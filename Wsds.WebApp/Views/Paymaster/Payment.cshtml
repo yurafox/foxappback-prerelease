@@ -1,0 +1,21 @@
+@model Wsds.WebApp.Models.PaymentModel
+
+@{
+    Layout = null;
+}
+
+<form action="https://lmi.paymaster.ua/" method="post" id="paymaster" name="paymaster">
+    <input type="hidden" name="LMI_MERCHANT_ID" value="1984" />
+    <input type="hidden" name="LMI_PAYMENT_NO" value="" />
+    <input type="hidden" name="LMI_PAYMENT_AMOUNT" value="@Model.Id" />
+    <input type="hidden" name="LMI_PAYMENT_DESC" value="Payment for order in Foxtrot for amount of @Model.Total UAH" />
+    <input type="hidden" name="LMI_SYS_PAYMENT_ID" value="@Model.Id" />
+    <input type="hidden" name="LMI_SUCCESS_URL" value="" />
+    <input type="hidden" name="LMI_FAIL_URL" value="" />
+    <input type="hidden" name="LMI_PAYMENT_NOTIFICATION_URL" value="" />
+    <!--<input type="hidden" name="LMI_PAYMENT_SYSTEM" value="21" />-->
+    <!--<input type="hidden" name="LMI_SIM_MODE" value="0" />-->
+</form>
+<script type="text/javascript">
+    window.onload = function () { document.forms["paymaster"].submit(); }
+</script>

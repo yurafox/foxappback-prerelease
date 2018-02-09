@@ -1,0 +1,14 @@
+﻿@model IEnumerable<wsdsdata.Models.Product_Group>
+<div class="panel panel-primary">
+    <div class="panel-heading">Products</div>
+    <table class="table table-striped">
+        <tr><th>ID</th><th>Name</th></tr>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.ID</td>
+                <td>@p.NAME</td>
+            </tr>
+        }
+    </table>
+</div>

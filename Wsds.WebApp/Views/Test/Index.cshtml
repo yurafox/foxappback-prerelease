@@ -1,0 +1,16 @@
+﻿@model IEnumerable<wsdsdata.Models.Client_Order>
+<div class="panel panel-primary">
+    <div class="panel-heading">Orders</div>
+    <table class="table table-striped">
+        <tr><th>ID</th><th>Date</th><th>Qty</th><th>SpecCount</th></tr>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.ID</td>
+                <td>@p.ORDER_DATE</td>
+                <td>@p.ORDER_SPEC_PRODUCTS.FirstOrDefault().QTY</td>
+                <td>@p.ORDER_SPEC_PRODUCTS.Count()</td>
+            </tr>
+        }
+    </table>
+</div>

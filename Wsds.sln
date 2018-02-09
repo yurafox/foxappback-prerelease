@@ -3,7 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wsds.WebApp", "Wsds.WebApp\Wsds.WebApp.csproj", "{787EFB04-FD05-4289-8DC5-6804CFE9850B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wsds.DAL", "Wsds.DAL\Wsds.DAL.csproj", "{2D7A0CE5-175E-4255-9227-60AAD238B725}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{787EFB04-FD05-4289-8DC5-6804CFE9850B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{787EFB04-FD05-4289-8DC5-6804CFE9850B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{787EFB04-FD05-4289-8DC5-6804CFE9850B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{787EFB04-FD05-4289-8DC5-6804CFE9850B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D7A0CE5-175E-4255-9227-60AAD238B725}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D7A0CE5-175E-4255-9227-60AAD238B725}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D7A0CE5-175E-4255-9227-60AAD238B725}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D7A0CE5-175E-4255-9227-60AAD238B725}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
