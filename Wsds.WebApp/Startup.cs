@@ -101,7 +101,8 @@ namespace Wsds.WebApp
                 p => new CacheService<Product>
                 (mainDataConnString, 60000, (pr) => pr.PRODUCTS_IN_GROUPS.Any(pg => pg.ProductGroup.ID_PRODUCT_CAT == virtualCatalogId)
                     , (prg) => prg.PRODUCTS_IN_GROUPS
-                    , (m) => m.MANUFACTURER),
+                    , (m) => m.MANUFACTURER
+                    , (prVal) => prVal.PRODUCT_PROP_VALUES),
                 ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Product_Group>),

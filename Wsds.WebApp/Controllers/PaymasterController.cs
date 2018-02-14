@@ -13,8 +13,20 @@ namespace Wsds.WebApp.Controllers
                 return BadRequest("Ошибка состояния данных в запросе к платежной системе");
 
 
-            //return Content("degufgrrufg");
             return View("Payment", payment);
+        }
+
+        [HttpPost]
+        public IActionResult Result(PaymentResultModel paymentReceiver)
+        {
+            if (!TryValidateModel(paymentReceiver))
+            {
+                return BadRequest("ошибка ответа от платежной системы");
+            }
+
+            ViewBag.Result = paymentReceiver.GetResultVerification();
+            return View("Result");
+
         }
     }
 }
