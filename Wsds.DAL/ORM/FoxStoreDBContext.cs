@@ -290,11 +290,11 @@ namespace Wsds.DAL.ORM
                 .Property(e => e.URL)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Manufacturer>()
-                .HasMany(e => e.PRODUCTS)
-                .WithRequired(e => e.MANUFACTURER)
-                .HasForeignKey(e => e.ID_MANUFACTURER)
-                .WillCascadeOnDelete(false);
+            //modelBuilder.Entity<Manufacturer>()
+            //    .HasMany(e => e.PRODUCTS)
+            //    .WithRequired(e => e.MANUFACTURER)
+            //    .HasForeignKey(e => e.ID_MANUFACTURER)
+            //    .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Order_Spec_Product>()
                 .Property(e => e.QTY)
@@ -360,11 +360,11 @@ namespace Wsds.DAL.ORM
                 .Property(e => e.URL)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Product>()
-                .HasMany(e => e.PRODUCT_FILES)
-                .WithRequired(e => e.PRODUCT)
-                .HasForeignKey(e => e.ID_PRODUCT)
-                .WillCascadeOnDelete(false);
+            //modelBuilder.Entity<Product>()
+            //    .HasMany(e => e.PRODUCT_FILES)
+            //    .WithRequired(e => e.PRODUCT)
+            //    .HasForeignKey(e => e.ID_PRODUCT)
+            //    .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Product>()
                 .HasMany(e => e.PRODUCT_PROP_VALUES)
@@ -372,11 +372,11 @@ namespace Wsds.DAL.ORM
                 .HasForeignKey(e => e.ID_PRODUCT)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<Product>()
-                .HasMany(e => e.PRODUCT_VIEW_HISTORY)
-                .WithRequired(e => e.PRODUCT)
-                .HasForeignKey(e => e.ID_PRODUCT)
-                .WillCascadeOnDelete(false);
+            //modelBuilder.Entity<Product>()
+            //    .HasMany(e => e.PRODUCT_VIEW_HISTORY)
+            //    .WithRequired(e => e.PRODUCT)
+            //    .HasForeignKey(e => e.ID_PRODUCT)
+            //    .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Product>()
                 .HasMany(e => e.PRODUCTS_IN_GROUPS)
@@ -384,11 +384,11 @@ namespace Wsds.DAL.ORM
                 .HasForeignKey(e => e.ID_PRODUCT)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<Product>()
-                .HasMany(e => e.QUOTATIONS)
-                .WithRequired(e => e.PRODUCT)
-                .HasForeignKey(e => e.ID_PRODUCT)
-                .WillCascadeOnDelete(false);
+            //modelBuilder.Entity<Product>()
+            //    .HasMany(e => e.QUOTATIONS)
+            //    .WithRequired(e => e.PRODUCT)
+            //    .HasForeignKey(e => e.ID_PRODUCT)
+            //    .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Prop_Enums_List>()
                 .Property(e => e.NAME)
@@ -523,10 +523,10 @@ namespace Wsds.DAL.ORM
                 .HasForeignKey(e => e.ID_SUPPLIER)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<Variant_Item>()
-                .HasMany(e => e.PRODUCTS)
-                .WithOptional(e => e.VariantItem)
-                .HasForeignKey(e => e.ID_VARIANT_ITEM);
+            //modelBuilder.Entity<Variant_Item>()
+            //    .HasMany(e => e.PRODUCTS)
+            //    .WithOptional(e => e.VariantItem)
+            //    .HasForeignKey(e => e.ID_VARIANT_ITEM);
 
         }
     

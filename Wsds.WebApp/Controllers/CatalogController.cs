@@ -1,7 +1,11 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Primitives;
 using Wsds.DAL.Entities;
+using Wsds.DAL.Entities.DTO;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
 
@@ -11,43 +15,30 @@ namespace Wsds.WebApp.Controllers
     [Route("api/[controller]")]
     public class CatalogController : Controller
     {
-        private readonly IDictionaryRepository _dictionaryRepository;
-        private ICacheService<Product_Group> _tst;
+        IProductGroupRepository _repo;
 
-        public CatalogController(IDictionaryRepository dictionaryRepository, ICacheService<Product_Group> tst)
+        public CatalogController(IProductGroupRepository repo)
         {
-            _dictionaryRepository = dictionaryRepository;
-            _tst = tst;
+
+            _repo = repo;
         }
 
         [HttpGet]
         public IActionResult Get()
         {
-            var dataList= _dictionaryRepository
-                .ProductsGroupsCache
-                .Select(p => new { p.ID, p.NAME,
-                                   parentId =p.PARENT_ID,
-                                   priorityIndex =p.PRIORITY_INDEX,
-                                   idProductCat = p.ID_PRODUCT_CAT,
-                                   isShow= p.IS_SHOW,
-                                   prefix = p.PREFIX,
-                                   priorityShow =p.PRIORITY_SHOW,
-                                   icon = (p.ICON != null) ? Convert.ToBase64String(p.ICON) : null  
-                                 });
-
-            return Ok(dataList);
-
+            var data = _repo.ProductGroups;
+            return (data != null && data.Count() != 0) 
+                ? Ok(data)
+                : (IActionResult) BadRequest("category list is empty");
         }
 
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            var list = _dictionaryRepository
-                              .ProductGroupsByFilterCache(p=>p.ID==id)
-                              .Select(p=> new {p.ID,p.NAME,p.PARENT_ID});
 
-            return (!list.Any()) ? (IActionResult) BadRequest($"can not find category tree by id={id}") 
-                                  : Ok(list);
+            var data = _repo.GetProductGroupById(id);
+            return (data == null) ? (IActionResult)BadRequest($"can not find category by id={id}")
+                                  : Ok(data);
 
         }
     }

@@ -1,9 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System;
+
 
 namespace Wsds.DAL.Entities
 {
     [Table("FOXSTORE.PRODUCT_PROP_VALUES")]
+    [Serializable]
     public  class Product_Prop_Value
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]

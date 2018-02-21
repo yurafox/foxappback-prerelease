@@ -1,7 +1,5 @@
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository.Abstract;
-using Wsds.DAL.Infrastructure.Extensions;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -9,38 +7,34 @@ namespace Wsds.WebApp.Controllers
     [Route("api/[controller]")]
     public class ProductController : Controller
     {
-        private readonly IDictionaryRepository _dictRepo;
+        private readonly IProductRepository _prodRepo;
 
-        public ProductController(IDictionaryRepository dictRepo) {
-            _dictRepo = dictRepo;
+        public ProductController(IProductRepository prodRepo) {
+            _prodRepo = prodRepo;
         }
 
         [HttpGet]
         public IActionResult Get()
         {
-            var products = _dictRepo.ProductsCache.WithOutEntityNavigation();
-            return Ok(products);
+            return Ok(_prodRepo.Products);
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
-        {
-            var prod =_dictRepo.ProductCache(id);
-            var rez = OrmExtension.WithOutEntityNavigation(prod);
-
-            return Ok(rez);
-        }
+        public IActionResult Get(long id) => Ok(_prodRepo.Product(id));
 
 
         [HttpGet("category/{categoryId}")]
         public IActionResult GetByCategory(int categoryId)
         {
+            return null;
+            /*
             var products = _dictRepo.ProductsCache
                 .Where(p => p.PRODUCTS_IN_GROUPS.Any(gr => gr.ID_GROUP == categoryId))
                 .WithOutEntityNavigation();
 
             return (!products.Any()) ? (IActionResult) BadRequest($"category doesn't contains products")
                                                         : Ok(products);
+                                                        */
 
         }
     }

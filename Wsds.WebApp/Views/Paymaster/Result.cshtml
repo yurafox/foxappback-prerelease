@@ -1,0 +1,11 @@
+
+@{
+    ViewData["Title"] = "Result";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script>
+    window.onload = function () {
+        window.parent.postMessage('@ViewBag.Result', '*');
+    }
+</script>

@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System;
 
 namespace Wsds.DAL.Entities
 {
     [Table("FOXSTORE.VARIANT_ITEMS")]
+    [Serializable]
     public class Variant_Item
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]

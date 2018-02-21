@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -5,6 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Wsds.DAL.Entities
 {
     [Table("FOXSTORE.CURRENCIES")]
+    [Serializable]
     public class Currency
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]

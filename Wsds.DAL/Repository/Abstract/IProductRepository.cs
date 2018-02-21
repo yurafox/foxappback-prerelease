@@ -3,9 +3,9 @@ using Wsds.DAL.Entities;
 
 namespace Wsds.DAL.Repository.Abstract
 {
-    interface IProductRepository
+    public interface IProductRepository
     {
-        IEnumerable<Product> Products { get; }
-        IEnumerable<Product_Group> ProductGroups { get; }
+        IEnumerable<Product_DTO> Products { get; }
+        Product_DTO Product(long id);
     }
 }

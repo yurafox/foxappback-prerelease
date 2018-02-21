@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Identity;
 using Wsds.DAL.Entities;
@@ -21,6 +16,9 @@ using Wsds.DAL.Repository.Abstract;
 using Wsds.DAL.Repository.Specific;
 using Wsds.WebApp.Auth;
 using Microsoft.AspNetCore.HttpOverrides;
+using CachingFramework.Redis;
+using Wsds.DAL.Entities.DTO;
+
 
 namespace Wsds.WebApp
 {
@@ -41,14 +39,14 @@ namespace Wsds.WebApp
             Configuration = builder.Build();
         }
 
-
+        
 
         public void ConfigureServices(IServiceCollection services)
         {
             // fox ssl enable
             services.AddMvc(options =>
             {
-                options.Filters.Add(new RequireHttpsAttribute());
+                //options.Filters.Add(new RequireHttpsAttribute());
             });
 
             // fox add code for close many http redirects
@@ -72,6 +70,62 @@ namespace Wsds.WebApp
 
             var mainDataConnString = Configuration.GetConnectionString("MainDataConnection");
             var virtualCatalogId = Convert.ToInt64(Configuration["AppOptions:virtualId"]);
+            var redisCache = new Context();
+            services.AddSingleton(redisCache);
+
+            EntityConfigDictionary.AddConfig("products", 
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, json_data as value from products t") 
+                    .AddSqlCommandWhere("where t.id in (6293680, 6280637, 6293680, 6294898, 6325585, 6324182, 6252121, 6202929, 6324216, " +
+                                        "6324213, 6161537, 6307814,6343804, 6337167, 6291460, 6316576, 6310491, " +
+                                        "6312913, 6363302, 6337781, 5857818, 6309865 )")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetPreserializedJSONField("json_data")
+                    .SetSerializerFunc("Serialization.Product2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("quotation_product", 
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.QuotProduct2Json(t.id) as value from QUOTATIONS_PRODUCTS t ")
+                    .AddSqlCommandWhere("where t.stock_qty>0")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.QuotProduct2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("currencies", 
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.Currency2Json(t.id) as value from currencies t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Currency2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("suppliers", 
+                  new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.Supplier2Json(t.id) as value from suppliers t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Supplier2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("manufacturers", 
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.Manufacturer2Json(t.id) as value from manufacturers t ")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Manufacturer2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("product_groups",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization_Branch.ProductGroups2Json(t.id) as value from product_groups t")
+                    .AddSqlCommandWhere($"where t.id_product_cat ={virtualCatalogId}")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization_Branch.ProductGroups2Json")
+            );
 
             services.AddScoped<FoxStoreDBContext>(_ =>
                 new FoxStoreDBContext(mainDataConnString));
@@ -91,32 +145,43 @@ namespace Wsds.WebApp
                 .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
-            services.AddScoped<IOrdersRepository, FSOrdersRepository>();
-            services.AddScoped<IUserRepository, FSUserRepository>();
-            services.AddScoped<IRoleRepository, FSRoleRepository>();
-            services.AddScoped<IBrandRepository, FSBrandRepository>();
+            services.AddScoped<IProductRepository, FSProductRepository>();
+            services.AddScoped<IQuotationProductRepository, FSQuotationProductRepository>();
+            services.AddScoped<ICurrencyRepository, FSCurrencyRepository>();
+            services.AddScoped<ISupplierRepository, FSSupplierRepository>();
+            services.AddScoped<IManufacturerRepository, FSManufacturerRepository>();
+            services.AddScoped<IProductGroupRepository, FSProductGroupRepository>();
 
-            services.Add(new ServiceDescriptor(typeof(ICacheService<Product>),
-                p => new CacheService<Product>
-                (mainDataConnString, 60000, (pr) => pr.PRODUCTS_IN_GROUPS.Any(pg => pg.ProductGroup.ID_PRODUCT_CAT == virtualCatalogId)
-                    , (prg) => prg.PRODUCTS_IN_GROUPS
-                    , (m) => m.MANUFACTURER),
-                ServiceLifetime.Singleton));
+            //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
+            //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
+            //services.AddScoped<IUserRepository, FSUserRepository>();
+            //services.AddScoped<IRoleRepository, FSRoleRepository>();
+            //services.AddScoped<IBrandRepository, FSBrandRepository>();
 
-            services.Add(new ServiceDescriptor(typeof(ICacheService<Product_Group>),
-                p => new CacheService<Product_Group>(mainDataConnString, 600000, // 10 min
-                    (f) => f.ID_PRODUCT_CAT == virtualCatalogId,
-                    (pg) => pg.PRODUCTS_IN_GROUPS),
-                ServiceLifetime.Singleton));
 
-            services.Add(new ServiceDescriptor(typeof(ICacheService<Product_Template>),
-                p => new CacheService<Product_Template>(mainDataConnString, 600000,
-                    (pt) => pt.ProductGroup.ID_PRODUCT_CAT == virtualCatalogId,
-                    (pt) => pt.PROP,
-                    (pt) => pt.PROP.PROP_ENUMS_LISTS,
-                    (pt) => pt.PROP.PRODUCT_PROP_VALUES),
-                ServiceLifetime.Singleton));
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Product_DTO>),
+                    p => new CacheService<Product_DTO>
+                    ("products", 300000, redisCache), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Currency_DTO>),
+                    p => new CacheService<Currency_DTO>
+                    ("currencies", 200000, redisCache), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Supplier_DTO>),
+                    p => new CacheService<Supplier_DTO>
+                    ("suppliers", 100000, redisCache), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Manufacturer_DTO>),
+                    p => new CacheService<Manufacturer_DTO>
+                    ("manufacturers", 600000, redisCache), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Quotation_Product_DTO>),
+                    p => new CacheService<Quotation_Product_DTO>
+                    ("quotation_product", 620000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Product_Groups_DTO>),
+                p => new CacheService<Product_Groups_DTO>
+                    ("product_groups", 620000, redisCache, true), ServiceLifetime.Singleton));
         }
 
         public void Configure(IApplicationBuilder app,
@@ -134,6 +199,12 @@ namespace Wsds.WebApp
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            // create global dependency collection ICacheService
+            /*
+            var services = app.ApplicationServices.GetServices<ICacheService>();
+            AppDepResolver.InitCollection(services);
+             */ 
 
             IdentityInit(app.ApplicationServices).Wait();
         }

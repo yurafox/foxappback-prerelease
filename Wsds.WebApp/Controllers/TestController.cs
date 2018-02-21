@@ -35,19 +35,19 @@ namespace Wsds.WebApp.Controllers
         }
 
         [HttpGet]
-        public Product Product(int id)
+        public Product_DTO Product(int id)
         {
             return _dbContext.Product(id);
         }
-        public ActionResult Products([FromServices] ICacheService<Product> csp)
-        {
-            return View(csp.Items);
-        }
+        //public ActionResult Products([FromServices] ICacheService<Product> csp)
+        //{
+        //    return View(csp.Items);
+        //}
 
-        public ActionResult ProductGroups([FromServices] ICacheService<Product_Group> cspg)
-        {
-            return View(cspg.Items);
-        }
+        //public ActionResult ProductGroups([FromServices] ICacheService<Product_Group> cspg)
+        //{
+        //    return View(cspg.Items);
+        //}
 
 
     }

@@ -1,116 +1,139 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Timers;
-using Wsds.DAL.Infrastructure.Extensions;
+using CachingFramework.Redis;
+using CachingFramework.Redis.Contracts.RedisObjects;
+
 
 namespace Wsds.DAL.Providers
 {
-    public interface ICacheService<T> where T : class {
-        IEnumerable<T> Items { get; }
+    public interface ICacheService<T> where T : class
+    {
+        string EntityName { get; }
+        T Item(long id);
+        IDictionary<long, T> Items { get; }
     }
 
-    public class CacheService<T> : ICacheService<T> where T : class {
+    public class CacheService<T> : ICacheService<T> where T : class
+    {
 
-        private CacheBase<T> _cb; 
-        public CacheService (string connString, int timerInterval,
-                             Func<T, bool> filterFunc,params Expression<Func<T, object>>[] includies) {
-            _cb = new CacheBase<T>(connString, timerInterval,filterFunc,includies);
-        }
-
-        public IEnumerable<T> Items
+        private CacheBase<T> _cb;
+        public string EntityName { get; }
+        public CacheService(string entityName,
+                            int timerInterval, 
+                            Context redisCache,
+                            bool preLoadData = true)
         {
-            get
-            { 
-                return _cb.Items;
-            }
+            EntityName = entityName;
+            _cb = new CacheBase<T>(entityName, 
+                                   timerInterval,
+                                   redisCache,
+                                   preLoadData);
         }
 
+        public IDictionary<long, T> Items => _cb.Items;
+        
+        public T Item (long id)  => _cb.Item(id);
     }
+
     public class CacheBase<T> where T : class
     {
         private object listLoadingSemaphore = new Object();
-        private List<T> _list1 = new List<T>();
-        private List<T> _list2 = new List<T>();
         private int _curListIndex = 0;
         private Timer _timer = new Timer();
-        private string _connString;
-        private Func<T, bool> _filter;
-        private Expression<Func<T, object>>[] _includies;
+        private string _entityName;
+        private bool _preLoadData;
+        private Context _redisCache;
+        private EntityConfig _entityConfig; 
 
-        public CacheBase (string connString, int timerInterval, 
-                          Func<T, bool> filter, Expression<Func<T, object>>[] includies) {
 
+        public CacheBase(string entityName, 
+                         int timerInterval,
+                         Context redisCache,
+                         bool preLoadData)
+        {
             _timer.Interval = timerInterval;
-            _connString = connString;
-            _filter = filter;
-            _includies = includies;
+            _entityName = entityName;
+            _redisCache = redisCache;
+            _preLoadData = preLoadData;
+            _entityConfig = EntityConfigDictionary.GetConfig(_entityName);
+
             LoadData();
             _timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+            _timer.Start();
         }
 
-        
-        public void Configure (int timerInterval) {
+        private IRedisDictionary<long, T> TempHash => 
+            _redisCache.Collections.GetRedisDictionary<long, T>(TempKey);
+
+        private IRedisDictionary<long, T> ItemsHash => 
+            _redisCache.Collections.GetRedisDictionary<long, T>(ItemsKey);
+
+        public T Item(long id)
+        {
+            if (Items.ContainsKey(id))
+            {
+                Items.TryGetValue(id, out T res);
+                return res;
+            }
+            else
+            {
+                return new EntityProvider<T>(_entityConfig)
+                              .GetItem(id);
+            }
+        }
+
+        public void Configure(int timerInterval)
+        {
             _timer.Stop();
             _timer.Interval = timerInterval;
             _timer.Start();
         }
 
-        private List<T> _tempitems
-        {
-            get
-            {
-                return (_curListIndex == 1) ? _list1 : _list2;
-            }
+        private string ItemsKey => (_curListIndex == 1) ? _entityName + ":hash1" : _entityName + ":hash2";
 
-            set
-            {
-                if (_curListIndex == 1)
-                {
-                    _list1 = value;
-                }
-                else
-                {
-                    _list2 = value;
-                }
-            }
-        }
+        private string TempKey => (_curListIndex == 0) ? _entityName + ":hash1" : _entityName + ":hash2";
 
-        public List<T> Items
-        {
-            get
-            {
-                return (_curListIndex == 0) ? _list1 : _list2;
-            }
-        }
+        public IDictionary<long, T> Items => _redisCache.Collections.GetRedisDictionary<long, T>(ItemsKey);
 
-        private void OnTimedEvent(object source, ElapsedEventArgs e)
+        private void OnTimedEvent(object source, ElapsedEventArgs e) => LoadData();
+
+        private void FillCache(IDictionary<long, T> list)
         {
-            LoadData();
+            try
+            {
+                TempHash.Clear();
+                TempHash.AddRange(list);
+            }
+            catch
+            {
+                Console.WriteLine("Error during Redis AddRange call");
+            }
         }
 
         public void LoadData()
         {
-            using (var db = new ORM.FoxStoreDBContext(_connString))
+            lock (listLoadingSemaphore)
             {
-                lock (listLoadingSemaphore)
+                try
                 {
-                    try
-                    {
-                        _timer.Stop();
-                         var dbEntity = db.Set<T>();
+                    _timer.Stop();
+                    IDictionary<long, T> dict = new Dictionary<long, T>();
+                    var prov = new EntityProvider<T>(_entityConfig);
+                    FillCache(prov.GetItems().ToDictionary(
+                                    x => Int64.Parse(x.GetType().GetProperty(_entityConfig.KeyField)
+                                        .GetValue(x).ToString()),
+                                    x => x
+                                    )
+                                );
 
-                        _tempitems = (_includies == null)
-                            ? dbEntity.IncludeLink(_filter)
-                            : dbEntity.IncludeLink(_includies, _filter);
-                        //Переключаем списки
-                        _curListIndex = (_curListIndex == 0) ? 1 : 0;
-                    }
-                    finally
-                    {
-                        _timer.Start();
-                    }
+                    //Переключаем списки
+                    _curListIndex = (_curListIndex == 0) ? 1 : 0;
+                }
+                finally
+                {
+                    _timer.Start();
                 }
             }
         }

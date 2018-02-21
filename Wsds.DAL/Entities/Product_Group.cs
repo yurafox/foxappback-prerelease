@@ -7,6 +7,7 @@ using Wsds.DAL.Common;
 namespace Wsds.DAL.Entities
 {
     [Table("FOXSTORE.PRODUCT_GROUPS")]
+    [Serializable]
     public class Product_Group :INamedEntity
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]

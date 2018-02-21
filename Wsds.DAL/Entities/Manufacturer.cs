@@ -1,16 +1,19 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System;
+
 
 namespace Wsds.DAL.Entities
 {
     [Table("FOXSTORE.MANUFACTURERS")]
+    [Serializable]
     public  class Manufacturer
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Manufacturer()
         {
-            PRODUCTS = new HashSet<Product>();
+            //PRODUCTS = new HashSet<Product>();
         }
 
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -25,7 +28,7 @@ namespace Wsds.DAL.Entities
         [NotMapped]
         public int Count { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Product> PRODUCTS { get; set; }
+        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        //public virtual ICollection<Product> PRODUCTS { get; set; }
     }
 }

@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CachingFramework.Redis, Version=7.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CachingFramework.Redis.7.5.0\lib\net461\CachingFramework.Redis.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -156,6 +159,9 @@
     <Reference Include="Remotion.Linq, Version=2.1.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
       <HintPath>..\packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
     </Reference>
+    <Reference Include="StackExchange.Redis, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\StackExchange.Redis.1.2.1\lib\net46\StackExchange.Redis.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.AppContext.4.3.0\lib\net46\System.AppContext.dll</HintPath>
@@ -273,9 +279,16 @@
     <Compile Include="Entities\Client_Prop_Value.cs" />
     <Compile Include="Entities\Credit_Entity.cs" />
     <Compile Include="Entities\Credit_Product.cs" />
+    <Compile Include="Entities\DTO\Currency_DTO.cs" />
     <Compile Include="Entities\Currency.cs" />
     <Compile Include="Entities\Currency_Rate.cs" />
     <Compile Include="Entities\Delivery_Option.cs" />
+    <Compile Include="Entities\DictionaryEntity.cs" />
+    <Compile Include="Entities\DTO\DTOAbstract.cs" />
+    <Compile Include="Entities\DTO\IDTO.cs" />
+    <Compile Include="Entities\DTO\Product_Groups_DTO.cs" />
+    <Compile Include="Entities\DTO\Quotation_Product_DTO.cs" />
+    <Compile Include="Entities\DTO\Supplier_DTO.cs" />
     <Compile Include="Entities\Entity.cs" />
     <Compile Include="Entities\Enum_Order_Payment_Status.cs" />
     <Compile Include="Entities\Enum_Order_Status.cs" />
@@ -285,20 +298,25 @@
     <Compile Include="Entities\Locale.cs" />
     <Compile Include="Entities\Localization.cs" />
     <Compile Include="Entities\Manufacturer.cs" />
+    <Compile Include="Entities\DTO\Manufacturer_DTO.cs" />
     <Compile Include="Entities\Offer.cs" />
     <Compile Include="Entities\Order_Spec_Product.cs" />
     <Compile Include="Entities\Order_Spec_Service.cs" />
     <Compile Include="Entities\Product.cs" />
     <Compile Include="Entities\Products_In_Group.cs" />
     <Compile Include="Entities\Product_Cat.cs" />
+    <Compile Include="Entities\DTO\Product_DTO.cs" />
     <Compile Include="Entities\Product_File.cs" />
     <Compile Include="Entities\Product_Group.cs" />
     <Compile Include="Entities\Product_Prop_Value.cs" />
+    <Compile Include="Entities\DTO\Product_Prop_Value_DTO.cs" />
     <Compile Include="Entities\Product_Template.cs" />
     <Compile Include="Entities\Product_Template_Func_Area.cs" />
     <Compile Include="Entities\Product_View_History.cs" />
     <Compile Include="Entities\Prop.cs" />
+    <Compile Include="Entities\DTO\Prop_DTO.cs" />
     <Compile Include="Entities\Prop_Enums_List.cs" />
+    <Compile Include="Entities\DTO\Prop_Enum_List_DTO.cs" />
     <Compile Include="Entities\Prop_Predestination.cs" />
     <Compile Include="Entities\Quotation.cs" />
     <Compile Include="Entities\Service.cs" />
@@ -315,18 +333,31 @@
     <Compile Include="ORM\FoxStoreDBContext.cs" />
     <Compile Include="ORM\FoxStoreDBContextUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\AppDepResolver.cs" />
     <Compile Include="Providers\CacheBase.cs" />
+    <Compile Include="Providers\EntityConfig.cs" />
+    <Compile Include="Providers\EntityConfigDictionary.cs" />
+    <Compile Include="Providers\EntityProvider.cs" />
     <Compile Include="Providers\SingletonProvider.cs" />
-    <Compile Include="Repository\Abstract\IBrandRepository.cs" />
+    <Compile Include="Repository\Abstract\IManufacturerRepository.cs" />
+    <Compile Include="Repository\Abstract\ICurrencyRepository.cs" />
     <Compile Include="Repository\Abstract\IDictionaryRepository.cs" />
     <Compile Include="Repository\Abstract\IOrdersRepository.cs" />
+    <Compile Include="Repository\Abstract\IProductGroupRepository.cs" />
     <Compile Include="Repository\Abstract\IProductRepository.cs" />
+    <Compile Include="Repository\Abstract\IQuotationProductRepository.cs" />
     <Compile Include="Repository\Abstract\IRoleRepository.cs" />
+    <Compile Include="Repository\Abstract\ISupplierRepository.cs" />
     <Compile Include="Repository\Abstract\IUserRepository.cs" />
-    <Compile Include="Repository\Specific\FSBrandRepository.cs" />
+    <Compile Include="Repository\Specific\FSManufacturerRepository.cs" />
+    <Compile Include="Repository\Specific\FSCurrencyRepository.cs" />
     <Compile Include="Repository\Specific\FSDictionaryRepository.cs" />
     <Compile Include="Repository\Specific\FSOrdersRepository.cs" />
+    <Compile Include="Repository\Specific\FSProductGroupRepository.cs" />
+    <Compile Include="Repository\Specific\FSProductRepository.cs" />
+    <Compile Include="Repository\Specific\FSQuotationProductRepository.cs" />
     <Compile Include="Repository\Specific\FSRoleRepository.cs" />
+    <Compile Include="Repository\Specific\FSSupplierRepository.cs" />
     <Compile Include="Repository\Specific\FSUserRepository.cs" />
     <Compile Include="UserAttrubutes\WsdsOraSequenceNameAttribute.cs" />
   </ItemGroup>
