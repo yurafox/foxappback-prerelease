@@ -24,7 +24,7 @@ namespace Wsds.WebApp.Controllers
 
 
         [HttpGet("category/{categoryId}")]
-        public IActionResult GetByCategory(int categoryId)
+        public IActionResult GetByCategory(long categoryId)
         {
             return null;
             /*

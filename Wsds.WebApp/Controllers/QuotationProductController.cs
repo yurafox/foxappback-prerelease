@@ -28,7 +28,7 @@ namespace Wsds.WebApp.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public IActionResult Get(long id)
         {
             return Ok(_repo.QuotationProduct(id));
         }

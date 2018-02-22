@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Wsds.DAL.Infrastructure.Extensions;
 using Wsds.DAL.Repository.Abstract;
 
 namespace Wsds.WebApp.Controllers
@@ -19,7 +18,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult Get(long id) => Ok(_dictRepo.Manufacturer(id));
 
         [HttpGet("catalog/{categoryId}")]
-        public IActionResult GetBrandByCategoryId(int categoryId)
+        public IActionResult GetBrandByCategoryId(long categoryId)
         {
             return null;
             /*

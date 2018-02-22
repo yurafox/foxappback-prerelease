@@ -286,6 +286,7 @@
     <Compile Include="Entities\DictionaryEntity.cs" />
     <Compile Include="Entities\DTO\DTOAbstract.cs" />
     <Compile Include="Entities\DTO\IDTO.cs" />
+    <Compile Include="Entities\DTO\Measure_Unit_DTO.cs" />
     <Compile Include="Entities\DTO\Product_Groups_DTO.cs" />
     <Compile Include="Entities\DTO\Quotation_Product_DTO.cs" />
     <Compile Include="Entities\DTO\Supplier_DTO.cs" />
@@ -342,6 +343,7 @@
     <Compile Include="Repository\Abstract\IManufacturerRepository.cs" />
     <Compile Include="Repository\Abstract\ICurrencyRepository.cs" />
     <Compile Include="Repository\Abstract\IDictionaryRepository.cs" />
+    <Compile Include="Repository\Abstract\IMeasureUnitRepository.cs" />
     <Compile Include="Repository\Abstract\IOrdersRepository.cs" />
     <Compile Include="Repository\Abstract\IProductGroupRepository.cs" />
     <Compile Include="Repository\Abstract\IProductRepository.cs" />
@@ -352,6 +354,7 @@
     <Compile Include="Repository\Specific\FSManufacturerRepository.cs" />
     <Compile Include="Repository\Specific\FSCurrencyRepository.cs" />
     <Compile Include="Repository\Specific\FSDictionaryRepository.cs" />
+    <Compile Include="Repository\Specific\FSMeasureUnitRepository.cs" />
     <Compile Include="Repository\Specific\FSOrdersRepository.cs" />
     <Compile Include="Repository\Specific\FSProductGroupRepository.cs" />
     <Compile Include="Repository\Specific\FSProductRepository.cs" />

@@ -19,7 +19,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult Get() => Ok(_repo.Currencies);
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id) => Ok(_repo.Currency(id));
+        public IActionResult Get(long id) => Ok(_repo.Currency(id));
 
         //получение сортированного списка, вызываем через метод репозитория
         [HttpGet("GetCurAsc")]

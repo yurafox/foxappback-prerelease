@@ -73,6 +73,14 @@ namespace Wsds.WebApp
             var redisCache = new Context();
             services.AddSingleton(redisCache);
 
+            EntityConfigDictionary.AddConfig("measure_unit",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name) as value from measure_unit t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.MeasureUnit2Json")
+                );
+
             EntityConfigDictionary.AddConfig("products", 
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("SELECT t.id, json_data as value from products t") 
@@ -145,6 +153,7 @@ namespace Wsds.WebApp
                 .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddScoped<IMeasureUnitRepository, FSMeasureUnitRepository>();
             services.AddScoped<IProductRepository, FSProductRepository>();
             services.AddScoped<IQuotationProductRepository, FSQuotationProductRepository>();
             services.AddScoped<ICurrencyRepository, FSCurrencyRepository>();
@@ -158,6 +167,9 @@ namespace Wsds.WebApp
             //services.AddScoped<IRoleRepository, FSRoleRepository>();
             //services.AddScoped<IBrandRepository, FSBrandRepository>();
 
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Measure_Unit_DTO>),
+                    p => new CacheService<Measure_Unit_DTO>
+                    ("measure_unit", 320000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Product_DTO>),
                     p => new CacheService<Product_DTO>

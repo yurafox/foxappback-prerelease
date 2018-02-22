@@ -21,7 +21,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult Get() => Ok(_repo.Suppliers);
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id) => Ok(_repo.Supplier(id));
+        public IActionResult Get(long id) => Ok(_repo.Supplier(id));
 
     }
 }
