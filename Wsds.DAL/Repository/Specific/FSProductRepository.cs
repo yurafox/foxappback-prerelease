@@ -45,7 +45,7 @@ namespace Wsds.DAL.Repository.Specific
                 {
                     con.Close();
                 }
-            };
+            }; 
             return res;
         }
 
