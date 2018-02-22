@@ -11,7 +11,7 @@ namespace Wsds.DAL.Providers
         public EntityProvider(EntityConfig config) {
             _config = config;
         }
-
+         
         public EntityConfig Config { get; set; }
 
         public T SetItem(T item) {
