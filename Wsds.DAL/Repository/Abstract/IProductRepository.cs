@@ -7,5 +7,6 @@ namespace Wsds.DAL.Repository.Abstract
     {
         IEnumerable<Product_DTO> Products { get; }
         Product_DTO Product(long id);
+        string GetProductDescription(long id);
     }
 }

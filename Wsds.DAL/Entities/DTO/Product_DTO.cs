@@ -20,7 +20,6 @@ namespace Wsds.DAL.Entities
         public int? rating { get; set; }
         public int? recall { get; set; }
         public int? supplOffers { get; set; }
-        public string description { get; set; }
         public ICollection<string> slideImageUrls { get; set; }
         public string barcode { get; set; }
     }

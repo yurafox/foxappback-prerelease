@@ -37,5 +37,9 @@ namespace Wsds.WebApp.Controllers
                                                         */
 
         }
+        [HttpGet ("GetProductDescription/{id}")]
+        public IActionResult GetProductDescription(long id) {
+            return Ok(_prodRepo.GetProductDescription(id));
+        }
     }
 }
