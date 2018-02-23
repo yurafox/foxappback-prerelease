@@ -75,6 +75,32 @@ namespace Wsds.WebApp
             var redisCache = new Context();
             services.AddSingleton(redisCache);
 
+            EntityConfigDictionary.AddConfig("city",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name, 'id_region' value id_region) as value from CITIES t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.city2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("country",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name) as value from COUNTRIES t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.country2Json")
+                );
+
+
+            EntityConfigDictionary.AddConfig("lang",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name) as value from LOCALES t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Lang2Json")
+                );
+
+
             EntityConfigDictionary.AddConfig("measure_unit",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name) as value from measure_unit t")
@@ -155,6 +181,8 @@ namespace Wsds.WebApp
                 .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddScoped<IGeoRepository, FSGeoRepository>();
+            services.AddScoped<ILocalizationRepository, FSLocalizationRepository>();
             services.AddScoped<IMeasureUnitRepository, FSMeasureUnitRepository>();
             services.AddScoped<IProductRepository, FSProductRepository>();
             services.AddScoped<IQuotationProductRepository, FSQuotationProductRepository>();
@@ -168,6 +196,18 @@ namespace Wsds.WebApp
             //services.AddScoped<IUserRepository, FSUserRepository>();
             //services.AddScoped<IRoleRepository, FSRoleRepository>();
             //services.AddScoped<IBrandRepository, FSBrandRepository>();
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Country_DTO>),
+                    p => new CacheService<Country_DTO>
+                    ("country", 51000000, redisCache), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<City_DTO>),
+                    p => new CacheService<City_DTO>
+                    ("city", 5000000, redisCache), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Lang_DTO>),
+                    p => new CacheService<Lang_DTO>
+                    ("lang", 50000000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Measure_Unit_DTO>),
                     p => new CacheService<Measure_Unit_DTO>

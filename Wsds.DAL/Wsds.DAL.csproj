@@ -279,6 +279,8 @@
     <Compile Include="Entities\Client_Prop_Value.cs" />
     <Compile Include="Entities\Credit_Entity.cs" />
     <Compile Include="Entities\Credit_Product.cs" />
+    <Compile Include="Entities\DTO\City_DTO.cs" />
+    <Compile Include="Entities\DTO\Country_DTO.cs" />
     <Compile Include="Entities\DTO\Currency_DTO.cs" />
     <Compile Include="Entities\Currency.cs" />
     <Compile Include="Entities\Currency_Rate.cs" />
@@ -286,6 +288,7 @@
     <Compile Include="Entities\DictionaryEntity.cs" />
     <Compile Include="Entities\DTO\DTOAbstract.cs" />
     <Compile Include="Entities\DTO\IDTO.cs" />
+    <Compile Include="Entities\DTO\Lang_DTO.cs" />
     <Compile Include="Entities\DTO\Measure_Unit_DTO.cs" />
     <Compile Include="Entities\DTO\Product_Groups_DTO.cs" />
     <Compile Include="Entities\DTO\Quotation_Product_DTO.cs" />
@@ -340,6 +343,8 @@
     <Compile Include="Providers\EntityConfigDictionary.cs" />
     <Compile Include="Providers\EntityProvider.cs" />
     <Compile Include="Providers\SingletonProvider.cs" />
+    <Compile Include="Repository\Abstract\IGeoRepository.cs" />
+    <Compile Include="Repository\Abstract\ILocalizationRepository.cs" />
     <Compile Include="Repository\Abstract\IManufacturerRepository.cs" />
     <Compile Include="Repository\Abstract\ICurrencyRepository.cs" />
     <Compile Include="Repository\Abstract\IDictionaryRepository.cs" />
@@ -351,6 +356,8 @@
     <Compile Include="Repository\Abstract\IRoleRepository.cs" />
     <Compile Include="Repository\Abstract\ISupplierRepository.cs" />
     <Compile Include="Repository\Abstract\IUserRepository.cs" />
+    <Compile Include="Repository\Specific\FSGeoRepository.cs" />
+    <Compile Include="Repository\Specific\FSLocalizationRepository.cs" />
     <Compile Include="Repository\Specific\FSManufacturerRepository.cs" />
     <Compile Include="Repository\Specific\FSCurrencyRepository.cs" />
     <Compile Include="Repository\Specific\FSDictionaryRepository.cs" />
