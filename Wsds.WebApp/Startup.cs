@@ -69,6 +69,8 @@ namespace Wsds.WebApp
 
 
             var mainDataConnString = Configuration.GetConnectionString("MainDataConnection");
+            services.AddSingleton<IConfiguration>(Configuration);
+
             var virtualCatalogId = Convert.ToInt64(Configuration["AppOptions:virtualId"]);
             var redisCache = new Context();
             services.AddSingleton(redisCache);
@@ -86,7 +88,7 @@ namespace Wsds.WebApp
                     .AddSqlCommandSelect("SELECT t.id, json_data as value from products t") 
                     .AddSqlCommandWhere("where t.id in (6293680, 6280637, 6293680, 6294898, 6325585, 6324182, 6252121, 6202929, 6324216, " +
                                         "6324213, 6161537, 6307814,6343804, 6337167, 6291460, 6316576, 6310491, " +
-                                        "6312913, 6363302, 6337781, 5857818, 6309865 )")
+                                        "6312913, 6363302, 6337781, 5857818, 6309865, 5936214 )")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetPreserializedJSONField("json_data")
