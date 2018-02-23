@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository.Abstract;
+using Newtonsoft.Json;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -39,7 +40,7 @@ namespace Wsds.WebApp.Controllers
         }
         [HttpGet ("GetProductDescription/{id}")]
         public IActionResult GetProductDescription(long id) {
-            return Ok(_prodRepo.GetProductDescription(id));
+            return Ok(JsonConvert.SerializeObject(_prodRepo.GetProductDescription(id)));
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Wsds.DAL.Entities
         public long? manufacturerId { get; set; }
         public ICollection<Product_Prop_Value_DTO> Props { get; set; }
         public string imageUrl { get; set; }
-        public int? rating { get; set; }
+        public decimal? rating { get; set; }
         public int? recall { get; set; }
         public int? supplOffers { get; set; }
         public ICollection<string> slideImageUrls { get; set; }
