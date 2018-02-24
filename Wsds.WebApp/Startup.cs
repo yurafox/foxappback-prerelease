@@ -162,6 +162,8 @@ namespace Wsds.WebApp
             services.AddScoped<ISupplierRepository, FSSupplierRepository>();
             services.AddScoped<IManufacturerRepository, FSManufacturerRepository>();
             services.AddScoped<IProductGroupRepository, FSProductGroupRepository>();
+            services.AddScoped<IUserRepository, FSUserRepository>();
+            services.AddScoped<IRoleRepository, FSRoleRepository>();
 
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
@@ -214,15 +216,13 @@ namespace Wsds.WebApp
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            // create global dependency collection ICacheService
-            /*
-            var services = app.ApplicationServices.GetServices<ICacheService>();
-            AppDepResolver.InitCollection(services);
-             */ 
-
-            IdentityInit(app.ApplicationServices).Wait();
+          
+            // this is obsolete call 
+            //TODO: check this method when we will be create admin panel
+           // IdentityInit(app.ApplicationServices).Wait();
         }
 
+        [Obsolete]
         public async Task IdentityInit(IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();

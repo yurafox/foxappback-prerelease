@@ -32,9 +32,10 @@ namespace Wsds.WebApp.Controllers
                 else
                 {
                     var user = await _userRepository.UserEngine.FindByNameAsync(auth.Login.ToLower());
-                    var roles = await _userRepository.UserEngine.GetRolesAsync(user);
+                    //TODO: check this role method when we will be create admin panel
+                    //var roles = await _userRepository.UserEngine.GetRolesAsync(user);
 
-                    var jToken = AuthOpt.GetToken(user, roles);
+                    var jToken = AuthOpt.GetToken(user);
 
                     var responseObj = new
                     {

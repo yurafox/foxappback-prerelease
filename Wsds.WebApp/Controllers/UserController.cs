@@ -10,7 +10,7 @@ using Wsds.WebApp.Models;
 
 namespace Wsds.WebApp.Controllers
 {
-    [Authorize(Roles = "admin")]
+    [Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
     public class UserController : Controller
@@ -69,11 +69,10 @@ namespace Wsds.WebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser(RegisterModel auth)
         {
-
             if (!ModelState.IsValid)
                 return BadRequest( "Model is not valid");
 
-            var appUser = new AppUser() { UserName = auth.Login.ToLower(), Email = auth.Email };
+            var appUser = new AppUser() { UserName = auth.Login.ToLower(), Email = auth.Email.ToLower(), Card = 102};
 
             var usr = await _userRepository.CreateUser(appUser, auth.Password);
             return Ok(usr.Id);
