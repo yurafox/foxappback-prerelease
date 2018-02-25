@@ -14,6 +14,8 @@ namespace Wsds.DAL.Providers
         private string _valueField;
         private string _preserializedJSONField;
         private string _serializerFunc;
+        private string _baseTable;
+        private string _sequence;
 
         public string ConnString { get; set; }
         public string SqlCommandSelect {
@@ -59,6 +61,23 @@ namespace Wsds.DAL.Providers
             }
         }
 
+        public string BaseTable
+        {
+            get
+            {
+                return _baseTable;
+            }
+        }
+
+        public string Sequence
+        {
+            get
+            {
+                return _sequence;
+            }
+        }
+
+
         public EntityConfig AddSqlCommandSelect(string sqlCommandSelect) {
             _sqlCommandSelect = sqlCommandSelect;
             return this;
@@ -92,6 +111,19 @@ namespace Wsds.DAL.Providers
             _serializerFunc = serializerFunc;
             return this;
         }
+
+        public EntityConfig SetBaseTable(string baseTable)
+        {
+            _baseTable = baseTable;
+            return this;
+        }
+
+        public EntityConfig SetSequence(string sequence)
+        {
+            _sequence = sequence;
+            return this;
+        }
+
 
         public EntityConfig(string connString)
         {

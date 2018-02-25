@@ -75,6 +75,80 @@ namespace Wsds.WebApp
             var redisCache = new Context();
             services.AddSingleton(redisCache);
 
+
+            EntityConfigDictionary.AddConfig("client_order",
+                new EntityConfig(mainDataConnString)
+                    .SetBaseTable("CLIENT_ORDERS")
+                    .AddSqlCommandSelect("select t.*, Serialization.CLIENT_ORDER2JSON(t.id) as value " +
+                                         "from client_orders t")
+                    .AddSqlCommandWhere("where t.id_status=0")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSequence("SEQ_CLIENT_ORDERS")
+                    .SetSerializerFunc("Serialization.CLIENT_ORDER2JSON")
+                );
+
+
+            EntityConfigDictionary.AddConfig("client_order_product",
+                new EntityConfig(mainDataConnString)
+                    .SetBaseTable("ORDER_SPEC_PRODUCTS")
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value t.id, 'idOrder' value id_order, " +
+                                         "'idQuotationProduct' value id_quotation, 'price' value price, 'qty' value qty, " +
+                                         "'idStorePlace' value id_store_place, 'idLoEntity' value id_lo_entity, " +
+                                         "'loTrackTicket' value lo_track_ticket, 'loDeliveryCost' value lo_delivery_cost, " +
+                                         "'loDeliveryCompleted' value lo_delivery_completed, " +
+                                         "'loEstimatedDeliveryDate' value lo_estimated_delivery_date, " +
+                                         "'loDeliveryCompletedDate' value lo_delivery_completed_date, 'errorMessage' value error_message, " +
+                                         "'warningMessage' value warning_message, 'payPromoCode' value pay_promocode, " +
+                                         "'payPromoCodeDiscount' value pay_promocode_discount, 'payBonusCnt' value pay_bonus_cnt, " +
+                                         "'payPromoBonusCnt' value pay_promobonus_cnt, 'earnedBonusCnt' value earned_bonus_cnt, " +
+                                         "'warningRead' value warning_read) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
+                    .AddSqlCommandWhere("where o.id = t.id_order and o.id_status=0")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSequence("SEQ_ORDER_SPEC_PRODUCTS")
+                    .SetSerializerFunc("Serialization.ORDER_SPEC_PRODUCT2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("client",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id,'userId' value user_id, " +
+                                         "'name' value name, 'phone' value phone, 'login' value login, 'email' value email, " +
+                                         "'fname' value fname, 'lname' value lname, 'barcode' value barcode,  'bonusBalance' " +
+                                         "value null, 'actionBonusBalance' value null) as value from CLIENTS t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Client2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("quotation",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, " +
+                                         "JSON_OBJECT('id' value id, 'idSupplier' value id_Supplier, 'dateStart' value date_start, " +
+                                         "'dateEnd' value date_end, 'currencyId' value currency_id) as value from QUOTATIONS t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Quot2Json")
+                );
+
+
+            EntityConfigDictionary.AddConfig("loentity",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name) as value from LO_ENTITIES t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.loEntity2Json")
+                );
+
+
+            EntityConfigDictionary.AddConfig("pmtmethod",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name) as value from ENUM_PAYMENT_METHODS t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.pmtmethod2Json")
+                );
+
             EntityConfigDictionary.AddConfig("city",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name, 'id_region' value id_region) as value from CITIES t")
@@ -181,6 +255,11 @@ namespace Wsds.WebApp
                 .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddScoped<ICartRepository, FSCartRepository>();
+            services.AddScoped<IClientRepository, FSClientRepository>();
+            services.AddScoped<IQuotationRepository, FSQuotationRepository>();
+            services.AddScoped<ILORepository, FSLORepository>();
+            services.AddScoped<IFinRepository, FSFinRepository>();
             services.AddScoped<IGeoRepository, FSGeoRepository>();
             services.AddScoped<ILocalizationRepository, FSLocalizationRepository>();
             services.AddScoped<IMeasureUnitRepository, FSMeasureUnitRepository>();
@@ -196,6 +275,25 @@ namespace Wsds.WebApp
             //services.AddScoped<IUserRepository, FSUserRepository>();
             //services.AddScoped<IRoleRepository, FSRoleRepository>();
             //services.AddScoped<IBrandRepository, FSBrandRepository>();
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Client_DTO>),
+                    p => new CacheService<Client_DTO>
+                    ("client", 1000000, redisCache, false), ServiceLifetime.Singleton));
+
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Quotation_DTO>),
+                    p => new CacheService<Quotation_DTO>
+                    ("quotation", 1000000, redisCache), ServiceLifetime.Singleton));
+
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<LoEntity_DTO>),
+                    p => new CacheService<LoEntity_DTO>
+                    ("loentity", 100000000, redisCache), ServiceLifetime.Singleton));
+
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Enum_Pmt_Method_DTO>),
+                    p => new CacheService<Enum_Pmt_Method_DTO>
+                    ("pmtmethod", 50000000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Country_DTO>),
                     p => new CacheService<Country_DTO>
@@ -215,11 +313,11 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Product_DTO>),
                     p => new CacheService<Product_DTO>
-                    ("products", 300000, redisCache), ServiceLifetime.Singleton));
+                    ("products", 3000000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Currency_DTO>),
                     p => new CacheService<Currency_DTO>
-                    ("currencies", 200000, redisCache), ServiceLifetime.Singleton));
+                    ("currencies", 2000000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Supplier_DTO>),
                     p => new CacheService<Supplier_DTO>
@@ -231,7 +329,7 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Quotation_Product_DTO>),
                     p => new CacheService<Quotation_Product_DTO>
-                    ("quotation_product", 620000, redisCache, true), ServiceLifetime.Singleton));
+                    ("quotation_product", 620000, redisCache, false), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Product_Groups_DTO>),
                 p => new CacheService<Product_Groups_DTO>
@@ -260,7 +358,7 @@ namespace Wsds.WebApp
             AppDepResolver.InitCollection(services);
              */ 
 
-            IdentityInit(app.ApplicationServices).Wait();
+            //IdentityInit(app.ApplicationServices).Wait();
         }
 
         public async Task IdentityInit(IServiceProvider serviceProvider)

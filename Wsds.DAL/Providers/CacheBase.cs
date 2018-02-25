@@ -59,7 +59,9 @@ namespace Wsds.DAL.Providers
             _preLoadData = preLoadData;
             _entityConfig = EntityConfigDictionary.GetConfig(_entityName);
 
-            LoadData();
+            if (_preLoadData)
+                LoadData();
+
             _timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
             _timer.Start();
         }
@@ -79,8 +81,10 @@ namespace Wsds.DAL.Providers
             }
             else
             {
-                return new EntityProvider<T>(_entityConfig)
+                T item =  new EntityProvider<T>(_entityConfig)
                               .GetItem(id);
+                ItemsHash.Add(id, item);
+                return item;
             }
         }
 
