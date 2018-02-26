@@ -28,6 +28,11 @@ namespace Wsds.WebApp.Controllers
             return Ok(_spRepo.GetProductSPByQuotId(idQuotationProduct));
         }
 
+        [HttpGet("StorePlace")]
+        public IActionResult GetStorePlaces()
+        {
+            return Ok(_spRepo.StorePlaces);
+        }
 
     }
 }

@@ -80,7 +80,9 @@ namespace Wsds.WebApp
                     .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id, 'idSupplier' value id_supplier," +
                                          "'name' value name, 'idCity' value id_city, 'zip' value zip, " +
                                          "'address_line' value address_line, 'lat' value lat,'lng' value lng," +
-                                         "'type' value type) as value from STORE_PLACES t")
+                                         "'type' value type) as value from STORE_PLACES t ")
+                    .AddSqlCommandWhere("where t.id in (select sp.id_store_place from product_store_places sp where sp.qty>0) " +
+                                        "and t.type=1")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Store_place2Json")
@@ -173,7 +175,10 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("city",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name, 'id_region' value id_region) as value from CITIES t")
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name, " +
+                                         "'id_region' value id_region) as value from CITIES t ")
+                    .AddSqlCommandWhere("where t.id in (select sp.id_city from product_store_places psp, " +
+                                        "store_places sp where psp.id_store_place = sp.id and psp.qty > 0)")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.city2Json")
@@ -308,11 +313,9 @@ namespace Wsds.WebApp
                     p => new CacheService<Quotation_DTO>
                     ("quotation", 1000000, redisCache), ServiceLifetime.Singleton));
 
-
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoEntity_DTO>),
                     p => new CacheService<LoEntity_DTO>
                     ("loentity", 100000000, redisCache), ServiceLifetime.Singleton));
-
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Enum_Pmt_Method_DTO>),
                     p => new CacheService<Enum_Pmt_Method_DTO>
@@ -324,7 +327,7 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<City_DTO>),
                     p => new CacheService<City_DTO>
-                    ("city", 5000000, redisCache, false), ServiceLifetime.Singleton));
+                    ("city", 5000000, redisCache, true), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Lang_DTO>),
                     p => new CacheService<Lang_DTO>
@@ -332,7 +335,7 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Measure_Unit_DTO>),
                     p => new CacheService<Measure_Unit_DTO>
-                    ("measure_unit", 320000, redisCache), ServiceLifetime.Singleton));
+                    ("measure_unit", 3200000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Product_DTO>),
                     p => new CacheService<Product_DTO>
