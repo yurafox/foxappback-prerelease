@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Wsds.DAL.Entities.DTO
 {
     [Serializable]
-    public class Product_Groups_DTO: IDTO
+    public class Product_Groups_DTO
     {
         public long id { get; set; }
         public string name { get; set; }
