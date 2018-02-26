@@ -200,7 +200,8 @@ namespace Wsds.DAL.Providers
             string stmt = _config.SqlCommandSelect + " " + _config.SqlCommandWhere;
 
             if (!(String.IsNullOrEmpty(filterExpr)))
-                stmt = stmt + (String.IsNullOrEmpty(_config.SqlCommandWhere) ? " where " : " and ") + filterExpr;
+                stmt = stmt + (String.IsNullOrEmpty(_config.SqlCommandWhere) ? " where " : " and ") 
+                            + filterExpr + " " + _config.SqlCommandOrderBy;
 
             using (var con = new OracleConnection(_config.ConnString))
             using (var cmd = new OracleCommand(stmt, con))

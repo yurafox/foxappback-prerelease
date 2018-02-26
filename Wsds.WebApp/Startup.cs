@@ -18,7 +18,7 @@ using Wsds.WebApp.Auth;
 using Microsoft.AspNetCore.HttpOverrides;
 using CachingFramework.Redis;
 using Wsds.DAL.Entities.DTO;
-
+using Wsds.DAL.Repository;
 
 namespace Wsds.WebApp
 {
@@ -75,6 +75,27 @@ namespace Wsds.WebApp
             var redisCache = new Context();
             services.AddSingleton(redisCache);
 
+            EntityConfigDictionary.AddConfig("store_place",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id, 'idSupplier' value id_supplier," +
+                                         "'name' value name, 'idCity' value id_city, 'zip' value zip, " +
+                                         "'address_line' value address_line, 'lat' value lat,'lng' value lng," +
+                                         "'type' value type) as value from STORE_PLACES t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Store_place2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("product_store_place",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, " +
+                                         "JSON_OBJECT ('id' value id, 'idStorePlace' value id_Store_Place, " +
+                                         "'idQuotationProduct' value id_Quotation_Product, 'qty' value qty) as value " +
+                                         "from PRODUCT_STORE_PLACES t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Product_Store_Place2Json")
+                );
 
             EntityConfigDictionary.AddConfig("client_order",
                 new EntityConfig(mainDataConnString)
@@ -144,6 +165,7 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("pmtmethod",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name) as value from ENUM_PAYMENT_METHODS t")
+                    .AddSqlCommandOrderBy("order by t.id")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.pmtmethod2Json")
@@ -255,6 +277,7 @@ namespace Wsds.WebApp
                 .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddScoped<IStorePlaceRepository, FSStorePlaceRepository>();
             services.AddScoped<ICartRepository, FSCartRepository>();
             services.AddScoped<IClientRepository, FSClientRepository>();
             services.AddScoped<IQuotationRepository, FSQuotationRepository>();
@@ -301,7 +324,7 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<City_DTO>),
                     p => new CacheService<City_DTO>
-                    ("city", 5000000, redisCache), ServiceLifetime.Singleton));
+                    ("city", 5000000, redisCache, false), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Lang_DTO>),
                     p => new CacheService<Lang_DTO>
@@ -325,7 +348,7 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Manufacturer_DTO>),
                     p => new CacheService<Manufacturer_DTO>
-                    ("manufacturers", 600000, redisCache), ServiceLifetime.Singleton));
+                    ("manufacturers", 600000, redisCache, false), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Quotation_Product_DTO>),
                     p => new CacheService<Quotation_Product_DTO>
@@ -334,6 +357,10 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<Product_Groups_DTO>),
                 p => new CacheService<Product_Groups_DTO>
                     ("product_groups", 620000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<StorePlace_DTO>),
+                p => new CacheService<StorePlace_DTO>
+                    ("store_place", 1000000, redisCache, true), ServiceLifetime.Singleton));
         }
 
         public void Configure(IApplicationBuilder app,

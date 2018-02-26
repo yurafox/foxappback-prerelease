@@ -16,6 +16,7 @@ namespace Wsds.DAL.Providers
         private string _serializerFunc;
         private string _baseTable;
         private string _sequence;
+        private string _sqlCommandOrderBy;
 
         public string ConnString { get; set; }
         public string SqlCommandSelect {
@@ -31,6 +32,15 @@ namespace Wsds.DAL.Providers
                 return _sqlCommandWhere;
             }
         }
+
+        public string SqlCommandOrderBy
+        {
+            get
+            {
+                return _sqlCommandOrderBy;
+            }
+        }
+
         public string KeyField
         {
             get
@@ -87,6 +97,13 @@ namespace Wsds.DAL.Providers
             _sqlCommandWhere = sqlCommandWhere;
             return this;
         }
+
+        public EntityConfig AddSqlCommandOrderBy(string sqlCommandOrderBy)
+        {
+            _sqlCommandOrderBy = sqlCommandOrderBy;
+            return this;
+        }
+
 
         public EntityConfig SetKeyField(string keyField)
         {

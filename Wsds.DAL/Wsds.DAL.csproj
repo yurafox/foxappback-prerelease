@@ -295,9 +295,12 @@
     <Compile Include="Entities\DTO\Lang_DTO.cs" />
     <Compile Include="Entities\DTO\LoEntity_DTO.cs" />
     <Compile Include="Entities\DTO\Measure_Unit_DTO.cs" />
+    <Compile Include="Entities\DTO\ProductStorePlace_DTO.cs" />
     <Compile Include="Entities\DTO\Product_Groups_DTO.cs" />
     <Compile Include="Entities\DTO\Quotation_DTO.cs" />
     <Compile Include="Entities\DTO\Quotation_Product_DTO.cs" />
+    <Compile Include="Entities\DTO\StorePlace_DTO.cs" />
+    <Compile Include="Entities\DTO\Store_DTO.cs" />
     <Compile Include="Entities\DTO\Supplier_DTO.cs" />
     <Compile Include="Entities\Entity.cs" />
     <Compile Include="Entities\Enum_Order_Payment_Status.cs" />
@@ -368,6 +371,7 @@
     <Compile Include="Repository\Abstract\IRoleRepository.cs" />
     <Compile Include="Repository\Abstract\ISupplierRepository.cs" />
     <Compile Include="Repository\Abstract\IUserRepository.cs" />
+    <Compile Include="Repository\IStorePlaceRepository.cs" />
     <Compile Include="Repository\Specific\FSCartRepository.cs" />
     <Compile Include="Repository\Specific\FSClientRepository.cs" />
     <Compile Include="Repository\Specific\FSFinRepository.cs" />
@@ -384,6 +388,7 @@
     <Compile Include="Repository\Specific\FSQuotationProductRepository.cs" />
     <Compile Include="Repository\Specific\FSQuotationRepository.cs" />
     <Compile Include="Repository\Specific\FSRoleRepository.cs" />
+    <Compile Include="Repository\Specific\FSStorePlaceRepository.cs" />
     <Compile Include="Repository\Specific\FSSupplierRepository.cs" />
     <Compile Include="Repository\Specific\FSUserRepository.cs" />
     <Compile Include="UserAttrubutes\WsdsOraSequenceNameAttribute.cs" />

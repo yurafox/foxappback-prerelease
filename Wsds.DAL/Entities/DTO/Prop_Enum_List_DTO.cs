@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Wsds.DAL.Entities
 {
     [Serializable]
-    public class Prop_Enum_List_DTO : IDTO
+    public class Prop_Enum_List_DTO
     {
         public long id { get; set; }
         public Prop_DTO id_Prop { get; set; }

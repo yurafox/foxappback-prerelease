@@ -17,7 +17,7 @@ namespace Wsds.DAL.Repository.Specific
             _csPmtMethod = csPmtMethod;
         }
 
-        public IEnumerable<Enum_Pmt_Method_DTO> PaymentMethods => _csPmtMethod.Items.Values;
+        public IEnumerable<Enum_Pmt_Method_DTO> PaymentMethods => _csPmtMethod.Items.Values.OrderBy(x => x.id);
 
         public Enum_Pmt_Method_DTO PaymentMethod(long id) => _csPmtMethod.Item(id);
     }
