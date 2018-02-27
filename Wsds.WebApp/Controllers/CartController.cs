@@ -43,6 +43,12 @@ namespace Wsds.WebApp.Controllers
             return NoContent();
         }
 
+        [HttpGet("getClientDraftOrder")]
+        public IActionResult getClientDraftOrder()
+        {
+            return Ok(_cartRepo.GetOrCreateClientDraftOrder());
+        }
+
 
     }
 }

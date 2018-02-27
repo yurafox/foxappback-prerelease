@@ -83,7 +83,9 @@ namespace Wsds.DAL.Providers
             {
                 T item =  new EntityProvider<T>(_entityConfig)
                               .GetItem(id);
-                ItemsHash.Add(id, item);
+                if (item != null) {
+                    ItemsHash.Add(id, item);
+                }
                 return item;
             }
         }

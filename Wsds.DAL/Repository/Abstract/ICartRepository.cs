@@ -13,6 +13,7 @@ namespace Wsds.DAL.Repository.Abstract
         IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByClietId(long clientId);
         ClientOrderProduct_DTO UpdateCartProduct(ClientOrderProduct_DTO item);
         ClientOrderProduct_DTO InsertCartProduct(ClientOrderProduct_DTO item);
+        ClientOrder_DTO GetOrCreateClientDraftOrder();
         void DeleteCartProduct(long id);
     }
 }

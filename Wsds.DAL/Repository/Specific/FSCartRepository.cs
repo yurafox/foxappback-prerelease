@@ -42,7 +42,7 @@ namespace Wsds.DAL.Repository.Specific
         {
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
-            item.idOrder = GetOrCreateClientDraftOrderID();
+            item.idOrder = GetOrCreateClientDraftOrder().id;
             return prov.InsertItem(item);
         }
 
@@ -53,7 +53,7 @@ namespace Wsds.DAL.Repository.Specific
             prov.DeleteItem(id);
         }
 
-        public long GetOrCreateClientDraftOrderID() {
+        public ClientOrder_DTO GetOrCreateClientDraftOrder() {
 
             var idClient = 100; // TODO я
             var idCur = 0; //TODO грн
@@ -64,7 +64,7 @@ namespace Wsds.DAL.Repository.Specific
                                                 .FirstOrDefault();
             if (!(order == null))
             {
-                return (long)order.id;
+                return order;
             }
             else
             {
@@ -77,7 +77,7 @@ namespace Wsds.DAL.Repository.Specific
                 newDraftOrder.idPaymentStatus = 1; //не оплачен
                 newDraftOrder.idStatus = 0; //draft
 
-                return (long)ordersProv.InsertItem(newDraftOrder).id;
+                return ordersProv.InsertItem(newDraftOrder);
 
             };
 

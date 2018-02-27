@@ -36,5 +36,9 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cliRepo.GetClientByEmail(email));
         }
 
+        [HttpGet("person/{id}")]
+        public IActionResult GetPersonById(long id) {
+            return Ok(_cliRepo.GetPersonById(id));
+        }
     }
 }

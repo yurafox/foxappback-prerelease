@@ -294,7 +294,10 @@
     <Compile Include="Entities\DTO\IDTO.cs" />
     <Compile Include="Entities\DTO\Lang_DTO.cs" />
     <Compile Include="Entities\DTO\LoEntity_DTO.cs" />
+    <Compile Include="Entities\DTO\LoSupplEntity_DTO.cs" />
+    <Compile Include="Entities\DTO\LoTrackLog.cs" />
     <Compile Include="Entities\DTO\Measure_Unit_DTO.cs" />
+    <Compile Include="Entities\DTO\PersonInfo_DTO.cs" />
     <Compile Include="Entities\DTO\ProductStorePlace_DTO.cs" />
     <Compile Include="Entities\DTO\Product_Groups_DTO.cs" />
     <Compile Include="Entities\DTO\Quotation_DTO.cs" />

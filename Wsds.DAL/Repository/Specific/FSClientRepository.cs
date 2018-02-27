@@ -33,5 +33,11 @@ namespace Wsds.DAL.Repository.Specific
             return prov.GetItems("email = :email", new OracleParameter("email", email));
         }
 
+        public PersonInfo_DTO GetPersonById(long idPerson)
+        {
+            var persCnfg = EntityConfigDictionary.GetConfig("person_info");
+            var prov = new EntityProvider<PersonInfo_DTO>(persCnfg);
+            return prov.GetItem(idPerson);
+        }
     }
 }

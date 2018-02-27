@@ -13,5 +13,6 @@ namespace Wsds.DAL.Repository.Abstract
         Client_DTO Client(long id);
         IEnumerable<Client_DTO> GetClientByUserID(long userId);
         IEnumerable<Client_DTO> GetClientByEmail(string email);
+        PersonInfo_DTO GetPersonById(long idPerson);
     }
 }

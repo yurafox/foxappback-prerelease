@@ -75,6 +75,35 @@ namespace Wsds.WebApp
             var redisCache = new Context();
             services.AddSingleton(redisCache);
 
+            EntityConfigDictionary.AddConfig("person_info",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, select JSON_OBJECT ('id' value id, 'firstName' value first_name," +
+                                         "'lastName' value last_name, 'middleName' value middle_name, " +
+                                         "'passportSeries' value passport_Series, 'passportNum' value passport_Num, " +
+                                         "'issuedAuthority' value issued_Authority, 'taxNumber' value tax_number, 'birthDate' value birth_date) as value from person t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Person2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("lo_track_log",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id, " +
+                                         "'idOrderSpecProd' value id_order_spec_prod, " +
+                                         "'trackDate' value Track_Date, 'trackString' value Track_String) as value " +
+                                         "from LO_ORDER_SPEC_TRACKING t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                );
+
+            EntityConfigDictionary.AddConfig("lo_suppl_entity",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'idSupplier' value id_Supplier, " +
+                                         "'idLoEntity' value id_lo_entity) as value from LO_SUPPL_ENTITIES t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                );
+
             EntityConfigDictionary.AddConfig("store_place",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id, 'idSupplier' value id_supplier," +
@@ -364,6 +393,11 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<StorePlace_DTO>),
                 p => new CacheService<StorePlace_DTO>
                     ("store_place", 1000000, redisCache, true), ServiceLifetime.Singleton));
+            
+            services.Add(new ServiceDescriptor(typeof(ICacheService<LoSupplEntity_DTO>),
+                p => new CacheService<LoSupplEntity_DTO>
+                    ("lo_suppl_entity", 7200000, redisCache, true), ServiceLifetime.Singleton));
+
         }
 
         public void Configure(IApplicationBuilder app,

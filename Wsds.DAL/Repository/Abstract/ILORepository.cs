@@ -11,5 +11,9 @@ namespace Wsds.DAL.Repository.Abstract
     {
         IEnumerable<LoEntity_DTO> LoEntities { get; }
         LoEntity_DTO LoEntity(long id);
+
+        IEnumerable<LoSupplEntity_DTO> LoSupplEntities { get; }
+        IEnumerable<LoSupplEntity_DTO> GetLoEntitiesForSuppl(long supplId);
+        IEnumerable<LoTrackLog> GetTrackLogForOrderSpecProd(long orderSpecProdId);
     }
 }
