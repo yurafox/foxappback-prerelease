@@ -17,9 +17,6 @@ namespace Wsds.DAL.Providers
         public EntityConfig Config { get; set; }
 
         private object Convert2OraType(object value) {
-            if (value == null) {
-                return value;
-            }
             if (value is bool)
             {
                 return (bool)value ? 1 : 0;
