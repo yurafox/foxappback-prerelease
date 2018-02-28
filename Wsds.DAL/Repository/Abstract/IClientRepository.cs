@@ -14,6 +14,6 @@ namespace Wsds.DAL.Repository.Abstract
         IEnumerable<Client_DTO> GetClientByUserID(long userId);
         IEnumerable<Client_DTO> GetClientByEmail(string email);
         PersonInfo_DTO GetPersonById(long idPerson);
-        Task<object> GetClientBonusesInfoAsync(long idClient);
+        object GetClientBonusesInfo(long idClient);
     }
 }

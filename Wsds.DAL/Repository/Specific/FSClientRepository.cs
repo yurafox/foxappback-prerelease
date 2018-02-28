@@ -10,7 +10,8 @@ using Wsds.DAL.Entities;
 using Wsds.DAL.Infrastructure;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
-using System.Runtime.Serialization.Json;
+using Newtonsoft.Json;
+
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -44,14 +45,22 @@ namespace Wsds.DAL.Repository.Specific
             return prov.GetItem(idPerson);
         }
 
-        public async Task<object> GetClientBonusesInfoAsync(long idClient)
+        public object GetClientBonusesInfo(long idClient)
         {
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Accept.Add(
-                            new MediaTypeWithQualityHeaderValue("application/json"));
-            var streamTask = client.GetStreamAsync(UrlConstants.GetBonusInfoUrl);
-            var bonusInfo = await streamTask;
-            return bonusInfo;
+            object res = null;
+            using (var client = new HttpClient()) {
+                client.DefaultRequestHeaders.Accept.Add(
+                                new MediaTypeWithQualityHeaderValue("application/json"));
+                var response = client.GetAsync(UrlConstants.GetBonusInfoUrl + "/" + idClient.ToString()).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = response.Content;
+                    string responseString = responseContent.ReadAsStringAsync().Result;
+
+                    res = JsonConvert.DeserializeObject(responseString);
+                }
+            }
+            return res;
         }
     }
 }
