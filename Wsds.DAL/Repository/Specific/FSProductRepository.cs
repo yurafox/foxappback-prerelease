@@ -49,5 +49,30 @@ namespace Wsds.DAL.Repository.Specific
             return res;
         }
 
+        public IEnumerable<string> GetProductImages(long id)
+        {
+            List<string> res = new List<string>();
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("select app_core.Get_Image_Root_Url||Location as value " +
+                "from PRODUCT_FILES t where t.id_product = :id order by List_index", con))
+            {
+                try
+                {
+                    con.Open();
+                    cmd.Parameters.Add(new OracleParameter("id", id));
+                    OracleDataReader dr = cmd.ExecuteReader();
+                    while (dr.Read())
+                    {
+                        res.Add(dr["value"].ToString());
+                    };
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+            return res;
+        }
     }
 }

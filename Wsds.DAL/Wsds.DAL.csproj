@@ -347,6 +347,7 @@
     <Compile Include="Infrastructure\Extensions\CollectionExtension.cs" />
     <Compile Include="Infrastructure\Extensions\OrmExtension.cs" />
     <Compile Include="Infrastructure\OracleHelper.cs" />
+    <Compile Include="Infrastructure\UrlConstants.cs" />
     <Compile Include="ORM\FoxStoreDBContext.cs" />
     <Compile Include="ORM\FoxStoreDBContextUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

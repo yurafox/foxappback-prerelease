@@ -2,11 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Wsds.DAL.Entities;
+using Wsds.DAL.Infrastructure;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
+using System.Runtime.Serialization.Json;
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -38,6 +42,16 @@ namespace Wsds.DAL.Repository.Specific
             var persCnfg = EntityConfigDictionary.GetConfig("person_info");
             var prov = new EntityProvider<PersonInfo_DTO>(persCnfg);
             return prov.GetItem(idPerson);
+        }
+
+        public async Task<object> GetClientBonusesInfoAsync(long idClient)
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Accept.Add(
+                            new MediaTypeWithQualityHeaderValue("application/json"));
+            var streamTask = client.GetStreamAsync(UrlConstants.GetBonusInfoUrl);
+            var bonusInfo = await streamTask;
+            return bonusInfo;
         }
     }
 }

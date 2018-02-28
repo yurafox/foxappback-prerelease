@@ -40,7 +40,14 @@ namespace Wsds.WebApp.Controllers
         }
         [HttpGet ("GetProductDescription/{id}")]
         public IActionResult GetProductDescription(long id) {
-            return Ok(JsonConvert.SerializeObject(_prodRepo.GetProductDescription(id)));
+            return Ok(new {description = _prodRepo.GetProductDescription(id)});
         }
+
+        [HttpGet("GetProductImages/{id}")]
+        public IActionResult GetProductImages(long id)
+        {
+            return Ok(new {images = _prodRepo.GetProductImages(id)});
+        }
+
     }
 }
