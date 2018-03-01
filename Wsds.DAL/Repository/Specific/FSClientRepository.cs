@@ -33,5 +33,20 @@ namespace Wsds.DAL.Repository.Specific
             return prov.GetItems("email = :email", new OracleParameter("email", email));
         }
 
+        public IEnumerable<StorePlace_DTO> GetFavoriteStore(long clientId)
+        {
+            var clCnfg = EntityConfigDictionary.GetConfig("store_place");
+            var prov = new EntityProvider<StorePlace_DTO>(clCnfg);
+            return prov.GetItems("id in (select f.id_store_places from favorite_stores f " +
+                                 "where f.id_client = :email)", new OracleParameter("id_client", clientId));
+        }
+
+        public Client_DTO GetClientByPhone(string phone)
+        {
+            var clCnfg = EntityConfigDictionary.GetConfig("client");
+            var prov = new EntityProvider<Client_DTO>(clCnfg);
+            var data = prov.GetItems("phone = :phone", new OracleParameter("phone", phone));
+            return data?.FirstOrDefault();
+        }
     }
 }

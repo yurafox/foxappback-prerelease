@@ -72,7 +72,7 @@ namespace Wsds.WebApp.Controllers
             if (!ModelState.IsValid)
                 return BadRequest( "Model is not valid");
 
-            var appUser = new AppUser() { UserName = auth.Login.ToLower(), Email = auth.Email.ToLower(), Card = 102};
+            var appUser = new AppUser() { UserName = auth.Phone.ToLower(), Email = auth.Email.ToLower()};
 
             var usr = await _userRepository.CreateUser(appUser, auth.Password);
             return Ok(usr.Id);
@@ -116,7 +116,7 @@ namespace Wsds.WebApp.Controllers
                 var usr = await _userRepository.UpdateUser(new AppUser()
                 {
                     Id = model.Id,
-                    UserName = model.Login,
+                    UserName = model.Phone,
                     Email = model.Email
                 });
 

@@ -5,7 +5,8 @@ namespace Wsds.WebApp.Models
     public class AuthModel
     {
         [Required]
-        public string Login { get; set; }
+        [RegularExpression("^380[0 - 9]{9}$")]
+        public string Phone { get; set; }
 
         [Required]
         [DataType(DataType.Password)]

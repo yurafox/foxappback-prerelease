@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Providers;
+using Wsds.DAL.Repository.Abstract;
 
 namespace Wsds.DAL.Repository.Specific
 {

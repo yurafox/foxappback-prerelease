@@ -18,7 +18,9 @@ using Wsds.WebApp.Auth;
 using Microsoft.AspNetCore.HttpOverrides;
 using CachingFramework.Redis;
 using Wsds.DAL.Entities.DTO;
+using Wsds.DAL.Infrastructure.Facade;
 using Wsds.DAL.Repository;
+using Wsds.WebApp.Auth.Protection;
 
 namespace Wsds.WebApp
 {
@@ -67,6 +69,7 @@ namespace Wsds.WebApp
                 });
             });
 
+            services.AddDataProtection();
 
             var mainDataConnString = Configuration.GetConnectionString("MainDataConnection");
             services.AddSingleton<IConfiguration>(Configuration);
@@ -136,7 +139,8 @@ namespace Wsds.WebApp
                     .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id,'userId' value user_id, " +
                                          "'name' value name, 'phone' value phone, 'login' value login, 'email' value email, " +
                                          "'fname' value fname, 'lname' value lname, 'barcode' value barcode,  'bonusBalance' " +
-                                         "value null, 'actionBonusBalance' value null) as value from CLIENTS t")
+                                         "value null, 'actionBonusBalance' value null, 'id_currency' value id_currency,'id_lang' value id_lang, " +
+                                         "'app_key' value app_key) as value from CLIENTS t")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Client2Json")
@@ -294,6 +298,8 @@ namespace Wsds.WebApp
             services.AddScoped<IProductGroupRepository, FSProductGroupRepository>();
             services.AddScoped<IUserRepository, FSUserRepository>();
             services.AddScoped<IRoleRepository, FSRoleRepository>();
+            services.AddScoped<AccountUserFacade>();
+            services.AddScoped<ICrypto, FSCryptoProvider>();
 
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();

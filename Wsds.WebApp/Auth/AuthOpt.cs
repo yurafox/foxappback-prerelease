@@ -30,7 +30,7 @@ namespace Wsds.WebApp.Auth
                     ValidIssuer = Issuer,
                     ValidateAudience = true,
                     ValidAudience = Subscriber,
-                    ValidateLifetime = true,
+                    ValidateLifetime = false,
                     IssuerSigningKey = GetSymmetricSecurityKey(),
                     ValidateIssuerSigningKey = true,
                 }
@@ -45,7 +45,8 @@ namespace Wsds.WebApp.Auth
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, appUser.UserName.ToLower())
+                new Claim("userName", appUser.UserName.ToLower()),
+                new Claim("clientId",appUser.Card.ToString())
             };
 
             if(roles!=null)
