@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Wsds.DAL.Entities;
@@ -11,7 +9,9 @@ using Wsds.DAL.Infrastructure;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
 using Newtonsoft.Json;
-
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json.Linq;
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -57,7 +57,40 @@ namespace Wsds.DAL.Repository.Specific
                     var responseContent = response.Content;
                     string responseString = responseContent.ReadAsStringAsync().Result;
 
-                    res = JsonConvert.DeserializeObject(responseString);
+                    var responseObj = (JObject)JsonConvert.DeserializeObject(responseString);
+
+                    return  new {
+                                 bonusLimit = responseObj.GetValue("regular"),
+                                 actionBonusLimit = responseObj.GetValue("special")
+                                };
+                }
+            }
+            return res;
+        }
+
+        public IEnumerable<object> GetClientBonusesExpireInfo(long idClient)
+        {
+            List<object> res = new List<object>();
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Add(
+                                new MediaTypeWithQualityHeaderValue("application/json"));
+                var response = client.GetAsync(UrlConstants.GetClientBonusesExpireInfoUrl + "/" + idClient.ToString()).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = response.Content;
+                    string responseString = responseContent.ReadAsStringAsync().Result;
+
+                    JArray responseObj = (JArray)JsonConvert.DeserializeObject(responseString);
+
+                    foreach (JObject obj in responseObj) {
+                        res.Add(new {
+                                        id = (long?)null,
+                                        clientId = (long?)null,
+                                        bonus = obj.Property("quantity").Value,
+                                        dueDate = obj.Property("expiryDate").Value
+                        });
+                    }
                 }
             }
             return res;

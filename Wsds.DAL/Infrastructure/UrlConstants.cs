@@ -8,6 +8,7 @@ namespace Wsds.DAL.Infrastructure
 {
     public static class UrlConstants
     {
-        public static string GetBonusInfoUrl = "http://hybrisservices.mc.gcf/ftd/GetBalance";
+        public static string GetBonusInfoUrl = "http://hybrisservices.mc.gcf/api/Loyality/GetBalance";
+        public static string GetClientBonusesExpireInfoUrl = "http://hybrisservices.mc.gcf/api/Loyality/GetBonuseList";
     }
 }

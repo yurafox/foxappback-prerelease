@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository.Abstract;
 using Wsds.WebApp.Attributes;
+using Newtonsoft.Json;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -39,6 +40,18 @@ namespace Wsds.WebApp.Controllers
         [HttpGet("person/{id}")]
         public IActionResult GetPersonById(long id) {
             return Ok(_cliRepo.GetPersonById(id));
+        }
+
+        [HttpGet("getBonusesInfo/{id}")]
+        public IActionResult GetClientBonusesInfo(long id) {
+            return Ok(_cliRepo.GetClientBonusesInfo(id));
+        }
+
+        [HttpGet("getBonusesExpireInfo")]
+        [Link("clientId")]
+        public IActionResult GetClientBonusesExpireInfo([FromQuery]long clientId)
+        {
+            return Ok( _cliRepo.GetClientBonusesExpireInfo(clientId));
         }
     }
 }
