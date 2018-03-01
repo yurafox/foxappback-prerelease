@@ -284,6 +284,7 @@
     <Compile Include="Entities\DTO\ClientOrder_DTO.cs" />
     <Compile Include="Entities\DTO\Client_DTO.cs" />
     <Compile Include="Entities\DTO\Country_DTO.cs" />
+    <Compile Include="Entities\DTO\CreditProduct_DTO.cs" />
     <Compile Include="Entities\DTO\Currency_DTO.cs" />
     <Compile Include="Entities\Currency.cs" />
     <Compile Include="Entities\Currency_Rate.cs" />
@@ -299,6 +300,7 @@
     <Compile Include="Entities\DTO\Measure_Unit_DTO.cs" />
     <Compile Include="Entities\DTO\PersonInfo_DTO.cs" />
     <Compile Include="Entities\DTO\ProductStorePlace_DTO.cs" />
+    <Compile Include="Entities\DTO\ProductSupplCreditGrade_DTO.cs" />
     <Compile Include="Entities\DTO\Product_Groups_DTO.cs" />
     <Compile Include="Entities\DTO\Quotation_DTO.cs" />
     <Compile Include="Entities\DTO\Quotation_Product_DTO.cs" />
@@ -359,6 +361,7 @@
     <Compile Include="Providers\SingletonProvider.cs" />
     <Compile Include="Repository\Abstract\ICartRepository.cs" />
     <Compile Include="Repository\Abstract\IClientRepository.cs" />
+    <Compile Include="Repository\Abstract\ICreditRepository.cs" />
     <Compile Include="Repository\Abstract\IFinRepository.cs" />
     <Compile Include="Repository\Abstract\IGeoRepository.cs" />
     <Compile Include="Repository\Abstract\ILocalizationRepository.cs" />
@@ -378,6 +381,7 @@
     <Compile Include="Repository\IStorePlaceRepository.cs" />
     <Compile Include="Repository\Specific\FSCartRepository.cs" />
     <Compile Include="Repository\Specific\FSClientRepository.cs" />
+    <Compile Include="Repository\Specific\FSCreditRepository.cs" />
     <Compile Include="Repository\Specific\FSFinRepository.cs" />
     <Compile Include="Repository\Specific\FSGeoRepository.cs" />
     <Compile Include="Repository\Specific\FSLocalizationRepository.cs" />

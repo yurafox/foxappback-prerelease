@@ -75,6 +75,19 @@ namespace Wsds.WebApp
             var redisCache = new Context();
             services.AddSingleton(redisCache);
 
+            EntityConfigDictionary.AddConfig("credit_product",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.s_id, json_object('sId' value s_Id, 'sName' value s_name,'sDefProdId' value t.s_def_prod_id, "+
+                                         "'sPartPay' value t.s_part_pay, 'sGracePeriod' value t.s_grace_period, 'maxTerm' value t.max_term, "+
+                                         "'firstPay' value t.first_pmt,'monthCommissionPct' value t.month_commission_pct, 'yearPct' value t.year_pct, "+
+                                         "'kpcPct' value t.kpc_pct, 'minAmt' value APP_CORE.Get_Min_Credit_Amt, 'maxAmt' value APP_CORE.Get_Max_Credit_Amt, "+
+                                         "'minTerm' value to_number(APP_CORE.Get_Parameter_By_Name('MIN_LOAN_TERM')) "+
+                                         ") as value from CREDIT_PRODUCTS t  ")
+                    .SetKeyField("s_id")
+                    .SetValueField("value")
+                );
+
+
             EntityConfigDictionary.AddConfig("person_info",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.id, select JSON_OBJECT ('id' value id, 'firstName' value first_name," +
@@ -311,6 +324,7 @@ namespace Wsds.WebApp
                 .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddScoped<ICreditRepository, FSCreditRepository>();
             services.AddScoped<IStorePlaceRepository, FSStorePlaceRepository>();
             services.AddScoped<ICartRepository, FSCartRepository>();
             services.AddScoped<IClientRepository, FSClientRepository>();
@@ -398,6 +412,9 @@ namespace Wsds.WebApp
                 p => new CacheService<LoSupplEntity_DTO>
                     ("lo_suppl_entity", 7200000, redisCache, true), ServiceLifetime.Singleton));
 
+            services.Add(new ServiceDescriptor(typeof(ICacheService<CreditProduct_DTO>),
+                p => new CacheService<CreditProduct_DTO>
+                    ("credit_product", 7200000, redisCache, true), ServiceLifetime.Singleton));
         }
 
         public void Configure(IApplicationBuilder app,

@@ -75,7 +75,7 @@ namespace Wsds.DAL.Repository.Specific
             {
                 client.DefaultRequestHeaders.Accept.Add(
                                 new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = client.GetAsync(UrlConstants.GetClientBonusesExpireInfoUrl + "/" + idClient.ToString()).Result;
+                var response = client.GetAsync(UrlConstants.GetBonusesExpireInfoUrl + "/" + idClient.ToString()).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = response.Content;
@@ -85,10 +85,9 @@ namespace Wsds.DAL.Repository.Specific
 
                     foreach (JObject obj in responseObj) {
                         res.Add(new {
-                                        id = (long?)null,
-                                        clientId = (long?)null,
                                         bonus = obj.Property("quantity").Value,
-                                        dueDate = obj.Property("expiryDate").Value
+                                        dueDate = obj.Property("expiryDate").Value,
+                                        type = obj.Property("type").Value
                         });
                     }
                 }
