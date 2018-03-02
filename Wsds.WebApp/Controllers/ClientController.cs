@@ -53,5 +53,29 @@ namespace Wsds.WebApp.Controllers
         {
             return Ok( _cliRepo.GetClientBonusesExpireInfo(clientId));
         }
+
+        public class LogProductViewModel
+        {
+            public long idProduct { get; set; }
+            public string viewParams { get; set; }
+        }
+
+        [HttpPost("LogProductView")]
+        public IActionResult CreateCartProduct([FromBody] LogProductViewModel model)
+        {
+            _cliRepo.LogProductView(model.idProduct, model.viewParams);
+            return Created("", null);
+        }
+
+        [HttpGet("ClientAddress/{id}")]
+        public IActionResult ClientAddress(long id) {
+            return Ok(_cliRepo.ClientAddress(id));
+        }
+
+        [HttpGet("ClientAddress")]
+        [Link("idClient")]
+        public IActionResult GetClientAddressesByClientId([FromQuery] long idClient) {
+            return Ok(_cliRepo.GetClientAddressesByClientId(idClient));
+        }
     }
 }

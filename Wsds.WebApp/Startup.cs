@@ -75,6 +75,17 @@ namespace Wsds.WebApp
             var redisCache = new Context();
             services.AddSingleton(redisCache);
 
+            EntityConfigDictionary.AddConfig("client_address",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'idClient' value id_client, " +
+                                         "'idCity' value id_city, 'zip' value zip, 'street' value street, 'lat' value lat, " +
+                                         "'lng' value lng, 'isPrimary' value is_primary, 'idCountry' value id_country, " +
+                                         "'city' value city, 'bldApp' value bld_app, 'recName' value recname, " +
+                                         "'phone' value phone) as value from client_address")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                );
+
             EntityConfigDictionary.AddConfig("credit_product",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.s_id as sId, json_object('sId' value s_Id, 'sName' value s_name,'sDefProdId' value t.s_def_prod_id, "+

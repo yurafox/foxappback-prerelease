@@ -12,14 +12,19 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Configuration;
 
 namespace Wsds.DAL.Repository.Specific
 {
     public class FSClientRepository : IClientRepository
     {
-        private ICacheService<Client_DTO> _csClient;
+        private readonly ICacheService<Client_DTO> _csClient;
+        private readonly IConfiguration _config;
 
-        public FSClientRepository(ICacheService<Client_DTO> csClient) => _csClient = csClient;
+        public FSClientRepository(ICacheService<Client_DTO> csClient, IConfiguration config) {
+            _csClient = csClient;
+            _config = config;
+        }
         public IEnumerable<Client_DTO> Clients => _csClient.Items.Values;
 
         public Client_DTO Client(long id) => _csClient.Item(id);
@@ -93,6 +98,46 @@ namespace Wsds.DAL.Repository.Specific
                 }
             }
             return res;
+        }
+
+        public void LogProductView(long idProduct, string viewParams)
+        {
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin " +
+                                               "insert into PRODUCT_VIEW_HISTORY " +
+                                               "(id, id_client, id_product, date_of_view, view_params) " +
+                                               "values " +
+                                               "(seq_PRODUCT_VIEW_HISTORY.nextval, :idClient, :idProduct, sysdate, :viewParams); " +
+                                               "commit; end;", con))
+            {
+                try
+                {
+                    con.Open();
+                    cmd.Parameters.Add(new OracleParameter("idClient", 100)); //TODO я
+                    cmd.Parameters.Add(new OracleParameter("idProduct", idProduct));
+                    cmd.Parameters.Add(new OracleParameter("viewParams", viewParams));
+                    cmd.ExecuteNonQuery();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+        }
+
+        public ClientAddress_DTO ClientAddress(long id)
+        {
+            var caCnfg = EntityConfigDictionary.GetConfig("client_address");
+            var prov = new EntityProvider<ClientAddress_DTO>(caCnfg);
+            return prov.GetItem(id);
+        }
+
+        public IEnumerable<ClientAddress_DTO> GetClientAddressesByClientId(long id)
+        {
+            var caCnfg = EntityConfigDictionary.GetConfig("client_address");
+            var prov = new EntityProvider<ClientAddress_DTO>(caCnfg);
+            return prov.GetItems("id_client =:id", new OracleParameter("id", id));
         }
     }
 }

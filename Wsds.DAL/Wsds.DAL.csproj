@@ -280,6 +280,7 @@
     <Compile Include="Entities\Credit_Entity.cs" />
     <Compile Include="Entities\Credit_Product.cs" />
     <Compile Include="Entities\DTO\City_DTO.cs" />
+    <Compile Include="Entities\DTO\ClientAddress_DTO.cs" />
     <Compile Include="Entities\DTO\ClientOrderProduct_DTO.cs" />
     <Compile Include="Entities\DTO\ClientOrder_DTO.cs" />
     <Compile Include="Entities\DTO\Client_DTO.cs" />

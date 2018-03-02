@@ -166,7 +166,21 @@ namespace Wsds.DAL.Providers
 
         public T GetItem(long id) {
             T res = null;
-            string stmt = "select " + _config.SerializerFunc + "(:a) as value from dual";
+            string stmt;
+            string valueFld = "value";
+            if (_config.SerializerFunc != null)
+            {
+                stmt = "select " + _config.SerializerFunc + "(:a) as value from dual";
+
+            }
+            else
+            {
+                stmt = _config.SqlCommandSelect + " " + _config.SqlCommandWhere;
+                stmt = stmt + (String.IsNullOrEmpty(_config.SqlCommandWhere) ? " where " : " and ")
+                    + _config.KeyField + " = :a";
+                valueFld = _config.ValueField;
+
+            }
             using (var con = new OracleConnection(_config.ConnString))
             using (var cmd = new OracleCommand(stmt, con))
             {
@@ -177,7 +191,7 @@ namespace Wsds.DAL.Providers
                     OracleDataReader dr = cmd.ExecuteReader();
                     if (dr.Read())
                     {
-                        string json = dr["value"].ToString();
+                        string json = dr[valueFld].ToString();
                         if (!String.IsNullOrEmpty(json))
                         {
                             res = JsonConvert.DeserializeObject<T>(json);
