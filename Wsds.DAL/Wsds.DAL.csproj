@@ -33,6 +33,9 @@
     <Reference Include="CachingFramework.Redis, Version=7.5.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CachingFramework.Redis.7.5.0\lib\net461\CachingFramework.Redis.dll</HintPath>
     </Reference>
+    <Reference Include="Dapper, Version=1.50.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.1.50.4\lib\net451\Dapper.dll</HintPath>
+    </Reference>
     <Reference Include="dotnet-aspnet-codegenerator-design, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=x86">
       <HintPath>..\packages\Microsoft.VisualStudio.Web.CodeGeneration.Design.1.1.2\lib\dotnet-aspnet-codegenerator-design.exe</HintPath>
     </Reference>
@@ -499,9 +502,13 @@
     <Compile Include="Repository\Abstract\IQuotationProductRepository.cs" />
     <Compile Include="Repository\Abstract\IQuotationRepository.cs" />
     <Compile Include="Repository\Abstract\IRoleRepository.cs" />
+    <Compile Include="Services\Abstract\IAuthSender.cs" />
+    <Compile Include="Services\Abstract\ISmsService.cs" />
     <Compile Include="Repository\Abstract\ISupplierRepository.cs" />
     <Compile Include="Repository\Abstract\IUserRepository.cs" />
     <Compile Include="Repository\Abstract\IStorePlaceRepository.cs" />
+    <Compile Include="Services\Specific\FSAuthSender.cs" />
+    <Compile Include="Services\Specific\FSSmsService.cs" />
     <Compile Include="Repository\Specific\FSCartRepository.cs" />
     <Compile Include="Repository\Specific\FSClientRepository.cs" />
     <Compile Include="Repository\Specific\FSFinRepository.cs" />

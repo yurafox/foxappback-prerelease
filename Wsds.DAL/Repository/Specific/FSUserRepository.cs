@@ -76,7 +76,7 @@ namespace Wsds.DAL.Repository.Specific
 
             return (!String.IsNullOrEmpty(user.PasswordHash))
                 ? UserInSystemStrategy()
-                : UserInSystemWithOldRegistration();
+                : await UserInSystemWithOldRegistration(user);
         }
 
         public bool VerifyUserPhoneInputData(string phone)
@@ -125,7 +125,7 @@ namespace Wsds.DAL.Repository.Specific
             var findedUser = await UserEngine.FindByNameAsync(userName.ToLower());
             if (findedUser == null) return false;
 
-            return await UserEngine.CheckPasswordAsync(findedUser, pswd.ToLower());
+            return await UserEngine.CheckPasswordAsync(findedUser, pswd);
         }
 
         #region private behaviors
@@ -151,28 +151,46 @@ namespace Wsds.DAL.Repository.Specific
         private async Task<(string, byte)> OnlyUserAbsentStrategy(Client_DTO client)
         {
             var appUser = new AppUser() { UserName = client.phone, Card = (long)client.id, PhoneNumber = client.phone};
-            await UserEngine.CreateAsync(appUser);
             // generate random temp password for sms
             var tempPswd = _smsService.GetAuthTempPswd(8);
+
             //send sms logic
             try
             {
-                await _smsService.SendAuthSmsAsync(appUser.PhoneNumber, tempPswd);
+                await _smsService.SendAuthSmsAsync(appUser.UserName, tempPswd);
             }
             catch (OracleException ex)
             {
                 //TODO: maybe will create logging logic 
-                return ();
+                return (GetSendSmsErrorLocalizationString,0);
             }
+
+            // create user in identity
+            await UserEngine.CreateAsync(appUser, tempPswd);
             return (GetSmsWaitLocalizationString, 2);
         }
         private (string, byte) UserInSystemStrategy()
         {
             return (GetUserInSystemLocalizationString, 0);
         }
-        private (string, byte) UserInSystemWithOldRegistration()
+        private async Task<(string, byte)> UserInSystemWithOldRegistration(AppUser user)
         {
-            // TODO:send sms logic
+            // generate random temp password for sms
+            var tempPswd = _smsService.GetAuthTempPswd(8);
+
+            //send sms logic
+            try
+            {
+                await _smsService.SendAuthSmsAsync(user.UserName, tempPswd);
+            }
+            catch (OracleException ex)
+            {
+                //TODO: maybe will create logging logic 
+                return (GetSendSmsErrorLocalizationString, 0);
+            }
+       
+            // update passwd by temp password
+            await UserEngine.AddPasswordAsync(user, tempPswd);
             return (GetSmsWaitLocalizationString, 2);
         }
         #endregion
@@ -200,7 +218,7 @@ namespace Wsds.DAL.Repository.Specific
             get
             {
                 // TODO:change after localization logic will be Ok 
-                return "ошибка отправки sms";
+                return "Сервис sms занят. Ожидайте смс";
             }
         }
         #endregion

@@ -20,6 +20,8 @@ using CachingFramework.Redis;
 using Wsds.DAL.Entities.DTO;
 using Wsds.DAL.Infrastructure.Facade;
 using Wsds.DAL.Repository;
+using Wsds.DAL.Services.Abstract;
+using Wsds.DAL.Services.Specific;
 using Wsds.WebApp.Auth.Protection;
 
 namespace Wsds.WebApp
@@ -281,6 +283,13 @@ namespace Wsds.WebApp
                 .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
+            // limit the number of login attempts
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+                options.Lockout.MaxFailedAccessAttempts = 10;
+            });
+
             services.AddScoped<IStorePlaceRepository, FSStorePlaceRepository>();
             services.AddScoped<ICartRepository, FSCartRepository>();
             services.AddScoped<IClientRepository, FSClientRepository>();
@@ -300,7 +309,8 @@ namespace Wsds.WebApp
             services.AddScoped<IRoleRepository, FSRoleRepository>();
             services.AddScoped<AccountUserFacade>();
             services.AddScoped<ICrypto, FSCryptoProvider>();
-
+            services.AddScoped<IAuthSender,FSAuthSender>();
+            services.AddScoped<ISmsService, FSSmsService>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
