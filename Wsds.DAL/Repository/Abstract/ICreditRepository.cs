@@ -11,6 +11,6 @@ namespace Wsds.DAL.Repository.Abstract
     {
         IEnumerable<CreditProduct_DTO> CreditProducts { get; }
         CreditProduct_DTO CreditProduct(long id);
-        ProductSupplCreditGrade_DTO GetProductCreditSize(long idProduct, long idSupplier);
+        IEnumerable<ProductSupplCreditGrade_DTO> GetProductCreditSize(long idProduct, long idSupplier);
     }
 }

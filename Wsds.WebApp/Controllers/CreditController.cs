@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository.Abstract;
+using Wsds.WebApp.Attributes;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -20,5 +21,13 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetCreditProducts() {
             return Ok(_crRepo.CreditProducts);
         }
+
+        [HttpGet("GetProductCreditSize")]
+        public IActionResult GetProductCreditSize([FromQuery]long idProduct, [FromQuery]long idSupplier)
+        {
+            return Ok(_crRepo.GetProductCreditSize(idProduct, idSupplier));
+        }
+
+
     }
 }

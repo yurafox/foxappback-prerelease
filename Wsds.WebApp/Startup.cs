@@ -77,13 +77,13 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("credit_product",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.s_id, json_object('sId' value s_Id, 'sName' value s_name,'sDefProdId' value t.s_def_prod_id, "+
+                    .AddSqlCommandSelect("select t.s_id as sId, json_object('sId' value s_Id, 'sName' value s_name,'sDefProdId' value t.s_def_prod_id, "+
                                          "'sPartPay' value t.s_part_pay, 'sGracePeriod' value t.s_grace_period, 'maxTerm' value t.max_term, "+
                                          "'firstPay' value t.first_pmt,'monthCommissionPct' value t.month_commission_pct, 'yearPct' value t.year_pct, "+
                                          "'kpcPct' value t.kpc_pct, 'minAmt' value APP_CORE.Get_Min_Credit_Amt, 'maxAmt' value APP_CORE.Get_Max_Credit_Amt, "+
-                                         "'minTerm' value to_number(APP_CORE.Get_Parameter_By_Name('MIN_LOAN_TERM')) "+
+                                         "'minTerm' value t.min_term "+
                                          ") as value from CREDIT_PRODUCTS t  ")
-                    .SetKeyField("s_id")
+                    .SetKeyField("sId")
                     .SetValueField("value")
                 );
 

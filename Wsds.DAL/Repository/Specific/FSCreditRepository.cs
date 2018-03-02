@@ -25,9 +25,10 @@ namespace Wsds.DAL.Repository.Specific
 
         public CreditProduct_DTO CreditProduct(long id) => _csCredProd.Item(id);
 
-        public ProductSupplCreditGrade_DTO GetProductCreditSize(long idProduct, long idSupplier)
+        public IEnumerable<ProductSupplCreditGrade_DTO> GetProductCreditSize(long idProduct, long idSupplier)
         {
-            ProductSupplCreditGrade_DTO res = new ProductSupplCreditGrade_DTO();
+            List<ProductSupplCreditGrade_DTO> res = new List<ProductSupplCreditGrade_DTO>();
+            
             var ConnString = _config.GetConnectionString("MainDataConnection");
             using (var con = new OracleConnection(ConnString))
             using (var cmd = new OracleCommand("select t.id, t.parts_pmt_cnt, t.credit_size from PRODUCT_SUPPL_CREDIT_GRADES t " +
@@ -39,13 +40,15 @@ namespace Wsds.DAL.Repository.Specific
                     cmd.Parameters.Add(new OracleParameter("idProduct", idProduct));
                     cmd.Parameters.Add(new OracleParameter("idSupplier", idSupplier));
                     OracleDataReader dr = cmd.ExecuteReader();
-                    if (dr.Read())
+                    while (dr.Read())
                     {
-                        res.id = Convert.ToInt64(dr["id"].ToString());
-                        res.idProduct = idProduct;
-                        res.idSupplier = idSupplier;
-                        res.partsPmtCnt = Convert.ToInt32(dr["parts_pmt_cnt"].ToString());
-                        res.creditSize = Convert.ToInt32(dr["credit_size"].ToString());
+                        ProductSupplCreditGrade_DTO item = new ProductSupplCreditGrade_DTO();
+                        item.id = Convert.ToInt64(dr["id"].ToString());
+                        item.idProduct = idProduct;
+                        item.idSupplier = idSupplier;
+                        item.partsPmtCnt = Convert.ToInt32(dr["parts_pmt_cnt"].ToString());
+                        item.creditSize = Convert.ToInt32(dr["credit_size"].ToString());
+                        res.Add(item);
                     };
                 }
                 finally
