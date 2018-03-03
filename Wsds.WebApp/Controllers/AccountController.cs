@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Wsds.DAL.Entities.DTO;
 using Wsds.DAL.Infrastructure.Facade;
 using Wsds.WebApp.Auth;
 using Wsds.WebApp.Auth.Protection;
@@ -26,7 +27,7 @@ namespace Wsds.WebApp.Controllers
         }
 
         [HttpPost("login")]
-        public async Task Login([FromBody]AuthModel auth)
+        public async Task Login([FromBody] AuthModel auth)
         {
             var resultMessage = "Invalid Authentication Data";
             if (ModelState.IsValid)
@@ -54,7 +55,7 @@ namespace Wsds.WebApp.Controllers
                         };
 
                         await Response.WriteAsync(JsonConvert.SerializeObject(responseObj,
-                            new JsonSerializerSettings { Formatting = Formatting.Indented }));
+                            new JsonSerializerSettings {Formatting = Formatting.Indented}));
                         return;
                     }
                     resultMessage = "Can't find client";
@@ -71,7 +72,7 @@ namespace Wsds.WebApp.Controllers
         public async Task Get()
         {
             var tokenModel = HttpContext.Items["token"] as TokenModel;
-            if (tokenModel!=null && tokenModel.ValidateDataFromToken())
+            if (tokenModel != null && tokenModel.ValidateDataFromToken())
             {
                 var client = _account.Clients.Client(tokenModel.Client);
                 if (client != null)
@@ -80,7 +81,7 @@ namespace Wsds.WebApp.Controllers
                     var user = _account.Users.Swap(client, favoriteStores, _crypto.Encrypt);
 
                     await Response.WriteAsync(JsonConvert.SerializeObject(user,
-                        new JsonSerializerSettings { Formatting = Formatting.Indented }));
+                        new JsonSerializerSettings {Formatting = Formatting.Indented}));
 
                     return;
                 }
@@ -90,18 +91,40 @@ namespace Wsds.WebApp.Controllers
         }
 
         [HttpPost("verify")]
-        public async Task<IActionResult> Verify(/*[FromBody]*/string phone)
+        public async Task<IActionResult> Verify([FromBody] VerifyModel vm)
         {
-            if (!_account.Users.VerifyUserPhoneInputData(phone))
-                return Json(new { message = "Номер не валидный",status = 0});
+            if (!_account.Users.VerifyUserPhoneInputData(vm.Phone))
+                return Json(new {message = "Номер не валидный", status = 0});
 
-           // get user and client
-            var user = await _account.Users.GetUserByName(phone);
-            var client = _account.Clients.GetClientByPhone(phone);
-            var data = await _account.Users.UserVerifyStrategy(phone, user ,client);
+            // get user and client
+            var user = await _account.Users.GetUserByName(vm.Phone);
+            var client = _account.Clients.GetClientByPhone(vm.Phone);
+            var data = await _account.Users.UserVerifyStrategy(vm.Phone, user, client);
 
-           // send json
-           return Json(new { message = data.Item1, status = data.Item2 });
-        }  
+            // send json
+            return Json(new {message = data.Item1, status = data.Item2});
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateAccount([FromBody] User_DTO user)
+        {
+            if (!ModelState.IsValid)
+            {
+                Response.StatusCode = 400;
+                return Json(new {message = "данные пользователя не валидны", status = 0});
+            }
+
+            var findedUser = await _account.Users.GetUserByName(user.phone);
+            var findedClient = _account.Clients.GetClientByPhone(user.phone);
+
+            if (findedUser != null || findedClient != null)
+            {
+                Response.StatusCode = 400;
+                return Json(new {message = "пользователь уже существует в системе", status = 0});
+            }
+
+            //TODO:logic create with typhoon sync
+            return null;
+        }
     }
 }
