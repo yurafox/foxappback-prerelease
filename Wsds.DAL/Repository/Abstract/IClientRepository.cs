@@ -19,6 +19,9 @@ namespace Wsds.DAL.Repository.Abstract
         void LogProductView(long idProduct, string viewParams);
         ClientAddress_DTO ClientAddress(long id);
         IEnumerable<ClientAddress_DTO> GetClientAddressesByClientId(long id);
+        ClientAddress_DTO CreateClientAddress(ClientAddress_DTO item);
+        ClientAddress_DTO UpdateClientAddress(ClientAddress_DTO item);
+        void DeleteClientAddress(long id);
 
     }
 }

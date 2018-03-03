@@ -82,8 +82,11 @@ namespace Wsds.WebApp
                                          "'lng' value lng, 'isPrimary' value is_primary, 'idCountry' value id_country, " +
                                          "'city' value city, 'bldApp' value bld_app, 'recName' value recname, " +
                                          "'phone' value phone) as value from client_address")
+                    .AddSqlCommandWhere("where nvl(is_deleted,0)<>1")
                     .SetKeyField("id")
+                    .SetSequence("SEQ_CLIENT_ADDRESS")
                     .SetValueField("value")
+                    .SetBaseTable("CLIENT_ADDRESS")
                 );
 
             EntityConfigDictionary.AddConfig("credit_product",
@@ -152,6 +155,20 @@ namespace Wsds.WebApp
                     .SetSerializerFunc("Serialization.Product_Store_Place2Json")
                 );
 
+            EntityConfigDictionary.AddConfig("client_order_all",
+                new EntityConfig(mainDataConnString)
+                    .SetBaseTable("CLIENT_ORDERS")
+                    .AddSqlCommandSelect("select t.*, Serialization.CLIENT_ORDER2JSON(t.id) as value " +
+                                         "from client_orders t")
+                    .AddSqlCommandWhere("where t.id_status>0")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSequence("SEQ_CLIENT_ORDERS")
+                    .SetSerializerFunc("Serialization.CLIENT_ORDER2JSON")
+                );
+
+
+
             EntityConfigDictionary.AddConfig("client_order",
                 new EntityConfig(mainDataConnString)
                     .SetBaseTable("CLIENT_ORDERS")
@@ -163,6 +180,28 @@ namespace Wsds.WebApp
                     .SetSequence("SEQ_CLIENT_ORDERS")
                     .SetSerializerFunc("Serialization.CLIENT_ORDER2JSON")
                 );
+
+            EntityConfigDictionary.AddConfig("client_order_product_all",
+                new EntityConfig(mainDataConnString)
+                    .SetBaseTable("ORDER_SPEC_PRODUCTS")
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value t.id, 'idOrder' value id_order, " +
+                                         "'idQuotationProduct' value id_quotation, 'price' value price, 'qty' value qty, " +
+                                         "'idStorePlace' value id_store_place, 'idLoEntity' value id_lo_entity, " +
+                                         "'loTrackTicket' value lo_track_ticket, 'loDeliveryCost' value lo_delivery_cost, " +
+                                         "'loDeliveryCompleted' value lo_delivery_completed, " +
+                                         "'loEstimatedDeliveryDate' value lo_estimated_delivery_date, " +
+                                         "'loDeliveryCompletedDate' value lo_delivery_completed_date, 'errorMessage' value error_message, " +
+                                         "'warningMessage' value warning_message, 'payPromoCode' value pay_promocode, " +
+                                         "'payPromoCodeDiscount' value pay_promocode_discount, 'payBonusCnt' value pay_bonus_cnt, " +
+                                         "'payPromoBonusCnt' value pay_promobonus_cnt, 'earnedBonusCnt' value earned_bonus_cnt, " +
+                                         "'warningRead' value warning_read) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
+                    .AddSqlCommandWhere("where o.id = t.id_order")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSequence("SEQ_ORDER_SPEC_PRODUCTS")
+                    .SetSerializerFunc("Serialization.ORDER_SPEC_PRODUCT2Json")
+                );
+
 
 
             EntityConfigDictionary.AddConfig("client_order_product",

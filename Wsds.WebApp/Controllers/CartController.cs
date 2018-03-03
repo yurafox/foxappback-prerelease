@@ -43,11 +43,24 @@ namespace Wsds.WebApp.Controllers
             return NoContent();
         }
 
-        [HttpGet("getClientDraftOrder")]
+        [HttpGet("GetClientDraftOrder")]
         public IActionResult getClientDraftOrder()
         {
             return Ok(_cartRepo.GetOrCreateClientDraftOrder());
         }
+
+        [HttpGet("GetCartProductsByOrderId")]
+        public IActionResult GetClientOrderProductsByOrderId([FromQuery] long idOrder)
+        {
+            return Ok(_cartRepo.GetClientOrderProductsByOrderId(idOrder));
+        }
+
+        [HttpGet("GetClientOrders")]
+        public IActionResult GetClientOrders()
+        {
+            return Ok(_cartRepo.GetClientOrders());
+        }
+
 
 
     }

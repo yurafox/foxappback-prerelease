@@ -139,5 +139,68 @@ namespace Wsds.DAL.Repository.Specific
             var prov = new EntityProvider<ClientAddress_DTO>(caCnfg);
             return prov.GetItems("id_client =:id", new OracleParameter("id", id));
         }
+
+        public ClientAddress_DTO CreateClientAddress(ClientAddress_DTO item)
+        {
+            var caCnfg = EntityConfigDictionary.GetConfig("client_address");
+            var prov = new EntityProvider<ClientAddress_DTO>(caCnfg);
+            item.idClient = 100; //TODO я
+
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin " +
+                                               "update CLIENT_ADDRESS " +
+                                               "set is_primary = null " +
+                                               "where id_client = :idClient ;" +
+                                               "end;", con))
+            {
+                try
+                {
+                    con.Open();
+                    cmd.Parameters.Add(new OracleParameter("idClient", item.idClient));
+                    cmd.ExecuteNonQuery();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+
+            return prov.InsertItem(item);
+
+        }
+
+        public ClientAddress_DTO UpdateClientAddress(ClientAddress_DTO item)
+        {
+            var caCnfg = EntityConfigDictionary.GetConfig("client_address");
+            var prov = new EntityProvider<ClientAddress_DTO>(caCnfg);
+            return prov.UpdateItem(item);
+        }
+
+        public void DeleteClientAddress(long id)
+        {
+            var caCnfg = EntityConfigDictionary.GetConfig("client_address");
+            var prov = new EntityProvider<ClientAddress_DTO>(caCnfg);
+
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin " +
+                                               "update CLIENT_ADDRESS " +
+                                               "set is_deleted = 1 " +
+                                               "where id = :id ;" +
+                                               "end;", con))
+            {
+                try
+                {
+                    con.Open();
+                    cmd.Parameters.Add(new OracleParameter("idClient", id));
+                    cmd.ExecuteNonQuery();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+        }
     }
 }

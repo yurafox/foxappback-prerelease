@@ -54,7 +54,6 @@ namespace Wsds.DAL.Repository.Specific
         }
 
         public ClientOrder_DTO GetOrCreateClientDraftOrder() {
-
             var idClient = 100; // TODO я
             var idCur = 0; //TODO грн
             var confOrders = EntityConfigDictionary.GetConfig("client_order");
@@ -78,10 +77,24 @@ namespace Wsds.DAL.Repository.Specific
                 newDraftOrder.idStatus = 0; //draft
 
                 return ordersProv.InsertItem(newDraftOrder);
-
             };
-
         }
 
+        public IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByOrderId(long orderId) //TODO обьєдинить с данньіми из Т22
+        {
+            var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product_all");
+            var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
+
+            return prov.GetItems("t.id_order = :orderId", new OracleParameter("orderId", orderId));
+        }
+
+        public IEnumerable<ClientOrder_DTO> GetClientOrders() //TODO обьєдинить с данньіми из Т22
+        {
+            var coaCnfg = EntityConfigDictionary.GetConfig("client_order_all");
+            var prov = new EntityProvider<ClientOrder_DTO>(coaCnfg);
+
+            return prov.GetItems("t.id_client = :idClient", new OracleParameter("idClient", 100))
+                    .OrderByDescending(x => x.orderDate); //TODO я
+        }
     }
 }
