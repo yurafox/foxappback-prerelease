@@ -43,6 +43,19 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cliRepo.GetPersonById(id));
         }
 
+        [HttpPost("person")]
+        public IActionResult CreatePerson([FromBody] PersonInfo_DTO person)
+        {
+            PersonInfo_DTO result = _cliRepo.CreatePerson(person);
+            return CreatedAtRoute("", new { id = result.id }, result);
+        }
+
+        [HttpPut("person")]
+        public IActionResult UpdatePerson([FromBody] PersonInfo_DTO person)
+        {
+            return Ok(_cliRepo.UpdatePerson(person));
+        }
+
         [HttpGet("getBonusesInfo/{id}")]
         public IActionResult GetClientBonusesInfo(long id) {
             return Ok(_cliRepo.GetClientBonusesInfo(id));

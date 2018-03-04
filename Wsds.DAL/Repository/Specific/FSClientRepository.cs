@@ -50,6 +50,20 @@ namespace Wsds.DAL.Repository.Specific
             return prov.GetItem(idPerson);
         }
 
+        public PersonInfo_DTO CreatePerson(PersonInfo_DTO item)
+        {
+            var persCnfg = EntityConfigDictionary.GetConfig("person_info");
+            var prov = new EntityProvider<PersonInfo_DTO>(persCnfg);
+            return prov.InsertItem(item);
+        }
+
+        public PersonInfo_DTO UpdatePerson(PersonInfo_DTO item)
+        {
+            var persCnfg = EntityConfigDictionary.GetConfig("person_info");
+            var prov = new EntityProvider<PersonInfo_DTO>(persCnfg);
+            return prov.UpdateItem(item);
+        }
+
         public object GetClientBonusesInfo(long idClient)
         {
             object res = null;

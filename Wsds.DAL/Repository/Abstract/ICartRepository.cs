@@ -14,6 +14,7 @@ namespace Wsds.DAL.Repository.Abstract
         ClientOrderProduct_DTO UpdateCartProduct(ClientOrderProduct_DTO item);
         ClientOrderProduct_DTO InsertCartProduct(ClientOrderProduct_DTO item);
         ClientOrder_DTO GetOrCreateClientDraftOrder();
+        ClientOrder_DTO SaveClientOrder(ClientOrder_DTO order);
         void DeleteCartProduct(long id);
         IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByOrderId(long orderId);
         IEnumerable<ClientOrder_DTO> GetClientOrders();

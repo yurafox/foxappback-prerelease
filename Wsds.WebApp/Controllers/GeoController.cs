@@ -28,5 +28,8 @@ namespace Wsds.WebApp.Controllers
         [HttpGet("Country")]
         public IActionResult GetCountries() => Ok(_repo.Countries);
 
+        [HttpGet("citiesWithStores")]
+        public IActionResult GetCitiesWithStores() => Ok(_repo.CitiesWithStores());
+
     }
 }

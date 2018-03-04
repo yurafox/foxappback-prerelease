@@ -10,6 +10,7 @@ namespace Wsds.DAL.Providers
     public class EntityProvider<T> where T: class
     {
         EntityConfig _config;
+        private string _stmtCommit = "begin commit; end;";
         public EntityProvider(EntityConfig config) {
             _config = config;
         }
@@ -24,18 +25,23 @@ namespace Wsds.DAL.Providers
             return value;
         }
 
-        public void DeleteItem(long id) {
+        public void DeleteItem(long id, bool doCommit = true) {
             long KeyVal = id;
             string stmt = "begin delete from " + _config.BaseTable + " where " + _config.KeyField + " = :keyval ; commit; end;";
 
             using (var con = new OracleConnection(_config.ConnString))
             using (var cmd = new OracleCommand(stmt, con))
+            using (var cmdCommit = new OracleCommand(_stmtCommit, con))
             {
                 try
                 {
                     con.Open();
                     cmd.Parameters.Add(new OracleParameter(":keyval", KeyVal));
                     int rowsAffected = cmd.ExecuteNonQuery();
+                    if (doCommit)
+                    {
+                        cmdCommit.ExecuteNonQuery();
+                    }
                 }
                 finally
                 {
@@ -78,7 +84,7 @@ namespace Wsds.DAL.Providers
             }
         }
 
-        public T InsertItem(T item) {
+        public T InsertItem(T item, bool doCommit = true) {
             IDictionary<FieldMap, OracleParameter> _dict = new Dictionary<FieldMap, OracleParameter>();
             int i = 0;
             long KeyVal = GetNextSeq();
@@ -108,12 +114,18 @@ namespace Wsds.DAL.Providers
 
             using (var con = new OracleConnection(_config.ConnString))
             using (var cmd = new OracleCommand(stmt, con))
+            using (var cmdCommit = new OracleCommand(_stmtCommit, con))
             {
                 try
                 {
                     con.Open();
                     cmd.Parameters.AddRange(_dict.Values.ToList().ToArray());
                     int rowsAffected = cmd.ExecuteNonQuery();
+
+                    if (doCommit)
+                    {
+                        cmdCommit.ExecuteNonQuery();
+                    }
                 }
                 finally
                 {
@@ -123,7 +135,7 @@ namespace Wsds.DAL.Providers
             return GetItem(KeyVal);
         }
 
-        public T UpdateItem(T item) {
+        public T UpdateItem(T item, bool doCommit = true) {
             IDictionary<string, OracleParameter> _dict = new Dictionary<string, OracleParameter>();
             int i = 0;
             long KeyVal = Convert.ToInt64(item.GetType().GetProperty(_config.KeyField).GetValue(item).ToString());
@@ -144,10 +156,12 @@ namespace Wsds.DAL.Providers
             }
             var setStmt = string.Join(", ", _dict.Keys);
             
-            string stmt = "begin update " + _config.BaseTable + " set " + setStmt + " where " + _config.KeyField + " = :keyval ; commit; end;";
-
+            string stmt = "begin update " + _config.BaseTable + " set " + setStmt + " where " + _config.KeyField + " = :keyval ; end;";
+            
             using (var con = new OracleConnection(_config.ConnString))
             using (var cmd = new OracleCommand(stmt, con))
+            using (var cmdCommit = new OracleCommand(_stmtCommit, con))
+
             {
                 try
                 {
@@ -155,6 +169,11 @@ namespace Wsds.DAL.Providers
                     cmd.Parameters.AddRange(_dict.Values.ToList().ToArray());
                     cmd.Parameters.Add(new OracleParameter(":keyval", KeyVal));
                     int rowsAffected = cmd.ExecuteNonQuery();
+
+                    if (doCommit)
+                    {
+                        cmdCommit.ExecuteNonQuery();
+                    }
                 }
                 finally
                 {

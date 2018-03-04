@@ -43,7 +43,7 @@ namespace Wsds.WebApp.Controllers
             return NoContent();
         }
 
-        [HttpGet("GetClientDraftOrder")]
+        [HttpGet("ClientDraftOrder")]
         public IActionResult getClientDraftOrder()
         {
             return Ok(_cartRepo.GetOrCreateClientDraftOrder());
@@ -62,6 +62,11 @@ namespace Wsds.WebApp.Controllers
         }
 
 
+        [HttpPut("ClientDraftOrder")]
+        public IActionResult SaveClientOrder([FromBody] ClientOrder_DTO order)
+        {
+            return Ok(_cartRepo.SaveClientOrder(order));
+        }
 
     }
 }

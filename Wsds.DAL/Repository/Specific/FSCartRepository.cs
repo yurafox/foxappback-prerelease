@@ -96,5 +96,12 @@ namespace Wsds.DAL.Repository.Specific
             return prov.GetItems("t.id_client = :idClient", new OracleParameter("idClient", 100))
                     .OrderByDescending(x => x.orderDate); //TODO я
         }
+
+        public ClientOrder_DTO SaveClientOrder(ClientOrder_DTO order)
+        {
+            var confOrders = EntityConfigDictionary.GetConfig("client_order");
+            var ordersProv = new EntityProvider<ClientOrder_DTO>(confOrders);
+            return ordersProv.UpdateItem(order);
+        }
     }
 }

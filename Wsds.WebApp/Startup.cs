@@ -111,6 +111,8 @@ namespace Wsds.WebApp
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Person2Json")
+                    .SetSequence("SEQ_PERSON")
+                    .SetBaseTable("PERSON")
                 );
 
             EntityConfigDictionary.AddConfig("lo_track_log",
@@ -147,9 +149,11 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("product_store_place",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.*, " +
-                                         "JSON_OBJECT ('id' value id, 'idStorePlace' value id_Store_Place, " +
+                                         "JSON_OBJECT ('id' value t.id, 'idStorePlace' value id_Store_Place, " +
                                          "'idQuotationProduct' value id_Quotation_Product, 'qty' value qty) as value " +
-                                         "from PRODUCT_STORE_PLACES t")
+                                         "from PRODUCT_STORE_PLACES t, store_places sp, cities c")
+                    .AddSqlCommandWhere("where t.id_store_place = sp.id and sp.id_city = c.id")
+                    .AddSqlCommandOrderBy("order by c.name asc, sp.name asc, sp.address_line asc")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Product_Store_Place2Json")
@@ -271,6 +275,17 @@ namespace Wsds.WebApp
                                          "'id_region' value id_region) as value from CITIES t ")
                     .AddSqlCommandWhere("where t.id in (select sp.id_city from product_store_places psp, " +
                                         "store_places sp where psp.id_store_place = sp.id and psp.qty > 0)")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.city2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("city_with_store",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name, " +
+                                         "'id_region' value id_region) as value from CITIES t ")
+                    .AddSqlCommandWhere("where t.id in (select sp.id_city from product_store_places psp, " +
+                                        "store_places sp where psp.id_store_place = sp.id and psp.qty > 0 and sp.type=1)")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.city2Json")
