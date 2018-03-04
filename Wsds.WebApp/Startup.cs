@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using CachingFramework.Redis;
 using Wsds.DAL.Entities.DTO;
 using Wsds.DAL.Repository;
+using StackExchange.Redis;
 
 namespace Wsds.WebApp
 {
@@ -72,7 +73,20 @@ namespace Wsds.WebApp
             services.AddSingleton<IConfiguration>(Configuration);
 
             var virtualCatalogId = Convert.ToInt64(Configuration["AppOptions:virtualId"]);
-            var redisCache = new Context();
+
+            var redisConfig = new ConfigurationOptions
+            {
+                EndPoints =
+                            {
+                                { "localhost", 6379 }
+                            },
+
+                SyncTimeout = int.MaxValue //,
+                //Ssl = true,
+                //Password = "mypassword"
+            };
+
+            var redisCache = new Context(redisConfig);
             services.AddSingleton(redisCache);
 
             EntityConfigDictionary.AddConfig("client_address",
