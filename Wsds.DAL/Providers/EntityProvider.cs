@@ -27,7 +27,7 @@ namespace Wsds.DAL.Providers
 
         public void DeleteItem(long id, bool doCommit = true) {
             long KeyVal = id;
-            string stmt = "begin delete from " + _config.BaseTable + " where " + _config.KeyField + " = :keyval ; commit; end;";
+            string stmt = "begin delete from " + _config.BaseTable + " where " + _config.KeyField + " = :keyval ; end;";
 
             using (var con = new OracleConnection(_config.ConnString))
             using (var cmd = new OracleCommand(stmt, con))
@@ -110,7 +110,7 @@ namespace Wsds.DAL.Providers
             var flds = "( " + string.Join(", ", _dict.Keys.Select(x => x.fldName)) + " )";
             var vals = "( " + string.Join(", ", _dict.Keys.Select(x => x.fldParam)) + " )";
 
-            string stmt = "begin insert into " + _config.BaseTable + " " + flds + " values " + vals + "; commit; end;";
+            string stmt = "begin insert into " + _config.BaseTable + " " + flds + " values " + vals + "; end;";
 
             using (var con = new OracleConnection(_config.ConnString))
             using (var cmd = new OracleCommand(stmt, con))
