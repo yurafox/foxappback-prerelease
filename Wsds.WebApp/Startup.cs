@@ -18,8 +18,12 @@ using Wsds.WebApp.Auth;
 using Microsoft.AspNetCore.HttpOverrides;
 using CachingFramework.Redis;
 using Wsds.DAL.Entities.DTO;
+using Wsds.DAL.Infrastructure.Facade;
 using Wsds.DAL.Repository;
 using StackExchange.Redis;
+using Wsds.DAL.Services.Abstract;
+using Wsds.DAL.Services.Specific;
+using Wsds.WebApp.Auth.Protection;
 
 namespace Wsds.WebApp
 {
@@ -68,6 +72,7 @@ namespace Wsds.WebApp
                 });
             });
 
+            services.AddDataProtection();
 
             var mainDataConnString = Configuration.GetConnectionString("MainDataConnection");
             services.AddSingleton<IConfiguration>(Configuration);
@@ -248,7 +253,8 @@ namespace Wsds.WebApp
                     .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id,'userId' value user_id, " +
                                          "'name' value name, 'phone' value phone, 'login' value login, 'email' value email, " +
                                          "'fname' value fname, 'lname' value lname, 'barcode' value barcode,  'bonusBalance' " +
-                                         "value null, 'actionBonusBalance' value null) as value from CLIENTS t")
+                                         "value null, 'actionBonusBalance' value null, 'id_currency' value id_currency,'id_lang' value id_lang, " +
+                                         "'app_key' value app_key) as value from CLIENTS t")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Client2Json")
@@ -403,7 +409,13 @@ namespace Wsds.WebApp
                 .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddScoped<ICreditRepository, FSCreditRepository>();
+            // limit the number of login attempts
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+                options.Lockout.MaxFailedAccessAttempts = 10;
+            });
+
             services.AddScoped<IStorePlaceRepository, FSStorePlaceRepository>();
             services.AddScoped<ICartRepository, FSCartRepository>();
             services.AddScoped<IClientRepository, FSClientRepository>();
@@ -419,7 +431,12 @@ namespace Wsds.WebApp
             services.AddScoped<ISupplierRepository, FSSupplierRepository>();
             services.AddScoped<IManufacturerRepository, FSManufacturerRepository>();
             services.AddScoped<IProductGroupRepository, FSProductGroupRepository>();
-
+            services.AddScoped<IUserRepository, FSUserRepository>();
+            services.AddScoped<IRoleRepository, FSRoleRepository>();
+            services.AddScoped<AccountUserFacade>();
+            services.AddScoped<ICrypto, FSCryptoProvider>();
+            services.AddScoped<IAuthSender,FSAuthSender>();
+            services.AddScoped<ISmsService, FSSmsService>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
@@ -512,6 +529,11 @@ namespace Wsds.WebApp
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
+          
+            // this is obsolete call 
+            //TODO: check this method when we will be create admin panel
+           // IdentityInit(app.ApplicationServices).Wait();
+
             // create global dependency collection ICacheService
             /*
             var services = app.ApplicationServices.GetServices<ICacheService>();
@@ -521,6 +543,7 @@ namespace Wsds.WebApp
             //IdentityInit(app.ApplicationServices).Wait();
         }
 
+        [Obsolete]
         public async Task IdentityInit(IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();

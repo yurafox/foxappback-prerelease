@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Wsds.DAL.Entities;
+using Wsds.DAL.Entities.DTO;
 using Wsds.DAL.Identity;
 
 namespace Wsds.DAL.Repository.Abstract
@@ -23,9 +24,10 @@ namespace Wsds.DAL.Repository.Abstract
         Task<AppUser> CreateUser(AppUser user, string pswd);
         Task<AppUser> DeleteUser(string id);
         Task<AppUser> UpdateUser(AppUser user);
-
+        Task<(string, byte)> UserVerifyStrategy(string phone, AppUser user, Client_DTO client);
+        bool VerifyUserPhoneInputData(string phone);
         IEnumerable<string> UserRoles(string id);
-
+        User_DTO Swap(Client_DTO client, IEnumerable<StorePlace_DTO> store, Func<string,string> encrypt);
 
     }
 }
