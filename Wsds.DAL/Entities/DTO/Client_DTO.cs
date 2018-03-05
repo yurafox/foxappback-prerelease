@@ -20,5 +20,8 @@ namespace Wsds.DAL.Entities
         public string barcode { get; set; }
         public decimal? bonusBalance { get; set; }
         public decimal? actionBonusBalance { get; set; }
+        public long? id_currency { get; set; }
+        public long? id_lang { get; set; }
+        public string appKey { get; set; }
     }
 }

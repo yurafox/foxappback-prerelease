@@ -42,7 +42,7 @@ namespace Wsds.DAL.Repository.Specific
         {
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
-            item.idOrder = GetOrCreateClientDraftOrderID();
+            item.idOrder = GetOrCreateClientDraftOrder().id;
             return prov.InsertItem(item);
         }
 
@@ -53,8 +53,7 @@ namespace Wsds.DAL.Repository.Specific
             prov.DeleteItem(id);
         }
 
-        public long GetOrCreateClientDraftOrderID() {
-
+        public ClientOrder_DTO GetOrCreateClientDraftOrder() {
             var idClient = 100; // TODO я
             var idCur = 0; //TODO грн
             var confOrders = EntityConfigDictionary.GetConfig("client_order");
@@ -64,7 +63,7 @@ namespace Wsds.DAL.Repository.Specific
                                                 .FirstOrDefault();
             if (!(order == null))
             {
-                return (long)order.id;
+                return order;
             }
             else
             {
@@ -77,11 +76,32 @@ namespace Wsds.DAL.Repository.Specific
                 newDraftOrder.idPaymentStatus = 1; //не оплачен
                 newDraftOrder.idStatus = 0; //draft
 
-                return (long)ordersProv.InsertItem(newDraftOrder).id;
-
+                return ordersProv.InsertItem(newDraftOrder);
             };
-
         }
 
+        public IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByOrderId(long orderId) //TODO обьєдинить с данньіми из Т22
+        {
+            var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product_all");
+            var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
+
+            return prov.GetItems("t.id_order = :orderId", new OracleParameter("orderId", orderId));
+        }
+
+        public IEnumerable<ClientOrder_DTO> GetClientOrders() //TODO обьєдинить с данньіми из Т22
+        {
+            var coaCnfg = EntityConfigDictionary.GetConfig("client_order_all");
+            var prov = new EntityProvider<ClientOrder_DTO>(coaCnfg);
+
+            return prov.GetItems("t.id_client = :idClient", new OracleParameter("idClient", 100))
+                    .OrderByDescending(x => x.orderDate); //TODO я
+        }
+
+        public ClientOrder_DTO SaveClientOrder(ClientOrder_DTO order)
+        {
+            var confOrders = EntityConfigDictionary.GetConfig("client_order");
+            var ordersProv = new EntityProvider<ClientOrder_DTO>(confOrders);
+            return ordersProv.UpdateItem(order);
+        }
     }
 }

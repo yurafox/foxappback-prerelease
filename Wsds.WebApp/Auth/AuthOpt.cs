@@ -30,7 +30,7 @@ namespace Wsds.WebApp.Auth
                     ValidIssuer = Issuer,
                     ValidateAudience = true,
                     ValidAudience = Subscriber,
-                    ValidateLifetime = true,
+                    ValidateLifetime = false,
                     IssuerSigningKey = GetSymmetricSecurityKey(),
                     ValidateIssuerSigningKey = true,
                 }
@@ -39,15 +39,19 @@ namespace Wsds.WebApp.Auth
             return tokenOptions;
         }
 
-        public static string GetToken(AppUser appUser,IEnumerable<string> roles)
+        public static string GetToken(AppUser appUser,IEnumerable<string> roles=null)
         {
             var dateNow = DateTime.UtcNow;
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, appUser.UserName.ToLower()),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, roles.First())
+                new Claim("userName", appUser.UserName.ToLower()),
+                new Claim("clientId",appUser.Card.ToString())
             };
+
+            if(roles!=null)
+               claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, roles.First()));
+
             ClaimsIdentity claimsIdentity =
                 new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
                     ClaimsIdentity.DefaultRoleClaimType);

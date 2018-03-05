@@ -10,6 +10,8 @@ namespace Wsds.DAL.Repository.Abstract
     public interface IGeoRepository
     {
         IEnumerable<City_DTO> Cities { get; }
+        IEnumerable<City_DTO> CitiesWithStores();
+
         City_DTO City(long id);
         IEnumerable<Country_DTO> Countries { get; }
         Country_DTO Country(long id);

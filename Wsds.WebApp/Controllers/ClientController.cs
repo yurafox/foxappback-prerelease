@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository.Abstract;
 using Wsds.WebApp.Attributes;
+using Newtonsoft.Json;
+using Wsds.DAL.Entities;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -36,5 +38,78 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cliRepo.GetClientByEmail(email));
         }
 
+        [HttpGet("person/{id}")]
+        public IActionResult GetPersonById(long id) {
+            return Ok(_cliRepo.GetPersonById(id));
+        }
+
+        [HttpPost("person")]
+        public IActionResult CreatePerson([FromBody] PersonInfo_DTO person)
+        {
+            PersonInfo_DTO result = _cliRepo.CreatePerson(person);
+            return CreatedAtRoute("", new { id = result.id }, result);
+        }
+
+        [HttpPut("person")]
+        public IActionResult UpdatePerson([FromBody] PersonInfo_DTO person)
+        {
+            return Ok(_cliRepo.UpdatePerson(person));
+        }
+
+        [HttpGet("getBonusesInfo/{id}")]
+        public IActionResult GetClientBonusesInfo(long id) {
+            return Ok(_cliRepo.GetClientBonusesInfo(id));
+        }
+
+        [HttpGet("getBonusesExpireInfo")]
+        [Link("clientId")]
+        public IActionResult GetClientBonusesExpireInfo([FromQuery]long clientId)
+        {
+            return Ok( _cliRepo.GetClientBonusesExpireInfo(clientId));
+        }
+
+        public class LogProductViewModel
+        {
+            public long idProduct { get; set; }
+            public string viewParams { get; set; }
+        }
+
+        [HttpPost("LogProductView")]
+        public IActionResult CreateCartProduct([FromBody] LogProductViewModel model)
+        {
+            _cliRepo.LogProductView(model.idProduct, model.viewParams);
+            return Created("", null);
+        }
+
+        [HttpGet("ClientAddress/{id}")]
+        public IActionResult ClientAddress(long id) {
+            return Ok(_cliRepo.ClientAddress(id));
+        }
+
+        [HttpGet("ClientAddress")]
+        [Link("idClient")]
+        public IActionResult GetClientAddressesByClientId([FromQuery] long idClient) {
+            return Ok(_cliRepo.GetClientAddressesByClientId(idClient));
+        }
+
+        [HttpPost("ClientAddress")]
+        public IActionResult CreateClientAddress([FromBody] ClientAddress_DTO item)
+        {
+            ClientAddress_DTO result = _cliRepo.CreateClientAddress(item);
+            return CreatedAtRoute("", new { id = result.id }, result);
+        }
+
+        [HttpPut("ClientAddress")]
+        public IActionResult UpdateClientAddress([FromBody] ClientAddress_DTO item)
+        {
+            ClientAddress_DTO result = _cliRepo.UpdateClientAddress(item);
+            return Ok(result);
+        }
+
+        [HttpDelete("ClientAddress/{id}")]
+        public IActionResult DeleteClientAddress(long id) {
+            _cliRepo.DeleteClientAddress(id);
+            return NoContent();
+        }
     }
 }

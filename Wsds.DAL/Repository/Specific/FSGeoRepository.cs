@@ -22,6 +22,13 @@ namespace Wsds.DAL.Repository.Specific
 
         public IEnumerable<Country_DTO> Countries => _csCountry.Items.Values;
 
+        public IEnumerable<City_DTO> CitiesWithStores()
+        {
+            var clCnfg = EntityConfigDictionary.GetConfig("city_with_store");
+            var prov = new EntityProvider<City_DTO>(clCnfg);
+            return prov.GetItems();
+        } 
+
         public City_DTO City(long id) => _csCity.Item(id);
 
         public Country_DTO Country(long id) => _csCountry.Item(id);

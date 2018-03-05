@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Providers;
+using Wsds.DAL.Repository.Abstract;
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -16,7 +17,7 @@ namespace Wsds.DAL.Repository.Specific
         public FSStorePlaceRepository(ICacheService<StorePlace_DTO> csStorePlace) => _csStorePlace = csStorePlace;
         public IEnumerable<ProductStorePlace_DTO> ProductStorePlaces => throw new NotImplementedException();
 
-        public IEnumerable<StorePlace_DTO> StorePlaces => _csStorePlace.Items.Values.OrderBy(x => x.name);
+        public IEnumerable<StorePlace_DTO> StorePlaces => _csStorePlace.Items.Values;
 
         public IEnumerable<ProductStorePlace_DTO> GetProductSPByQuotId(long idQuot)
         {
