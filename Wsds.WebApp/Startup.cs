@@ -18,7 +18,12 @@ using Wsds.WebApp.Auth;
 using Microsoft.AspNetCore.HttpOverrides;
 using CachingFramework.Redis;
 using Wsds.DAL.Entities.DTO;
+using Wsds.DAL.Infrastructure.Facade;
 using Wsds.DAL.Repository;
+using StackExchange.Redis;
+using Wsds.DAL.Services.Abstract;
+using Wsds.DAL.Services.Specific;
+using Wsds.WebApp.Auth.Protection;
 
 namespace Wsds.WebApp
 {
@@ -67,13 +72,41 @@ namespace Wsds.WebApp
                 });
             });
 
+            services.AddDataProtection();
 
             var mainDataConnString = Configuration.GetConnectionString("MainDataConnection");
             services.AddSingleton<IConfiguration>(Configuration);
 
             var virtualCatalogId = Convert.ToInt64(Configuration["AppOptions:virtualId"]);
-            var redisCache = new Context();
+
+            var redisConfig = new ConfigurationOptions
+            {
+                EndPoints =
+                            {
+                                { "localhost", 6379 }
+                            },
+
+                SyncTimeout = int.MaxValue //,
+                //Ssl = true,
+                //Password = "mypassword"
+            };
+
+            var redisCache = new Context(redisConfig);
             services.AddSingleton(redisCache);
+
+            EntityConfigDictionary.AddConfig("client_address",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'idClient' value id_client, " +
+                                         "'idCity' value id_city, 'zip' value zip, 'street' value street, 'lat' value lat, " +
+                                         "'lng' value lng, 'isPrimary' value is_primary, 'idCountry' value id_country, " +
+                                         "'city' value city, 'bldApp' value bld_app, 'recName' value recname, " +
+                                         "'phone' value phone) as value from client_address")
+                    .AddSqlCommandWhere("where nvl(is_deleted,0)<>1")
+                    .SetKeyField("id")
+                    .SetSequence("SEQ_CLIENT_ADDRESS")
+                    .SetValueField("value")
+                    .SetBaseTable("CLIENT_ADDRESS")
+                );
 
             EntityConfigDictionary.AddConfig("credit_product",
                 new EntityConfig(mainDataConnString)
@@ -97,6 +130,8 @@ namespace Wsds.WebApp
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Person2Json")
+                    .SetSequence("SEQ_PERSON")
+                    .SetBaseTable("PERSON")
                 );
 
             EntityConfigDictionary.AddConfig("lo_track_log",
@@ -137,7 +172,7 @@ namespace Wsds.WebApp
                                          "'address' value address_line, 'lat' value lat,'lng' value lng," +
                                          "'openTime' value open_time, 'closeTime' value close_time, " +
                                          "'rating' value rating, 'idFeedbacks' value id_feedbacks) as value from STORE_PLACES t ")
-                    .AddSqlCommandWhere("where t.type=1 " + "and t.lat is not null " + "and t.lng is not null ")
+                    .AddSqlCommandWhere("where t.type=1 " + "and t.lat is not null " + "and t.lng is not null " + "and t.is_active=1")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Store2Json")
@@ -146,13 +181,29 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("product_store_place",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.*, " +
-                                         "JSON_OBJECT ('id' value id, 'idStorePlace' value id_Store_Place, " +
+                                         "JSON_OBJECT ('id' value t.id, 'idStorePlace' value id_Store_Place, " +
                                          "'idQuotationProduct' value id_Quotation_Product, 'qty' value qty) as value " +
-                                         "from PRODUCT_STORE_PLACES t")
+                                         "from PRODUCT_STORE_PLACES t, store_places sp, cities c")
+                    .AddSqlCommandWhere("where t.id_store_place = sp.id and sp.id_city = c.id")
+                    .AddSqlCommandOrderBy("order by c.name asc, sp.name asc, sp.address_line asc")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Product_Store_Place2Json")
                 );
+
+            EntityConfigDictionary.AddConfig("client_order_all",
+                new EntityConfig(mainDataConnString)
+                    .SetBaseTable("CLIENT_ORDERS")
+                    .AddSqlCommandSelect("select t.*, Serialization.CLIENT_ORDER2JSON(t.id) as value " +
+                                         "from client_orders t")
+                    .AddSqlCommandWhere("where t.id_status>0")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSequence("SEQ_CLIENT_ORDERS")
+                    .SetSerializerFunc("Serialization.CLIENT_ORDER2JSON")
+                );
+
+
 
             EntityConfigDictionary.AddConfig("client_order",
                 new EntityConfig(mainDataConnString)
@@ -165,6 +216,28 @@ namespace Wsds.WebApp
                     .SetSequence("SEQ_CLIENT_ORDERS")
                     .SetSerializerFunc("Serialization.CLIENT_ORDER2JSON")
                 );
+
+            EntityConfigDictionary.AddConfig("client_order_product_all",
+                new EntityConfig(mainDataConnString)
+                    .SetBaseTable("ORDER_SPEC_PRODUCTS")
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value t.id, 'idOrder' value id_order, " +
+                                         "'idQuotationProduct' value id_quotation, 'price' value price, 'qty' value qty, " +
+                                         "'idStorePlace' value id_store_place, 'idLoEntity' value id_lo_entity, " +
+                                         "'loTrackTicket' value lo_track_ticket, 'loDeliveryCost' value lo_delivery_cost, " +
+                                         "'loDeliveryCompleted' value lo_delivery_completed, " +
+                                         "'loEstimatedDeliveryDate' value lo_estimated_delivery_date, " +
+                                         "'loDeliveryCompletedDate' value lo_delivery_completed_date, 'errorMessage' value error_message, " +
+                                         "'warningMessage' value warning_message, 'payPromoCode' value pay_promocode, " +
+                                         "'payPromoCodeDiscount' value pay_promocode_discount, 'payBonusCnt' value pay_bonus_cnt, " +
+                                         "'payPromoBonusCnt' value pay_promobonus_cnt, 'earnedBonusCnt' value earned_bonus_cnt, " +
+                                         "'warningRead' value warning_read) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
+                    .AddSqlCommandWhere("where o.id = t.id_order")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSequence("SEQ_ORDER_SPEC_PRODUCTS")
+                    .SetSerializerFunc("Serialization.ORDER_SPEC_PRODUCT2Json")
+                );
+
 
 
             EntityConfigDictionary.AddConfig("client_order_product",
@@ -193,7 +266,8 @@ namespace Wsds.WebApp
                     .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id,'userId' value user_id, " +
                                          "'name' value name, 'phone' value phone, 'login' value login, 'email' value email, " +
                                          "'fname' value fname, 'lname' value lname, 'barcode' value barcode,  'bonusBalance' " +
-                                         "value null, 'actionBonusBalance' value null) as value from CLIENTS t")
+                                         "value null, 'actionBonusBalance' value null, 'id_currency' value id_currency,'id_lang' value id_lang, " +
+                                         "'app_key' value app_key) as value from CLIENTS t")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Client2Json")
@@ -234,6 +308,17 @@ namespace Wsds.WebApp
                                          "'id_region' value id_region) as value from CITIES t ")
                     .AddSqlCommandWhere("where t.id in (select sp.id_city from product_store_places psp, " +
                                         "store_places sp where psp.id_store_place = sp.id and psp.qty > 0)")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.city2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("city_with_store",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name, " +
+                                         "'id_region' value id_region) as value from CITIES t ")
+                    .AddSqlCommandWhere("where t.id in (select sp.id_city from product_store_places psp, " +
+                                        "store_places sp where psp.id_store_place = sp.id and psp.qty > 0 and sp.type=1)")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.city2Json")
@@ -337,7 +422,13 @@ namespace Wsds.WebApp
                 .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddScoped<ICreditRepository, FSCreditRepository>();
+            // limit the number of login attempts
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+                options.Lockout.MaxFailedAccessAttempts = 10;
+            });
+
             services.AddScoped<IStorePlaceRepository, FSStorePlaceRepository>();
             services.AddScoped<ICartRepository, FSCartRepository>();
             services.AddScoped<IClientRepository, FSClientRepository>();
@@ -353,7 +444,12 @@ namespace Wsds.WebApp
             services.AddScoped<ISupplierRepository, FSSupplierRepository>();
             services.AddScoped<IManufacturerRepository, FSManufacturerRepository>();
             services.AddScoped<IProductGroupRepository, FSProductGroupRepository>();
-
+            services.AddScoped<IUserRepository, FSUserRepository>();
+            services.AddScoped<IRoleRepository, FSRoleRepository>();
+            services.AddScoped<AccountUserFacade>();
+            services.AddScoped<ICrypto, FSCryptoProvider>();
+            services.AddScoped<IAuthSender,FSAuthSender>();
+            services.AddScoped<ISmsService, FSSmsService>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
@@ -420,7 +516,11 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<StorePlace_DTO>),
                 p => new CacheService<StorePlace_DTO>
                     ("store_place", 1000000, redisCache, true), ServiceLifetime.Singleton));
-            
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Store_DTO>),
+                p => new CacheService<Store_DTO>
+                    ("stores", 1000000, redisCache, true), ServiceLifetime.Singleton));
+
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoSupplEntity_DTO>),
                 p => new CacheService<LoSupplEntity_DTO>
                     ("lo_suppl_entity", 7200000, redisCache, true), ServiceLifetime.Singleton));
@@ -446,6 +546,11 @@ namespace Wsds.WebApp
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
+          
+            // this is obsolete call 
+            //TODO: check this method when we will be create admin panel
+           // IdentityInit(app.ApplicationServices).Wait();
+
             // create global dependency collection ICacheService
             /*
             var services = app.ApplicationServices.GetServices<ICacheService>();
@@ -455,6 +560,7 @@ namespace Wsds.WebApp
             //IdentityInit(app.ApplicationServices).Wait();
         }
 
+        [Obsolete]
         public async Task IdentityInit(IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();

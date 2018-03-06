@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository;
+using Wsds.DAL.Repository.Abstract;
 using Wsds.WebApp.Attributes;
 
 namespace Wsds.WebApp.Controllers

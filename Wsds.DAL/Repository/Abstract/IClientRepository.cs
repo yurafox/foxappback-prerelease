@@ -14,7 +14,18 @@ namespace Wsds.DAL.Repository.Abstract
         IEnumerable<Client_DTO> GetClientByUserID(long userId);
         IEnumerable<Client_DTO> GetClientByEmail(string email);
         PersonInfo_DTO GetPersonById(long idPerson);
+        PersonInfo_DTO CreatePerson(PersonInfo_DTO item);
+        PersonInfo_DTO UpdatePerson(PersonInfo_DTO item);
+
         object GetClientBonusesInfo(long idClient);
         IEnumerable<object> GetClientBonusesExpireInfo(long idClient);
+        void LogProductView(long idProduct, string viewParams);
+        ClientAddress_DTO ClientAddress(long id);
+        IEnumerable<ClientAddress_DTO> GetClientAddressesByClientId(long id);
+        ClientAddress_DTO CreateClientAddress(ClientAddress_DTO item);
+        ClientAddress_DTO UpdateClientAddress(ClientAddress_DTO item);
+        void DeleteClientAddress(long id);
+        Client_DTO GetClientByPhone(string phone);
+        IEnumerable<StorePlace_DTO> GetFavoriteStore(long clientId);
     }
 }
