@@ -38,6 +38,13 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cliRepo.GetClientByEmail(email));
         }
 
+        [HttpGet]
+        [Link("phone")]
+        public IActionResult GetClientByPhone([FromQuery]string phone)
+        {
+            return Ok(_cliRepo.GetClientByPhone(phone));
+        }
+
         [HttpGet("person/{id}")]
         public IActionResult GetPersonById(long id) {
             return Ok(_cliRepo.GetPersonById(id));

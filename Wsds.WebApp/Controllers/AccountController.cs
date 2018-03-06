@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -98,7 +99,7 @@ namespace Wsds.WebApp.Controllers
 
             // get user and client
             var user = await _account.Users.GetUserByName(vm.Phone);
-            var client = _account.Clients.GetClientByPhone(vm.Phone);
+            var client = _account.Clients.GetClientByPhone(vm.Phone).FirstOrDefault();
             var data = await _account.Users.UserVerifyStrategy(vm.Phone, user, client);
 
             // send json

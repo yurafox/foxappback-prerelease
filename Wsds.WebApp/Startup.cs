@@ -416,6 +416,8 @@ namespace Wsds.WebApp
                 options.Lockout.MaxFailedAccessAttempts = 10;
             });
 
+
+            services.AddScoped<ICreditRepository, FSCreditRepository>();
             services.AddScoped<IStorePlaceRepository, FSStorePlaceRepository>();
             services.AddScoped<ICartRepository, FSCartRepository>();
             services.AddScoped<IClientRepository, FSClientRepository>();
