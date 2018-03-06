@@ -67,7 +67,6 @@ namespace Wsds.DAL.Repository.Specific
 
         public object GetClientBonusesInfo(long idClient)
         {
-            object res = null;
             using (var client = new HttpClient()) {
                 client.DefaultRequestHeaders.Accept.Add(
                                 new MediaTypeWithQualityHeaderValue("application/json"));
@@ -79,13 +78,18 @@ namespace Wsds.DAL.Repository.Specific
 
                     var responseObj = (JObject)JsonConvert.DeserializeObject(responseString);
 
-                    return  new {
-                                 bonusLimit = responseObj.GetValue("regular"),
-                                 actionBonusLimit = responseObj.GetValue("special")
-                                };
+                    return new
+                    {
+                        bonusLimit = responseObj.GetValue("regular"),
+                        actionBonusLimit = responseObj.GetValue("special")
+                    };
                 }
+                else
+                {
+                    return null;
+                }
+
             }
-            return res;
         }
 
         public IEnumerable<object> GetClientBonusesExpireInfo(long idClient)
@@ -167,7 +171,7 @@ namespace Wsds.DAL.Repository.Specific
                                                "update CLIENT_ADDRESS " +
                                                "set is_primary = null " +
                                                "where id_client = :idClient ;" +
-                                               "end;", con))
+                                               "commit; end;", con))
             {
                 try
                 {
