@@ -14,6 +14,8 @@ namespace Wsds.DAL.Repository
         IEnumerable<ProductStorePlace_DTO> GetProductSPByQuotId(long idQuot);
 
         IEnumerable<StorePlace_DTO> StorePlaces { get; }
-        StorePlace_DTO StorePlace(long id); 
+        StorePlace_DTO StorePlace(long id);
+
+        IEnumerable<Store_DTO> GetStores();
     }
 }

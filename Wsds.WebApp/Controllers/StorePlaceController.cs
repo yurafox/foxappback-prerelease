@@ -16,6 +16,12 @@ namespace Wsds.WebApp.Controllers
         private IStorePlaceRepository _spRepo;
         public StorePlaceController(IStorePlaceRepository spRepo) => _spRepo = spRepo;
 
+        [HttpGet("Stores")]
+        public IActionResult GetStores()
+        {
+            return Ok(_spRepo.GetStores());
+        }
+
         [HttpGet("StorePlace/{id}")]
         public IActionResult GetStorePlaceById(long id) {
             return Ok(_spRepo.StorePlace(id));

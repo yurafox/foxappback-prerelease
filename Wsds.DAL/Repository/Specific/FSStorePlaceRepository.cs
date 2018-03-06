@@ -25,6 +25,13 @@ namespace Wsds.DAL.Repository.Specific
             return prov.GetItems("id_Quotation_Product = :idQuot and qty>0", new OracleParameter("a", idQuot));
         }
 
+        public IEnumerable<Store_DTO> GetStores()
+        {
+            var cnfg = EntityConfigDictionary.GetConfig("stores");
+            var prov = new EntityProvider<Store_DTO>(cnfg);
+            return prov.GetItems();
+        }
+
         public ProductStorePlace_DTO ProductStorePlace(long id)
         {
             throw new NotImplementedException();
