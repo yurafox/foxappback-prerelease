@@ -39,5 +39,16 @@ namespace Wsds.DAL.Repository.Specific
         }
 
         public LoEntity_DTO LoEntity(long id) => _csLoEnt.Item(id);
+
+        public object GetDeliveryCost(ClientOrderProduct_DTO orderProduct, long loEntityId, long loIdClientAddress)
+        {
+
+            return new { assessedCost = 15.34 };
+        }
+
+        public object GetDeliveryDate(ClientOrderProduct_DTO orderProduct, long loEntityId, long loIdClientAddress)
+        {
+            return new { deliveryDate = new DateTime() };
+        }
     }
 }

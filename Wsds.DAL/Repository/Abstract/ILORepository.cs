@@ -15,5 +15,8 @@ namespace Wsds.DAL.Repository.Abstract
         IEnumerable<LoSupplEntity_DTO> LoSupplEntities { get; }
         IEnumerable<LoSupplEntity_DTO> GetLoEntitiesForSuppl(long supplId);
         IEnumerable<LoTrackLog> GetTrackLogForOrderSpecProd(long orderSpecProdId);
+        object GetDeliveryCost(ClientOrderProduct_DTO orderProduct, long loEntityId, long loIdClientAddress);
+        object GetDeliveryDate(ClientOrderProduct_DTO orderProduct, long loEntityId, long loIdClientAddress);
+
     }
 }

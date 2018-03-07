@@ -74,5 +74,26 @@ namespace Wsds.DAL.Repository.Specific
             };
             return res;
         }
+
+        public IEnumerable<Product_DTO> SearchProducts(string srchString)
+        {
+            string fldName = "name";
+            IDictionary<string, OracleParameter> _dict = new Dictionary<string, OracleParameter>();
+            string[] tokens = srchString.Split(' ').Distinct().ToArray();
+            int i = 0;
+            foreach (string s in tokens) {
+                var _pname = "param" + i.ToString();
+                var str = "regexp_like (" + fldName + ", :" +_pname + ", 'i')";
+                _dict.Add(str, new OracleParameter(_pname, s));
+                i++;
+            }
+
+            var prodCnfg = EntityConfigDictionary.GetConfig("products");
+            var prov = new EntityProvider<Product_DTO>(prodCnfg);
+            return prov.GetItems(
+                                    string.Join(" and ", _dict.Keys),
+                                    _dict.Values.ToArray()
+                                 );
+        }
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository.Abstract;
 using Newtonsoft.Json;
+using Wsds.WebApp.Attributes;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -47,6 +48,13 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetProductImages(long id)
         {
             return Ok(new {images = _prodRepo.GetProductImages(id)});
+        }
+
+        [HttpGet]
+        [Link("srch")]
+        public IActionResult SearchProducts([FromQuery]string srch)
+        {
+            return Ok(_prodRepo.SearchProducts(srch));
         }
 
     }

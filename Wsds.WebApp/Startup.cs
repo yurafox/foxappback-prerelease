@@ -340,9 +340,10 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("products", 
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("SELECT t.id, json_data as value from products t") 
-                    .AddSqlCommandWhere("where t.id in (6293680, 6280637, 6293680, 6294898, 6325585, 6324182, 6252121, 6202929, 6324216, " +
+                    .AddSqlCommandWhere("where /* t.id in (6293680, 6280637, 6293680, 6294898, 6325585, 6324182, 6252121, 6202929, 6324216, " +
                                         "6324213, 6161537, 6307814,6343804, 6337167, 6291460, 6316576, 6310491, " +
-                                        "6312913, 6363302, 6337781, 5857818, 6309865, 5936214 )")
+                                        "6312913, 6363302, 6337781, 5857818, 6309865, 5936214 ) and */ t.price<>0") 
+
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetPreserializedJSONField("json_data")
@@ -480,7 +481,7 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Product_DTO>),
                     p => new CacheService<Product_DTO>
-                    ("products", 3000000, redisCache), ServiceLifetime.Singleton));
+                    ("products", 3000000, redisCache, false), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Currency_DTO>),
                     p => new CacheService<Currency_DTO>
