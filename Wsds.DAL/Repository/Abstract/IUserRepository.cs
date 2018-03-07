@@ -27,7 +27,7 @@ namespace Wsds.DAL.Repository.Abstract
         Task<(string, byte)> UserVerifyStrategy(string phone, AppUser user, Client_DTO client);
         bool VerifyUserPhoneInputData(string phone);
         IEnumerable<string> UserRoles(string id);
-        User_DTO Swap(Client_DTO client, IEnumerable<StorePlace_DTO> store, Func<string,string> encrypt);
+        User_DTO Swap(Client_DTO client,Func<string,string> encrypt);
 
     }
 }

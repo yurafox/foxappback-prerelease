@@ -8,11 +8,12 @@ namespace Wsds.WebApp.Auth
     public class TokenModel
     {
         public string Phone { get; set; }
-        public long Client { get; set; }
+        public long Card { get; set; }
+        public long ClientId { get; set; }
 
         public bool ValidateDataFromToken()
         {
-            return (!String.IsNullOrEmpty(Phone) && Client != 0);
+            return (!String.IsNullOrEmpty(Phone) && Card != 0 && ClientId !=0);
         }
     }
 }

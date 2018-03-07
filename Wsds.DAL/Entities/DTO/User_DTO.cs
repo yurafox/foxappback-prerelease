@@ -28,7 +28,6 @@ namespace Wsds.DAL.Entities.DTO
         public string appKey { get; set; }
         [Required]
         public IDictionary<string,string> userSetting { get; set; }
-        public long?[] favoriteStoresId { get; set; }
 
     }
 }

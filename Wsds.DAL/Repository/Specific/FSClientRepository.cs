@@ -1,6 +1,7 @@
 ﻿using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -221,15 +222,33 @@ namespace Wsds.DAL.Repository.Specific
             var clCnfg = EntityConfigDictionary.GetConfig("store_place");
             var prov = new EntityProvider<StorePlace_DTO>(clCnfg);
             return prov.GetItems("id in (select f.id_store_places from favorite_stores f " +
-                                 "where f.id_client = :email)", new OracleParameter("id_client", clientId));
+                                 "where f.id_client = :id_client)", new OracleParameter("id_client", clientId));
         }
 
-        public Client_DTO GetClientByPhone(string phone)
+
+        public IEnumerable<Client_DTO> GetClientByPhone(string phone)
         {
-            var clCnfg = EntityConfigDictionary.GetConfig("client");
-            var prov = new EntityProvider<Client_DTO>(clCnfg);
-            var data = prov.GetItems("phone = :phone", new OracleParameter("phone", phone));
-            return data?.FirstOrDefault();
+            string res = "";
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin :result := app_core.getclientbyphone(:phonenum); end;", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
+                    cmd.Parameters["result"].Size = 2000;
+                    cmd.Parameters.Add(new OracleParameter("phonenum", phone));
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                    res = cmd.Parameters["result"].Value.ToString();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+            return new List<Client_DTO> { JsonConvert.DeserializeObject<Client_DTO>(res) };
         }
+
     }
 }

@@ -12,24 +12,20 @@ namespace Wsds.DAL.Infrastructure.Facade
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
         private readonly IClientRepository _cliRepo;
-        private readonly IStorePlaceRepository _storePlaceRepository;
 
         public AccountUserFacade(IUserRepository userRepository,
                                  IRoleRepository roleRepository,
-                                 IClientRepository clientRepository,
-                                 IStorePlaceRepository storePlaceRepository)
+                                 IClientRepository clientRepository)
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
             _cliRepo = clientRepository;
-            _storePlaceRepository = storePlaceRepository;
 
         }
 
         public IUserRepository Users => _userRepository;
         public IRoleRepository Roles => _roleRepository;
         public IClientRepository Clients => _cliRepo;
-        public IStorePlaceRepository StorePlace => _storePlaceRepository;
 
     }
 }

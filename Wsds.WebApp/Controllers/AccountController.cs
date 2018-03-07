@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +11,7 @@ using Wsds.WebApp.Auth;
 using Wsds.WebApp.Auth.Protection;
 using Wsds.WebApp.Filters;
 using Wsds.WebApp.Models;
+using Wsds.WebApp.WebExtensions;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -40,18 +42,17 @@ namespace Wsds.WebApp.Controllers
                     //TODO: check this role method when we will be create admin panel
                     //var roles = await _userRepository.UserEngine.GetRolesAsync(user);
 
-                    var jToken = AuthOpt.GetToken(user);
-
                     // get clients
-                    var client = _account.Clients.Client(user.Card);
+                    var client = _account.Clients.GetClientByPhone(user.UserName).FirstOrDefault();
                     if (client != null)
                     {
+                        var jToken = AuthOpt.GetToken(user,client.id);
                         // get favorite stores
-                        var favoriteStores = _account.Clients.GetFavoriteStore(user.Card);
+                        //var favoriteStores = _account.Clients.GetFavoriteStore(user.Card);
                         var responseObj = new
                         {
                             token = jToken,
-                            user = _account.Users.Swap(client, favoriteStores, _crypto.Encrypt)
+                            user = _account.Users.Swap(client,_crypto.Encrypt)
                         };
 
                         await Response.WriteAsync(JsonConvert.SerializeObject(responseObj,
@@ -71,14 +72,14 @@ namespace Wsds.WebApp.Controllers
         [PullToken]
         public async Task Get()
         {
-            var tokenModel = HttpContext.Items["token"] as TokenModel;
-            if (tokenModel != null && tokenModel.ValidateDataFromToken())
+            var tokenModel = HttpContext.GeTokenModel();
+            if (tokenModel != null)
             {
-                var client = _account.Clients.Client(tokenModel.Client);
+                var client = _account.Clients.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
                 if (client != null)
                 {
-                    var favoriteStores = _account.Clients.GetFavoriteStore(tokenModel.Client);
-                    var user = _account.Users.Swap(client, favoriteStores, _crypto.Encrypt);
+                    //var favoriteStores = _account.Clients.GetFavoriteStore(tokenModel.Client);
+                    var user = _account.Users.Swap(client,_crypto.Encrypt);
 
                     await Response.WriteAsync(JsonConvert.SerializeObject(user,
                         new JsonSerializerSettings {Formatting = Formatting.Indented}));
@@ -98,7 +99,7 @@ namespace Wsds.WebApp.Controllers
 
             // get user and client
             var user = await _account.Users.GetUserByName(vm.Phone);
-            var client = _account.Clients.GetClientByPhone(vm.Phone);
+            var client = _account.Clients.GetClientByPhone(vm.Phone).FirstOrDefault();
             var data = await _account.Users.UserVerifyStrategy(vm.Phone, user, client);
 
             // send json

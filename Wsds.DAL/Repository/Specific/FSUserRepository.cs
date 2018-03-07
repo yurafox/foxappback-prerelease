@@ -96,7 +96,7 @@ namespace Wsds.DAL.Repository.Specific
         }
 
 
-        public User_DTO Swap(Client_DTO client, IEnumerable<StorePlace_DTO> stores, Func<string, string> encrypt)
+        public User_DTO Swap(Client_DTO client, Func<string, string> encrypt)
         {
             var dict = new Dictionary<string, string>
             {
@@ -109,11 +109,12 @@ namespace Wsds.DAL.Repository.Specific
             {
                 email = client.email,
                 appKey = (client.appKey != null) ? encrypt(client.appKey) : "",
-                login = client.login,
+                //login = client.login,
                 name = client.name,
                 phone = client.phone,
-                userSetting = dict,
-                favoriteStoresId = stores?.Select(s => s.id).ToArray()
+                fname = client.fname,
+                lname = client.lname,
+                userSetting = dict
             };
 
             return user;
@@ -150,7 +151,7 @@ namespace Wsds.DAL.Repository.Specific
         }
         private async Task<(string, byte)> OnlyUserAbsentStrategy(Client_DTO client)
         {
-            var appUser = new AppUser() { UserName = client.phone, Card = (long)client.id, PhoneNumber = client.phone};
+            var appUser = new AppUser() { UserName = client.phone, Card = (long)client.id, PhoneNumber = client.phone ,Email = client.email};
             // generate random temp password for sms
             var tempPswd = _smsService.GetAuthTempPswd(8);
 
