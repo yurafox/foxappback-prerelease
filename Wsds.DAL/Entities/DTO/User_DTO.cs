@@ -19,10 +19,10 @@ namespace Wsds.DAL.Entities.DTO
         public string login { get; set; }
         [EmailAddress]
         public string email { get; set; }
-        [Required]
+      
         [StringLength(20)]
         public string fname { get; set; }
-        [Required]
+        
         [StringLength(20)]
         public string lname { get; set; }
         public string appKey { get; set; }

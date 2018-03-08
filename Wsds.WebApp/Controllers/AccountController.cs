@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -44,7 +45,7 @@ namespace Wsds.WebApp.Controllers
 
                     // get clients
                     var client = _account.Clients.GetClientByPhone(user.UserName).FirstOrDefault();
-                    if (client != null)
+                    if (client?.id != null)
                     {
                         var jToken = AuthOpt.GetToken(user,client.id);
                         // get favorite stores
@@ -76,7 +77,7 @@ namespace Wsds.WebApp.Controllers
             if (tokenModel != null)
             {
                 var client = _account.Clients.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
-                if (client != null)
+                if (client?.id != null)
                 {
                     //var favoriteStores = _account.Clients.GetFavoriteStore(tokenModel.Client);
                     var user = _account.Users.Swap(client,_crypto.Encrypt);
@@ -124,8 +125,19 @@ namespace Wsds.WebApp.Controllers
                 return Json(new {message = "пользователь уже существует в системе", status = 0});
             }
 
-            //TODO:logic create with typhoon sync
-            return null;
+            // create client
+            var client = _account.Users.ToClient(user);
+            var clientCreated=_account.Clients.CreateOrUpdateClient(client);
+            if(clientCreated?.id == null)
+            {
+                Response.StatusCode = 400;
+                return Json(new { message = "ошибка создания пользователя", status = 0 });
+            }
+
+            // create identity user
+            var identityWrapper =_account.Users.FastUserIdentityCreate(clientCreated);
+            return Json(identityWrapper);
+
         }
     }
 }

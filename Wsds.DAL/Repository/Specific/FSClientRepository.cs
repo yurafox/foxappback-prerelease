@@ -12,6 +12,7 @@ using Wsds.DAL.Repository.Abstract;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Dapper;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Configuration;
 
@@ -250,5 +251,27 @@ namespace Wsds.DAL.Repository.Specific
             return new List<Client_DTO> { JsonConvert.DeserializeObject<Client_DTO>(res) };
         }
 
+        public Client_DTO CreateOrUpdateClient(Client_DTO client)
+        {
+            if (client == null) return null;
+
+            var cs=_config.GetConnectionString("MainDataConnection");
+            using (IDbConnection dbConnection = new OracleConnection(cs))
+            {
+                var funcName = "app_core.createorupdateclient";
+                var fParams = new { pphone=client.phone,
+                                    pname = client.name,
+                                    pcard = client.barcode,
+                                    pemail = client.email,
+                                    pfname = client.fname,
+                                    plname = client.lname,
+                                    pid_currency = client.id_currency,
+                                    pid_lang = client.id_lang
+                    };
+
+                var clientJson = dbConnection.QueryFirst<string>(funcName, fParams,commandType: CommandType.StoredProcedure);
+                return JsonConvert.DeserializeObject<Client_DTO>(clientJson);
+            }
+        }
     }
 }

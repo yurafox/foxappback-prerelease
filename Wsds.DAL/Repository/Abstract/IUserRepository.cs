@@ -28,6 +28,7 @@ namespace Wsds.DAL.Repository.Abstract
         bool VerifyUserPhoneInputData(string phone);
         IEnumerable<string> UserRoles(string id);
         User_DTO Swap(Client_DTO client,Func<string,string> encrypt);
-
+        Client_DTO ToClient(User_DTO user);
+        Task<AppUserManipulationModel> FastUserIdentityCreate(Client_DTO client);
     }
 }
