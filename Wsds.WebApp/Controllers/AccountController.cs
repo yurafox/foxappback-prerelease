@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using Wsds.DAL.Entities.DTO;
 using Wsds.DAL.Infrastructure.Facade;
@@ -136,12 +138,55 @@ namespace Wsds.WebApp.Controllers
             if (identityWrapper.IdentityUser != null && identityWrapper.Status != 0)
             {
                 Response.StatusCode = 201;
-                return Json(new { content = clientCreated, message=identityWrapper.Message,status = identityWrapper.Status });
+                return Json(new { content = _account.Users.Swap(clientCreated, _crypto.Encrypt), message=identityWrapper.Message,status = identityWrapper.Status });
             }
 
             
             return Json(new { message = "ошибка создания пользователя", status = 0 });
 
+        }
+
+        [Authorize]
+        [HttpPut]
+        [PullToken]
+        public async Task<IActionResult> EditUser([FromBody] User_DTO user)
+        {
+            Response.StatusCode = 200;
+            var tokenModel = HttpContext.GeTokenModel();
+            if (tokenModel != null && user.phone == tokenModel.Phone)
+            {          
+
+                if (!ModelState.IsValid){
+                    return Json(new { message = "данные пользователя не валидны", status = 0 });
+                }
+
+
+                var findedUser = await _account.Users.GetUserByName(user.phone);
+                var findedClient = _account.Clients.GetClientByPhone(user.phone).FirstOrDefault();
+
+                if (findedUser == null || findedClient?.id == null)
+                    return Json(new { message = "ошибка редактирования пользователя", status = 0 });
+
+                // update client
+                var client = _account.Users.ToClient(user);
+                var clientCreated = _account.Clients.CreateOrUpdateClient(client);
+
+                if (clientCreated?.id == null)
+                    return Json(new { message = "ошибка создания пользователя", status = 0 });
+
+                // update user
+                findedUser.Email = clientCreated.email;
+                findedUser.NormalizedEmail = clientCreated.email.ToUpper();
+                var identityUser = await _account.Users.UserEngine.UpdateAsync(findedUser);
+
+                if (identityUser == null)
+                    return Json(new { message = "ошибка создания identity пользователя", status = 0 });
+
+                return Json(new { content = _account.Users.Swap(clientCreated, _crypto.Encrypt), message = "пользователь успешно обновлен", status = 2 });
+            }
+
+            Response.StatusCode = 401;
+            return Json(new { message = "ошибка авторизации пользователя", status = 0 });
         }
     }
 }
