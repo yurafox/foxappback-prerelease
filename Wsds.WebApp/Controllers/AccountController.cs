@@ -188,5 +188,32 @@ namespace Wsds.WebApp.Controllers
             Response.StatusCode = 401;
             return Json(new { message = "ошибка авторизации пользователя", status = 0 });
         }
+
+        [Authorize]
+        [HttpPost("changePass")]
+        [PullToken]
+        public async Task<IActionResult> ChangePassword([FromBody] PasswdModel passwd)
+        {
+            Response.StatusCode = 200;
+            var tokenModel = HttpContext.GeTokenModel();
+            if (tokenModel != null)
+            {
+                if (!ModelState.IsValid){
+                    return Json(new { message = "данные не валидны", status = 0 });
+                }
+
+                var resultCompare = await _account.Users.CheckUser(tokenModel.Phone, passwd.Password);
+                if (!resultCompare) return Json(new { message = "не удалось связать пользователя и пароль", status = 0 });
+
+                var identityUser = await _account.Users.GetUserByName(tokenModel.Phone);
+                var result = await _account.Users.UserEngine.ChangePasswordAsync(identityUser, passwd.Password, passwd.NewPassword);
+                if(!result.Succeeded) return Json(new { message = "ошибка смены пароля", status = 0 });
+
+                return Json(new { message = "пароль успешно изменен", status = 2 });
+            }
+
+            Response.StatusCode = 401;
+            return Json(new { message = "ошибка авторизации пользователя", status = 0 });
+        }
     }
 }
