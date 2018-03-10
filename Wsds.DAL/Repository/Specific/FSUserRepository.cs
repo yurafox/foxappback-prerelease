@@ -135,7 +135,6 @@ namespace Wsds.DAL.Repository.Specific
             {
                 phone = user.phone,
                 email = user.email,
-                name = user.name,
                 fname = user.fname,
                 lname = user.lname,
                 id_currency = String.IsNullOrEmpty(user.userSetting["currency"]) ? 4 : // 4 - UAH

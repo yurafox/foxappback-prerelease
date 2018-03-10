@@ -255,23 +255,39 @@ namespace Wsds.DAL.Repository.Specific
         {
             if (client == null) return null;
 
-            var cs=_config.GetConnectionString("MainDataConnection");
-            using (IDbConnection dbConnection = new OracleConnection(cs))
+            string res = "";
+            var connString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(connString))
+            using (var cmd = new OracleCommand("begin :result:= app_core.createorupdateclient(:pphone,:pcard,:pemail,:pfname," +
+                                               ":plname,:pid_currency,:pid_lang);end;", con))
             {
-                var funcName = "app_core.createorupdateclient";
-                var fParams = new { pphone=client.phone,
-                                    pname = client.name,
-                                    pcard = client.barcode,
-                                    pemail = client.email,
-                                    pfname = client.fname,
-                                    plname = client.lname,
-                                    pid_currency = client.id_currency,
-                                    pid_lang = client.id_lang
-                    };
+                try
+                {
+                    cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
+                    cmd.Parameters["result"].Size = 2000;
+                    cmd.Parameters.Add(new OracleParameter("pphone", client.phone));
+                    cmd.Parameters.Add(new OracleParameter("pcard", client.barcode ?? (object) DBNull.Value));
+                    cmd.Parameters.Add(new OracleParameter("pemail", client.email));
+                    cmd.Parameters.Add(new OracleParameter("pfname", client.fname));
+                    cmd.Parameters.Add(new OracleParameter("plname", client.lname ?? (object) DBNull.Value));
+                    cmd.Parameters.Add(new OracleParameter("pid_currency", client.id_currency));
+                    cmd.Parameters.Add(new OracleParameter("pid_lang", client.id_lang));
 
-                var clientJson = dbConnection.QueryFirst<string>(funcName, fParams,commandType: CommandType.StoredProcedure);
-                return JsonConvert.DeserializeObject<Client_DTO>(clientJson);
-            }
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                    res = cmd.Parameters["result"].Value.ToString();
+                }
+                catch (OracleException ex)
+                {
+                    var tst = ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+                return JsonConvert.DeserializeObject<Client_DTO>(res);
         }
+        
     }
 }

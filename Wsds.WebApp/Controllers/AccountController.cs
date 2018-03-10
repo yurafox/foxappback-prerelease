@@ -110,33 +110,37 @@ namespace Wsds.WebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAccount([FromBody] User_DTO user)
         {
+            Response.StatusCode = 200; // init status code like always error
+  
             if (!ModelState.IsValid)
-            {
-                Response.StatusCode = 400;
                 return Json(new {message = "данные пользователя не валидны", status = 0});
-            }
+            
 
             var findedUser = await _account.Users.GetUserByName(user.phone);
-            var findedClient = _account.Clients.GetClientByPhone(user.phone);
+            var findedClient = _account.Clients.GetClientByPhone(user.phone).FirstOrDefault();
 
-            if (findedUser != null || findedClient != null)
-            {
-                Response.StatusCode = 400;
-                return Json(new {message = "пользователь уже существует в системе", status = 0});
-            }
+            if (findedUser != null || findedClient?.id != null)
+                return Json(new { message = "пользователь уже существует в системе", status = 0});
+            
 
             // create client
             var client = _account.Users.ToClient(user);
             var clientCreated=_account.Clients.CreateOrUpdateClient(client);
+
             if(clientCreated?.id == null)
-            {
-                Response.StatusCode = 400;
                 return Json(new { message = "ошибка создания пользователя", status = 0 });
-            }
+            
 
             // create identity user
-            var identityWrapper =_account.Users.FastUserIdentityCreate(clientCreated);
-            return Json(identityWrapper);
+            var identityWrapper = await _account.Users.FastUserIdentityCreate(clientCreated);
+            if (identityWrapper.IdentityUser != null && identityWrapper.Status != 0)
+            {
+                Response.StatusCode = 201;
+                return Json(new { content = clientCreated, message=identityWrapper.Message,status = identityWrapper.Status });
+            }
+
+            
+            return Json(new { message = "ошибка создания пользователя", status = 0 });
 
         }
     }

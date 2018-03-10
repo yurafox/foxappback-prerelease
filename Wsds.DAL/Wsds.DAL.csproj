@@ -473,6 +473,7 @@
     <Compile Include="Entities\Variant_Item.cs" />
     <Compile Include="Identity\AppIdentityDbContext.cs" />
     <Compile Include="Identity\AppUser.cs" />
+    <Compile Include="Identity\AppUserManipulationModel.cs" />
     <Compile Include="Infrastructure\DataFieldAttribute.cs" />
     <Compile Include="Infrastructure\Extensions\CollectionExtension.cs" />
     <Compile Include="Infrastructure\Extensions\OrmExtension.cs" />
