@@ -9,5 +9,6 @@ namespace Wsds.DAL.Repository.Abstract
         Product_DTO Product(long id);
         string GetProductDescription(long id);
         IEnumerable<string> GetProductImages(long id);
+        IEnumerable<ProductReview_DTO> GetProductReviews(long id);
     }
 }

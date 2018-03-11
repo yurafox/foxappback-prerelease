@@ -49,5 +49,11 @@ namespace Wsds.WebApp.Controllers
             return Ok(new {images = _prodRepo.GetProductImages(id)});
         }
 
+        [HttpGet("GetProductReviews/{id}")]
+        public IActionResult GetProductReviews(long id)
+        {
+            return Ok(_prodRepo.GetProductReviews(id));
+        }
+
     }
 }

@@ -172,7 +172,7 @@ namespace Wsds.WebApp
                                          "'address' value address_line, 'lat' value lat,'lng' value lng," +
                                          "'openTime' value open_time, 'closeTime' value close_time, " +
                                          "'rating' value rating, 'idFeedbacks' value id_feedbacks) as value from STORE_PLACES t ")
-                    .AddSqlCommandWhere("where t.type=1 " + "and t.lat is not null " + "and t.lng is not null " + "and t.is_active=1")
+                    .AddSqlCommandWhere("where t.type=1  and t.lat is not null  and t.lng is not null  and t.is_active=1")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Store2Json")
@@ -355,7 +355,7 @@ namespace Wsds.WebApp
                     .AddSqlCommandSelect("SELECT t.id, json_data as value from products t") 
                     .AddSqlCommandWhere("where t.id in (6293680, 6280637, 6293680, 6294898, 6325585, 6324182, 6252121, 6202929, 6324216, " +
                                         "6324213, 6161537, 6307814,6343804, 6337167, 6291460, 6316576, 6310491, " +
-                                        "6312913, 6363302, 6337781, 5857818, 6309865, 5936214 )")
+                                        "6312913, 6363302, 6337781, 5857818, 6309865, 5936214, 3051648 )")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetPreserializedJSONField("json_data")
@@ -402,6 +402,16 @@ namespace Wsds.WebApp
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization_Branch.ProductGroups2Json")
+            );
+
+            EntityConfigDictionary.AddConfig("product_reviews",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, JSON_OBJECT ('id' value id, 'idProduct' value id_product, 'idClient' value id_client, " +
+                                         "'rating' value rating, 'reviewText' value review_text, 'user' value user_, 'reviewDate' value review_date, " +
+                                         "'advantages' value advantages, 'disadvantages' value disadvantages, 'upvotes' value upvotes, " +
+                                         "'downvotes' value downvotes,  'idReview' value parent_id) as value from product_reviews t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
             );
 
             services.AddScoped<FoxStoreDBContext>(_ =>
