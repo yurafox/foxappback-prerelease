@@ -4,7 +4,7 @@ using Wsds.DAL.Repository.Abstract;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Stock")]
+    [Route("api/[controller]")]
     public class StockController : Controller
     {
         private readonly IActionRepository _actionRepository;
@@ -15,7 +15,7 @@ namespace Wsds.WebApp.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetActions(IActionRepository actionRepository)
+        public IActionResult GetActions()
         {
             return Ok(_actionRepository.GetActions());
         }
