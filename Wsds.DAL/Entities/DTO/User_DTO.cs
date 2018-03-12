@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Wsds.DAL.Entities.DTO
 {
+    [Serializable]
     public class User_DTO
     {
         [StringLength(50)]
