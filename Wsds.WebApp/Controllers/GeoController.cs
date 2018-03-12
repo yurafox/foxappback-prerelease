@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository.Abstract;
+using Wsds.WebApp.Attributes;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -31,5 +32,17 @@ namespace Wsds.WebApp.Controllers
         [HttpGet("citiesWithStores")]
         public IActionResult GetCitiesWithStores() => Ok(_repo.CitiesWithStores());
 
+        [HttpGet("City")]
+        [Link("srch")]
+        public IActionResult SearchCities([FromQuery] string srch)
+        {
+            return Ok(_repo.SearchCities(srch));
+        }
+
+        [HttpGet("Region/{id}")]
+        public IActionResult GetRegion(long id) => Ok(_repo.Region(id));
+
+        [HttpGet("Region")]
+        public IActionResult GetRegions() => Ok(_repo.Regions);
     }
 }

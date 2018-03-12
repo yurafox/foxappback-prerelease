@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Entities;
+using Wsds.DAL.Entities.Communication;
 using Wsds.DAL.Repository.Abstract;
 
 namespace Wsds.WebApp.Controllers
@@ -33,7 +34,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult CreateCartProduct([FromBody] ClientOrderProduct_DTO item)
         {
             ClientOrderProduct_DTO result = _cartRepo.InsertCartProduct(item);
-            return CreatedAtRoute("", new {id = result.id}, result);
+            return CreatedAtRoute("", new { id = result.id }, result);
         }
 
         [HttpDelete("CartProducts/{id}")]
@@ -61,12 +62,22 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cartRepo.GetClientOrders());
         }
 
-
         [HttpPut("ClientDraftOrder")]
         public IActionResult SaveClientOrder([FromBody] ClientOrder_DTO order)
         {
             return Ok(_cartRepo.SaveClientOrder(order));
         }
 
+        [HttpPost("CalculateCart")]
+        public IActionResult CalculateCart([FromBody] CalculateCartRequest cart)
+        {
+            return Ok(_cartRepo.CalculateCart(cart));
+        }
+
+        [HttpPut("PostOrder")]
+        public IActionResult PostOrder([FromBody] ClientOrder_DTO order)
+        {
+            return Ok(_cartRepo.PostOrder(order));
+        }
     }
 }

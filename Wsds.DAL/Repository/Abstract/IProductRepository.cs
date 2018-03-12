@@ -10,5 +10,6 @@ namespace Wsds.DAL.Repository.Abstract
         string GetProductDescription(long id);
         IEnumerable<string> GetProductImages(long id);
         IEnumerable<Product_DTO> SearchProducts(string srchString);
+        IEnumerable<Product_DTO> SearchProductsInCache(string srchString);
     }
 }

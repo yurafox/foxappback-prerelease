@@ -191,8 +191,22 @@ namespace Wsds.DAL.Repository.Specific
 
         public ClientAddress_DTO UpdateClientAddress(ClientAddress_DTO item)
         {
+            var idClient = 100; //TODO я
             var caCnfg = EntityConfigDictionary.GetConfig("client_address");
             var prov = new EntityProvider<ClientAddress_DTO>(caCnfg);
+
+            if ((bool)item.isPrimary) {
+                foreach (var i in prov.GetItems("t.id_client = :idClient and nvl(is_deleted,0)=0", 
+                                                new OracleParameter("idClient", idClient)
+                                                )
+                        )
+                {
+                    if (i.id != item.id) {
+                        i.isPrimary = false;
+                        prov.UpdateItem(i);
+                    }
+                }
+            }
             return prov.UpdateItem(item);
         }
 

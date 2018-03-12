@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Wsds.DAL.Entities;
+using Wsds.DAL.Entities.Communication;
 
 namespace Wsds.DAL.Repository.Abstract
 {
@@ -18,5 +19,7 @@ namespace Wsds.DAL.Repository.Abstract
         void DeleteCartProduct(long id);
         IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByOrderId(long orderId);
         IEnumerable<ClientOrder_DTO> GetClientOrders();
+        IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj);
+        PostOrderResponse PostOrder(ClientOrder_DTO order);
     }
 }

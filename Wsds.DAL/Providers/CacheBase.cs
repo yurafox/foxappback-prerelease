@@ -59,6 +59,9 @@ namespace Wsds.DAL.Providers
             _preLoadData = preLoadData;
             _entityConfig = EntityConfigDictionary.GetConfig(_entityName);
 
+            TempHash.Clear();
+            ItemsHash.Clear();
+
             if (_preLoadData)
                 LoadData();
 

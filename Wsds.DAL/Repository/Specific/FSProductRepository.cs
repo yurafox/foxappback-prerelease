@@ -75,25 +75,89 @@ namespace Wsds.DAL.Repository.Specific
             return res;
         }
 
+        
+        //This is the fastest search method
+        //TODO: In production system don't forget to change the name of search field to indexed text field, which includes
+        //all nessesary text, describing current item (product name, description, key features etc.)
         public IEnumerable<Product_DTO> SearchProducts(string srchString)
         {
-            string fldName = "name";
+            string fldName = "name";  
             IDictionary<string, OracleParameter> _dict = new Dictionary<string, OracleParameter>();
-            string[] tokens = srchString.Split(' ').Distinct().ToArray();
+            string[] tokens = srchString.Trim().Split(' ').Distinct().ToArray();
             int i = 0;
             foreach (string s in tokens) {
-                var _pname = "param" + i.ToString();
-                var str = "regexp_like (" + fldName + ", :" +_pname + ", 'i')";
-                _dict.Add(str, new OracleParameter(_pname, s));
+                if (s.Trim() != "")
+                { 
+                    var _pname = "param" + i.ToString();
+                    var str = "regexp_like (" + fldName + ", :" +_pname + ", 'i')";
+                    _dict.Add(str, new OracleParameter(_pname, s.Trim()));
+                }
                 i++;
             }
 
+            /* 
+             * Search by entity filter expression - this aproach is very slow because of clob reading :(
+            
             var prodCnfg = EntityConfigDictionary.GetConfig("products");
             var prov = new EntityProvider<Product_DTO>(prodCnfg);
             return prov.GetItems(
                                     string.Join(" and ", _dict.Keys),
                                     _dict.Values.ToArray()
-                                 );
+                                 ); 
+           */
+
+            //And this search rocks :)
+            var stmt = "select t.id from products t " +
+                       "where " + string.Join(" and ", _dict.Keys) +
+                       " and t.price>0 order by nvl(t.popularity,0) desc, t.price desc";
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+
+            List <Product_DTO> res = new List<Product_DTO>();
+
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand(stmt, con))
+            {
+                try
+                {
+                    cmd.Parameters.AddRange(_dict.Values.ToArray());
+                    con.Open();
+                    OracleDataReader dr = cmd.ExecuteReader();
+                    dr.FetchSize = cmd.RowSize * 100;
+                    var j = 0;
+                    while (dr.Read() && (j<=149))
+                    {
+                        var item = _csp.Item(Int64.Parse(dr["id"].ToString()));
+                        if (item != null)
+                        { 
+                            res.Add(item);
+                            j++;
+                        }
+                    };
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+
+            return res;
+        }
+
+        private bool IsFound(string stringToSearch, string stringToFind) {
+            string[] tokens = stringToFind.Split(' ').Distinct().ToArray();
+            foreach (string s in tokens)
+            {
+                var found = stringToSearch.ToLower().Contains(s.ToLower());
+                if (!found)
+                    return false;
+            }
+            return true;
+        }
+        
+        //searching in in-memory cache of ~50k products takes up to 60 seconds :(
+        public IEnumerable<Product_DTO> SearchProductsInCache(string srchString)
+        {
+            return _csp.Items.Values.Where(x => IsFound(x.name, srchString));
         }
     }
 }

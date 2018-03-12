@@ -96,11 +96,11 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("client_address",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'idClient' value id_client, " +
+                    .AddSqlCommandSelect("select t.*, Json_object('id' value id, 'idClient' value id_client, " +
                                          "'idCity' value id_city, 'zip' value zip, 'street' value street, 'lat' value lat, " +
                                          "'lng' value lng, 'isPrimary' value is_primary, 'idCountry' value id_country, " +
                                          "'city' value city, 'bldApp' value bld_app, 'recName' value recname, " +
-                                         "'phone' value phone) as value from client_address")
+                                         "'phone' value phone) as value from client_address t")
                     .AddSqlCommandWhere("where nvl(is_deleted,0)<>1")
                     .SetKeyField("id")
                     .SetSequence("SEQ_CLIENT_ADDRESS")
@@ -289,12 +289,20 @@ namespace Wsds.WebApp
                     .SetSerializerFunc("Serialization.pmtmethod2Json")
                 );
 
+            EntityConfigDictionary.AddConfig("region",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name ) as value from REGIONS t  ")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.region2Json")
+                );
+
             EntityConfigDictionary.AddConfig("city",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name, " +
-                                         "'id_region' value id_region) as value from CITIES t ")
-                    .AddSqlCommandWhere("where t.id in (select sp.id_city from product_store_places psp, " +
-                                        "store_places sp where psp.id_store_place = sp.id and psp.qty > 0)")
+                                         "'idRegion' value id_region) as value from CITIES t ")
+                    .AddSqlCommandWhere("where /*t.id in (select sp.id_city from product_store_places psp, " +
+                                        "store_places sp where psp.id_store_place = sp.id and psp.qty > 0)*/ t.id_region is not null")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.city2Json")
@@ -303,7 +311,7 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("city_with_store",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name, " +
-                                         "'id_region' value id_region) as value from CITIES t ")
+                                         "'idRegion' value id_region) as value from CITIES t ")
                     .AddSqlCommandWhere("where t.id in (select sp.id_city from product_store_places psp, " +
                                         "store_places sp where psp.id_store_place = sp.id and psp.qty > 0 and sp.type=1)")
                     .SetKeyField("id")
@@ -342,7 +350,8 @@ namespace Wsds.WebApp
                     .AddSqlCommandSelect("SELECT t.id, json_data as value from products t") 
                     .AddSqlCommandWhere("where /* t.id in (6293680, 6280637, 6293680, 6294898, 6325585, 6324182, 6252121, 6202929, 6324216, " +
                                         "6324213, 6161537, 6307814,6343804, 6337167, 6291460, 6316576, 6310491, " +
-                                        "6312913, 6363302, 6337781, 5857818, 6309865, 5936214 ) and */ t.price<>0") 
+                                        "6312913, 6363302, 6337781, 5857818, 6309865, 5936214 ) and */ t.price<>0 " +
+                                        " and t.id_manufacturer in (220, 107996, 196, 253, 114733, 47, 109483, 114183, 158, 199, 216)") 
 
                     .SetKeyField("id")
                     .SetValueField("value")
@@ -378,6 +387,7 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("manufacturers", 
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("SELECT t.id, Serialization.Manufacturer2Json(t.id) as value from manufacturers t ")
+                    .AddSqlCommandWhere("where t.id in (select p.id_manufacturer from products p)")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Manufacturer2Json")
@@ -471,6 +481,10 @@ namespace Wsds.WebApp
                     p => new CacheService<City_DTO>
                     ("city", 5000000, redisCache, true), ServiceLifetime.Singleton));
 
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Region_DTO>),
+                    p => new CacheService<Region_DTO>
+                    ("region", 500000000, redisCache, true), ServiceLifetime.Singleton));
+
             services.Add(new ServiceDescriptor(typeof(ICacheService<Lang_DTO>),
                     p => new CacheService<Lang_DTO>
                     ("lang", 50000000, redisCache), ServiceLifetime.Singleton));
@@ -493,7 +507,7 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Manufacturer_DTO>),
                     p => new CacheService<Manufacturer_DTO>
-                    ("manufacturers", 600000, redisCache, false), ServiceLifetime.Singleton));
+                    ("manufacturers", 600000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Quotation_Product_DTO>),
                     p => new CacheService<Quotation_Product_DTO>

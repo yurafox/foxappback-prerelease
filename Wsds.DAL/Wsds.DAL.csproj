@@ -403,8 +403,16 @@
     <Compile Include="Entities\Client.cs" />
     <Compile Include="Entities\Client_Order.cs" />
     <Compile Include="Entities\Client_Prop_Value.cs" />
+    <Compile Include="Entities\Communication\CalculateCartRequest.cs" />
+    <Compile Include="Entities\Communication\CalculateCartResponse.cs" />
+    <Compile Include="Entities\Communication\DeliveryCostResponse.cs" />
+    <Compile Include="Entities\Communication\DeliveryDateRequest.cs" />
+    <Compile Include="Entities\Communication\DeliveryDateResponse.cs" />
+    <Compile Include="Entities\Communication\LogProductViewRequest.cs" />
+    <Compile Include="Entities\Communication\PostOrderResponse.cs" />
     <Compile Include="Entities\Credit_Entity.cs" />
     <Compile Include="Entities\Credit_Product.cs" />
+    <Compile Include="Entities\Communication\DeliveryCostRequest.cs" />
     <Compile Include="Entities\DTO\City_DTO.cs" />
     <Compile Include="Entities\DTO\ClientAddress_DTO.cs" />
     <Compile Include="Entities\DTO\ClientOrderProduct_DTO.cs" />
@@ -431,6 +439,7 @@
     <Compile Include="Entities\DTO\Product_Groups_DTO.cs" />
     <Compile Include="Entities\DTO\Quotation_DTO.cs" />
     <Compile Include="Entities\DTO\Quotation_Product_DTO.cs" />
+    <Compile Include="Entities\DTO\Region_DTO.cs" />
     <Compile Include="Entities\DTO\StorePlace_DTO.cs" />
     <Compile Include="Entities\DTO\Store_DTO.cs" />
     <Compile Include="Entities\DTO\Supplier_DTO.cs" />

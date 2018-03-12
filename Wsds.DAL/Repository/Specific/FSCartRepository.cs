@@ -1,10 +1,16 @@
-﻿using Oracle.ManagedDataAccess.Client;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Wsds.DAL.Entities;
+using Wsds.DAL.Entities.Communication;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
 
@@ -12,8 +18,17 @@ namespace Wsds.DAL.Repository.Specific
 {
     public class FSCartRepository : ICartRepository
     {
-        private IClientRepository _clRepo;
-        public FSCartRepository(IClientRepository clRepo) => _clRepo = clRepo;
+        private readonly IClientRepository _clRepo;
+        private readonly IConfiguration _config;
+        private ICacheService<Quotation_Product_DTO> _csQProduct;
+        public FSCartRepository(IClientRepository clRepo, 
+                                IConfiguration config,
+                                ICacheService<Quotation_Product_DTO> csQProduct)
+        {
+            _clRepo = clRepo;
+            _config = config;
+            _csQProduct = csQProduct;
+        }
 
         public IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByUserId(long userId)
         {
@@ -31,11 +46,29 @@ namespace Wsds.DAL.Repository.Specific
             return prov.GetItems("o.id_client = :idclient", new OracleParameter("idclient", clientId));
         }
 
+
+        private bool CanUpdateOrder(long id) {
+            var idClient = 100; // TODO я
+            var cOrders = EntityConfigDictionary.GetConfig("client_order");
+            var ordersProv = new EntityProvider<ClientOrder_DTO>(cOrders);
+
+            ClientOrder_DTO order = ordersProv.GetItems("id_client = :idclient and id = :idOrder",
+                                                        new OracleParameter("idclient", idClient),
+                                                        new OracleParameter("idOrder", id)
+                                                        )
+                                                .FirstOrDefault();
+
+            return ((order != null) && (order.idStatus == 0)); 
+        }
         public ClientOrderProduct_DTO UpdateCartProduct(ClientOrderProduct_DTO item)
         {
-            var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
-            var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
-            return prov.UpdateItem(item); 
+            if (CanUpdateOrder((long)item.idOrder))
+            {
+                var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
+                var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
+                return prov.UpdateItem(item);
+            }
+            else return null; //if order does not exists => do nothing and return null
         }
 
         public ClientOrderProduct_DTO InsertCartProduct(ClientOrderProduct_DTO item)
@@ -48,9 +81,14 @@ namespace Wsds.DAL.Repository.Specific
 
         public void DeleteCartProduct(long id)
         {
+            
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
-            prov.DeleteItem(id);
+            var item = prov.GetItem(id);
+
+            if (CanUpdateOrder((long)item.idOrder)) { 
+                prov.DeleteItem(id);
+            }
         }
 
         public ClientOrder_DTO GetOrCreateClientDraftOrder() {
@@ -101,7 +139,163 @@ namespace Wsds.DAL.Repository.Specific
         {
             var confOrders = EntityConfigDictionary.GetConfig("client_order");
             var ordersProv = new EntityProvider<ClientOrder_DTO>(confOrders);
-            return ordersProv.UpdateItem(order);
+            if (CanUpdateOrder((long)order.id))
+            {
+                return ordersProv.UpdateItem(order);
+            }
+            else
+                return null;
+        }
+
+        private long MapItem(long g_id, CalculateCartRequest cartObj) {
+            return (long)cartObj.cartContent.FirstOrDefault(
+                            x => _csQProduct.Item((long)x.idQuotationProduct).idProduct == g_id)
+                            .id;
+        }
+
+        public IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj)
+        {
+
+            var itemsList = new List<CalcCartRequestT22_Item>();
+            foreach (var orderLine in cartObj.cartContent) {
+                var s = new CalcCartRequestT22_Item
+                {
+                    g_id = _csQProduct.Item((long)orderLine.idQuotationProduct).idProduct,
+                    qty = orderLine.qty,
+                    price = orderLine.price,
+                    is_set = 0, //TODO we don't support sets for a moment
+                    act = 0 //TODO we don't support promos for a moment
+                };
+                itemsList.Add(s);
+            }
+
+            string clientId = "+11049778713"; //TODO 
+
+            var calcCartRequestT22 = new CalcCartRequestT22
+            {
+                cnum = clientId, 
+                lptype = 2, //TODO ?
+                promocode = cartObj.promoCode,
+                bonpayamm = cartObj.maxBonusCnt,
+                dogrole = 12, //T22 constant 
+                is_cred_prod = cartObj.creditProductId,
+                bait_bon = ((bool)cartObj.usePromoBonus) ? 1 : 0,
+                spec = itemsList
+            };
+
+            var requestJson = JsonConvert.SerializeObject(calcCartRequestT22);
+            //Debug.WriteLine(requestJson);
+
+            string res = "";
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin :result := foxstore.pkg_xml_json.get_SaleSpec_Js(:json, :key); end;", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
+                    cmd.Parameters["result"].Size = 2000;
+                    cmd.Parameters.Add(new OracleParameter("json", requestJson));
+                    cmd.Parameters.Add(new OracleParameter("key", clientId));
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                    res = cmd.Parameters["result"].Value.ToString();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+            //Debug.WriteLine(res);
+            var resp = JsonConvert.DeserializeObject<CalcCartResponseT22>(res);
+
+            IList<CalculateCartResponse> lst = new List<CalculateCartResponse>();
+
+            if (resp != null) { 
+                foreach (var item in resp.outspec) {
+                    var _promoCodeDisc = 0; // (item.promocode == "") ? 0 : Decimal.Parse(item.promocode, new CultureInfo("ru-RU"));
+                    var _bonusDisc = item.bonus_pay;
+                    var _promoBonusDisc = item.bonus_sp_pay;
+                    var _earnedBonus =item.bonus;
+
+                    lst.Add(
+                                new CalculateCartResponse {
+                                    clOrderSpecProdId = MapItem((long)item.g_id, cartObj),
+                                    promoCodeDisc = _promoCodeDisc,
+                                    bonusDisc= _bonusDisc,
+                                    promoBonusDisc = _promoBonusDisc,
+                                    earnedBonus = _earnedBonus
+                                }
+                              );
+                }
+            }
+            return lst;
+        }
+
+
+        public PostOrderResponse PostOrder(ClientOrder_DTO order)
+        {
+
+            long clientId = 100; //TODO я
+            var res = new PostOrderResponse { isSuccess = false, errorMessage = "Your cart is empty" };
+
+            var confOrders = EntityConfigDictionary.GetConfig("client_order");
+            var ordersProv = new EntityProvider<ClientOrder_DTO>(confOrders);
+            var dbOrder = ordersProv.GetItems("t.id_client = :idClient and t.id = :idOrder and t.id_status=0", 
+                                                new OracleParameter("idClient", clientId),
+                                                new OracleParameter("idOrder", order.id)
+                                              )
+                                  .FirstOrDefault();
+
+            if (dbOrder != null) { 
+                var confOrdersSpec = EntityConfigDictionary.GetConfig("client_order_product");
+                var ordersSpecProv = new EntityProvider<ClientOrderProduct_DTO>(confOrdersSpec);
+                var orderSpecCnt = ordersSpecProv.GetItems("t.id_order = :idOrder", new OracleParameter("idOrder", dbOrder.id))
+                                                 .Count();
+
+                if (orderSpecCnt > 0)
+                {
+                    dbOrder.idStatus = 1;
+
+                    var sums = 
+                        ordersSpecProv.GetItems("t.id_order = :idOrder", new OracleParameter("idOrder", dbOrder.id))
+                        .GroupBy(x => x.idOrder)
+                        .Select(x => new {
+                                            _itemsTotal = x.Sum(s => s.qty * s.price),
+                                            _shippingTotal = x.Sum(s => s.loDeliveryCost),
+                                            _promoBonusTotal = x.Sum(s => s.payPromoBonusCnt * s.qty),
+                                            _bonusTotal = x.Sum(s => s.payBonusCnt * s.qty),
+                                            _bonusEarned = x.Sum(s => s.earnedBonusCnt * s.qty)
+                                         }
+                               );
+                    dbOrder.itemsTotal = sums.FirstOrDefault()._itemsTotal;
+                    dbOrder.shippingTotal = sums.FirstOrDefault()._shippingTotal;
+                    dbOrder.promoBonusTotal = sums.FirstOrDefault()._promoBonusTotal;
+                    dbOrder.bonusTotal = sums.FirstOrDefault()._bonusTotal;
+                    dbOrder.bonusEarned = sums.FirstOrDefault()._bonusEarned;
+                    dbOrder.total = dbOrder.itemsTotal + dbOrder.shippingTotal - dbOrder.promoBonusTotal - dbOrder.bonusTotal;
+
+                    if (
+                        (dbOrder.itemsTotal == order.itemsTotal)
+                        &&
+                        (dbOrder.shippingTotal == order.shippingTotal)
+                        &&
+                        (dbOrder.promoBonusTotal == order.promoBonusTotal)
+                        &&
+                        (dbOrder.bonusTotal == order.bonusTotal)
+                       )
+                    {
+                        ordersProv.UpdateItem(dbOrder);
+                        return new PostOrderResponse { isSuccess = true, errorMessage = "" };
+                    }
+                    else
+                    {
+                        return new PostOrderResponse { isSuccess = false, errorMessage = "Your order has been changed from another device" };
+                    };
+
+                }
+            };
+            return res;
         }
     }
 }

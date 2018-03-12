@@ -8,6 +8,7 @@ using Wsds.DAL.Repository.Abstract;
 using Wsds.WebApp.Attributes;
 using Newtonsoft.Json;
 using Wsds.DAL.Entities;
+using Wsds.DAL.Entities.Communication;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -75,14 +76,9 @@ namespace Wsds.WebApp.Controllers
             return Ok( _cliRepo.GetClientBonusesExpireInfo(clientId));
         }
 
-        public class LogProductViewModel
-        {
-            public long idProduct { get; set; }
-            public string viewParams { get; set; }
-        }
 
         [HttpPost("LogProductView")]
-        public IActionResult CreateCartProduct([FromBody] LogProductViewModel model)
+        public IActionResult CreateCartProduct([FromBody] LogProductViewRequest model)
         {
             _cliRepo.LogProductView(model.idProduct, model.viewParams);
             return Created("", null);

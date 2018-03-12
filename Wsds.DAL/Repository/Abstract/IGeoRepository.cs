@@ -11,9 +11,11 @@ namespace Wsds.DAL.Repository.Abstract
     {
         IEnumerable<City_DTO> Cities { get; }
         IEnumerable<City_DTO> CitiesWithStores();
-
+        IEnumerable<Region_DTO> Regions { get; }
+        Region_DTO Region(long id);
         City_DTO City(long id);
         IEnumerable<Country_DTO> Countries { get; }
         Country_DTO Country(long id);
+        IEnumerable<City_DTO> SearchCities(string srhString);
     }
 }

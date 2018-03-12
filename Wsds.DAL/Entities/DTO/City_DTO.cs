@@ -11,6 +11,6 @@ namespace Wsds.DAL.Entities
     {
         public long? id { get; set; }
         public string name { get; set; }
-        public long? id_Region { get; set; }
+        public long? idRegion { get; set; }
     }
 }
