@@ -406,6 +406,8 @@
     <Compile Include="Entities\Credit_Entity.cs" />
     <Compile Include="Entities\Credit_Product.cs" />
     <Compile Include="Entities\DTO\City_DTO.cs" />
+    <Compile Include="Entities\DTO\NoveltyDetails_DTO.cs" />
+    <Compile Include="Entities\DTO\Novelty_DTO.cs" />
     <Compile Include="Entities\DTO\ProductReview_DTO.cs" />
     <Compile Include="Entities\DTO\ClientAddress_DTO.cs" />
     <Compile Include="Entities\DTO\ClientOrderProduct_DTO.cs" />
@@ -433,6 +435,7 @@
     <Compile Include="Entities\DTO\Quotation_DTO.cs" />
     <Compile Include="Entities\DTO\Quotation_Product_DTO.cs" />
     <Compile Include="Entities\DTO\StorePlace_DTO.cs" />
+    <Compile Include="Entities\DTO\StoreReview_DTO.cs" />
     <Compile Include="Entities\DTO\Store_DTO.cs" />
     <Compile Include="Entities\DTO\Supplier_DTO.cs" />
     <Compile Include="Entities\DTO\User_DTO.cs" />
@@ -505,12 +508,14 @@
     <Compile Include="Repository\Abstract\ICurrencyRepository.cs" />
     <Compile Include="Repository\Abstract\IDictionaryRepository.cs" />
     <Compile Include="Repository\Abstract\IMeasureUnitRepository.cs" />
+    <Compile Include="Repository\Abstract\INoveltyRepository.cs" />
     <Compile Include="Repository\Abstract\IOrdersRepository.cs" />
     <Compile Include="Repository\Abstract\IProductGroupRepository.cs" />
     <Compile Include="Repository\Abstract\IProductRepository.cs" />
     <Compile Include="Repository\Abstract\IQuotationProductRepository.cs" />
     <Compile Include="Repository\Abstract\IQuotationRepository.cs" />
     <Compile Include="Repository\Abstract\IRoleRepository.cs" />
+    <Compile Include="Repository\Specific\FSNoveltyRepository.cs" />
     <Compile Include="Services\Abstract\IAuthSender.cs" />
     <Compile Include="Services\Abstract\ISmsService.cs" />
     <Compile Include="Repository\Abstract\ISupplierRepository.cs" />

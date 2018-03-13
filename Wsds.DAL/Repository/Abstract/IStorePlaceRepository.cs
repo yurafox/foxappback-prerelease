@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Wsds.DAL.Entities;
+using Wsds.DAL.Entities.DTO;
 
 namespace Wsds.DAL.Repository.Abstract
 {
@@ -13,5 +14,7 @@ namespace Wsds.DAL.Repository.Abstract
         StorePlace_DTO StorePlace(long id);
 
         IEnumerable<Store_DTO> GetStores();
+        IEnumerable<StoreReview_DTO> GetStoreReviews();
+        IEnumerable<StoreReview_DTO> GetStoreReviewsByStoreId(long id);
     }
 }

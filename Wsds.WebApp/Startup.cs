@@ -406,12 +406,26 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("product_reviews",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("SELECT t.id, JSON_OBJECT ('id' value id, 'idProduct' value id_product, 'idClient' value id_client, " +
-                                         "'rating' value rating, 'reviewText' value review_text, 'user' value user_, 'reviewDate' value review_date, " +
-                                         "'advantages' value advantages, 'disadvantages' value disadvantages, 'upvotes' value upvotes, " +
-                                         "'downvotes' value downvotes,  'idReview' value parent_id) as value from product_reviews t")
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.ProductReviews2Json(t.id) as value from product_reviews t")
                     .SetKeyField("id")
                     .SetValueField("value")
+                    .SetSerializerFunc("Serialization.ProductReviews2Json")
+            );
+
+            EntityConfigDictionary.AddConfig("store_reviews",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.StoreReviews2Json(t.id) as value from store_reviews t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.StoreReviews2Json")
+            );
+
+            EntityConfigDictionary.AddConfig("novelty_details",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.NoveltyDetails2Json(t.id) as value from novelty_details t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.NoveltyDetails2Json")
             );
 
             services.AddScoped<FoxStoreDBContext>(_ =>
@@ -460,6 +474,7 @@ namespace Wsds.WebApp
             services.AddScoped<ICrypto, FSCryptoProvider>();
             services.AddScoped<IAuthSender,FSAuthSender>();
             services.AddScoped<ISmsService, FSSmsService>();
+            services.AddScoped<INoveltyRepository, FSNoveltyRepository>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
@@ -538,6 +553,18 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<CreditProduct_DTO>),
                 p => new CacheService<CreditProduct_DTO>
                     ("credit_product", 7200000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<ProductReview_DTO>),
+                p => new CacheService<ProductReview_DTO>
+                    ("product_reviews", 1000000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<StoreReview_DTO>),
+                p => new CacheService<StoreReview_DTO>
+                    ("store_reviews", 1000000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<NoveltyDetails_DTO>),
+                p => new CacheService<NoveltyDetails_DTO>
+                    ("novelty_details", 1000000, redisCache, true), ServiceLifetime.Singleton));
         }
 
         public void Configure(IApplicationBuilder app,
