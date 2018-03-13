@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace Wsds.DAL.Entities.DTO
 {
+    [Serializable]
     public class User_DTO
     {
-        [Required]
-        [StringLength(20)]
+        [StringLength(50)]
         public string name { get; set; }
         [Required]
         [RegularExpression("^380[0-9]{9}$")]
@@ -19,16 +19,16 @@ namespace Wsds.DAL.Entities.DTO
         public string login { get; set; }
         [EmailAddress]
         public string email { get; set; }
+      
         [Required]
         [StringLength(20)]
         public string fname { get; set; }
-        [Required]
+        
         [StringLength(20)]
         public string lname { get; set; }
         public string appKey { get; set; }
         [Required]
         public IDictionary<string,string> userSetting { get; set; }
-        public long?[] favoriteStoresId { get; set; }
 
     }
 }

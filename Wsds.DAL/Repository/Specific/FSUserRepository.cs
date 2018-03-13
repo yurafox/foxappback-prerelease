@@ -49,7 +49,7 @@ namespace Wsds.DAL.Repository.Specific
             if (findedUser != null) return findedUser;
 
 
-            var result = await UserEngine.CreateAsync(user, pswd.ToLower());
+            var result = await UserEngine.CreateAsync(user, pswd);
             if (!result.Succeeded)
                 throw new IdentityNotMappedException(result.Errors.First().Description);
 
@@ -72,7 +72,7 @@ namespace Wsds.DAL.Repository.Specific
         public async Task<(string, byte)> UserVerifyStrategy(string phone, AppUser user, Client_DTO client)
         {
             if (user == null)
-                return (client == null) ? AbsentUserStrategy() : await OnlyUserAbsentStrategy(client);
+                return (client?.id == null) ? AbsentUserStrategy() : await OnlyUserAbsentStrategy(client);
 
             return (!String.IsNullOrEmpty(user.PasswordHash))
                 ? UserInSystemStrategy()
@@ -96,12 +96,12 @@ namespace Wsds.DAL.Repository.Specific
         }
 
 
-        public User_DTO Swap(Client_DTO client, IEnumerable<StorePlace_DTO> stores, Func<string, string> encrypt)
+        public User_DTO Swap(Client_DTO client, Func<string, string> encrypt)
         {
             var dict = new Dictionary<string, string>
             {
-                { "currency", (client.id_currency ?? 0).ToString() },
-                { "lang", (client.id_lang ?? 1).ToString()}
+                { "currency", (client.id_currency ?? 4).ToString() }, // 4 - UAH
+                { "lang", (client.id_lang ?? 1).ToString()} // 1 - RUS
             };
 
 
@@ -109,23 +109,49 @@ namespace Wsds.DAL.Repository.Specific
             {
                 email = client.email,
                 appKey = (client.appKey != null) ? encrypt(client.appKey) : "",
-                login = client.login,
+                //login = client.login,
                 name = client.name,
                 phone = client.phone,
-                userSetting = dict,
-                favoriteStoresId = stores?.Select(s => s.id).ToArray()
+                fname = client.fname,
+                lname = client.lname,
+                userSetting = dict
             };
 
             return user;
         }
-
-
         public async Task<bool> CheckUser(string userName, string pswd)
         {
             var findedUser = await UserEngine.FindByNameAsync(userName.ToLower());
             if (findedUser == null) return false;
 
             return await UserEngine.CheckPasswordAsync(findedUser, pswd);
+        }
+        public Client_DTO ToClient(User_DTO user)
+        {
+            if (user == null)
+                return null;
+
+            return new Client_DTO()
+            {
+                phone = user.phone,
+                email = user.email,
+                fname = user.fname,
+                lname = user.lname,
+                id_currency = String.IsNullOrEmpty(user.userSetting["currency"]) ? 4 : // 4 - UAH
+                                 Convert.ToInt32(user.userSetting["currency"]),
+
+                id_lang = String.IsNullOrEmpty(user.userSetting["lang"]) ? 1 : // 1 - RUS
+                                 Convert.ToInt32(user.userSetting["lang"]),
+            };
+        }
+
+        public async Task<AppUserManipulationModel> FastUserIdentityCreate(Client_DTO client)
+        {
+            var data = await OnlyUserAbsentStrategy(client);
+            var appUserModel = new AppUserManipulationModel() {Message = data.Item1, Status = data.Item2};
+            if (data.Item2 == 2) appUserModel.IdentityUser = await GetUserByName(client.phone);
+
+            return appUserModel;
         }
 
         #region private behaviors
@@ -150,7 +176,22 @@ namespace Wsds.DAL.Repository.Specific
         }
         private async Task<(string, byte)> OnlyUserAbsentStrategy(Client_DTO client)
         {
-            var appUser = new AppUser() { UserName = client.phone, Card = (long)client.id, PhoneNumber = client.phone};
+            // get card for identity like number
+            long card = 0;
+            if (!String.IsNullOrEmpty(client.barcode))
+            {
+                string barCode = client.barcode.Substring(1);
+                card = Convert.ToInt64(barCode);
+            }
+            
+
+            var appUser = new AppUser()
+            {
+                UserName = client.phone,
+                Card = card,
+                PhoneNumber = client.phone,
+                Email = client.email
+            };
             // generate random temp password for sms
             var tempPswd = _smsService.GetAuthTempPswd(8);
 

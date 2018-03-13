@@ -1,6 +1,7 @@
 ﻿using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Wsds.DAL.Repository.Abstract;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Dapper;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Configuration;
 using System.Data;
@@ -240,19 +242,20 @@ namespace Wsds.DAL.Repository.Specific
             var clCnfg = EntityConfigDictionary.GetConfig("store_place");
             var prov = new EntityProvider<StorePlace_DTO>(clCnfg);
             return prov.GetItems("id in (select f.id_store_places from favorite_stores f " +
-                                 "where f.id_client = :email)", new OracleParameter("id_client", clientId));
+                                 "where f.id_client = :id_client)", new OracleParameter("id_client", clientId));
         }
+
 
         public IEnumerable<Client_DTO> GetClientByPhone(string phone)
         {
             string res = "";
             var ConnString = _config.GetConnectionString("MainDataConnection");
             using (var con = new OracleConnection(ConnString))
-            using (var cmd = new OracleCommand("begin :result := app_core.getclientbyphone(:phonenum); end;", con))  
+            using (var cmd = new OracleCommand("begin :result := app_core.getclientbyphone(:phonenum); end;", con))
             {
                 try
                 {
-                    cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output); 
+                    cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
                     cmd.Parameters["result"].Size = 2000;
                     cmd.Parameters.Add(new OracleParameter("phonenum", phone));
                     con.Open();
@@ -266,5 +269,44 @@ namespace Wsds.DAL.Repository.Specific
             };
             return new List<Client_DTO> { JsonConvert.DeserializeObject<Client_DTO>(res) };
         }
+
+        public Client_DTO CreateOrUpdateClient(Client_DTO client)
+        {
+            if (client == null) return null;
+
+            string res = "";
+            var connString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(connString))
+            using (var cmd = new OracleCommand("begin :result:= app_core.createorupdateclient(:pphone,:pcard,:pemail,:pfname," +
+                                               ":plname,:pid_currency,:pid_lang);end;", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
+                    cmd.Parameters["result"].Size = 2000;
+                    cmd.Parameters.Add(new OracleParameter("pphone", client.phone));
+                    cmd.Parameters.Add(new OracleParameter("pcard", client.barcode ?? (object) DBNull.Value));
+                    cmd.Parameters.Add(new OracleParameter("pemail", client.email));
+                    cmd.Parameters.Add(new OracleParameter("pfname", client.fname));
+                    cmd.Parameters.Add(new OracleParameter("plname", client.lname ?? (object) DBNull.Value));
+                    cmd.Parameters.Add(new OracleParameter("pid_currency", client.id_currency));
+                    cmd.Parameters.Add(new OracleParameter("pid_lang", client.id_lang));
+
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                    res = cmd.Parameters["result"].Value.ToString();
+                }
+                catch (OracleException ex)
+                {
+                    var tst = ex;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+                return JsonConvert.DeserializeObject<Client_DTO>(res);
+        }
+        
     }
 }

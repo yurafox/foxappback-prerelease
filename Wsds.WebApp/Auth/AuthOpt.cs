@@ -39,14 +39,15 @@ namespace Wsds.WebApp.Auth
             return tokenOptions;
         }
 
-        public static string GetToken(AppUser appUser,IEnumerable<string> roles=null)
+        public static string GetToken(AppUser appUser, long? clientId, IEnumerable<string> roles=null)
         {
             var dateNow = DateTime.UtcNow;
 
             var claims = new List<Claim>
             {
-                new Claim("userName", appUser.UserName.ToLower()),
-                new Claim("clientId",appUser.Card.ToString())
+                new Claim("phone", appUser.UserName.ToLower()),
+                new Claim("card",appUser.Card.ToString()),
+                new Claim("clientId",clientId.ToString())
             };
 
             if(roles!=null)

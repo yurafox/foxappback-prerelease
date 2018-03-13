@@ -1,9 +1,12 @@
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using Wsds.DAL.Entities.DTO;
 using Wsds.DAL.Infrastructure.Facade;
@@ -11,6 +14,7 @@ using Wsds.WebApp.Auth;
 using Wsds.WebApp.Auth.Protection;
 using Wsds.WebApp.Filters;
 using Wsds.WebApp.Models;
+using Wsds.WebApp.WebExtensions;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -41,18 +45,17 @@ namespace Wsds.WebApp.Controllers
                     //TODO: check this role method when we will be create admin panel
                     //var roles = await _userRepository.UserEngine.GetRolesAsync(user);
 
-                    var jToken = AuthOpt.GetToken(user);
-
                     // get clients
-                    var client = _account.Clients.Client(user.Card);
-                    if (client != null)
+                    var client = _account.Clients.GetClientByPhone(user.UserName).FirstOrDefault();
+                    if (client?.id != null)
                     {
+                        var jToken = AuthOpt.GetToken(user,client.id);
                         // get favorite stores
-                        var favoriteStores = _account.Clients.GetFavoriteStore(user.Card);
+                        //var favoriteStores = _account.Clients.GetFavoriteStore(user.Card);
                         var responseObj = new
                         {
                             token = jToken,
-                            user = _account.Users.Swap(client, favoriteStores, _crypto.Encrypt)
+                            user = _account.Users.Swap(client,_crypto.Encrypt)
                         };
 
                         await Response.WriteAsync(JsonConvert.SerializeObject(responseObj,
@@ -72,14 +75,14 @@ namespace Wsds.WebApp.Controllers
         [PullToken]
         public async Task Get()
         {
-            var tokenModel = HttpContext.Items["token"] as TokenModel;
-            if (tokenModel != null && tokenModel.ValidateDataFromToken())
+            var tokenModel = HttpContext.GeTokenModel();
+            if (tokenModel != null)
             {
-                var client = _account.Clients.Client(tokenModel.Client);
-                if (client != null)
+                var client = _account.Clients.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
+                if (client?.id != null)
                 {
-                    var favoriteStores = _account.Clients.GetFavoriteStore(tokenModel.Client);
-                    var user = _account.Users.Swap(client, favoriteStores, _crypto.Encrypt);
+                    //var favoriteStores = _account.Clients.GetFavoriteStore(tokenModel.Client);
+                    var user = _account.Users.Swap(client,_crypto.Encrypt);
 
                     await Response.WriteAsync(JsonConvert.SerializeObject(user,
                         new JsonSerializerSettings {Formatting = Formatting.Indented}));
@@ -109,23 +112,108 @@ namespace Wsds.WebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAccount([FromBody] User_DTO user)
         {
+            Response.StatusCode = 200; // init status code like always error
+  
             if (!ModelState.IsValid)
-            {
-                Response.StatusCode = 400;
                 return Json(new {message = "данные пользователя не валидны", status = 0});
-            }
+            
 
             var findedUser = await _account.Users.GetUserByName(user.phone);
-            var findedClient = _account.Clients.GetClientByPhone(user.phone);
+            var findedClient = _account.Clients.GetClientByPhone(user.phone).FirstOrDefault();
 
-            if (findedUser != null || findedClient != null)
+            if (findedUser != null || findedClient?.id != null)
+                return Json(new { message = "пользователь уже существует в системе", status = 0});
+            
+
+            // create client
+            var client = _account.Users.ToClient(user);
+            var clientCreated=_account.Clients.CreateOrUpdateClient(client);
+
+            if(clientCreated?.id == null)
+                return Json(new { message = "ошибка создания пользователя", status = 0 });
+            
+
+            // create identity user
+            var identityWrapper = await _account.Users.FastUserIdentityCreate(clientCreated);
+            if (identityWrapper.IdentityUser != null && identityWrapper.Status != 0)
             {
-                Response.StatusCode = 400;
-                return Json(new {message = "пользователь уже существует в системе", status = 0});
+                Response.StatusCode = 201;
+                return Json(new { content = _account.Users.Swap(clientCreated, _crypto.Encrypt), message=identityWrapper.Message,status = identityWrapper.Status });
             }
 
-            //TODO:logic create with typhoon sync
-            return null;
+            
+            return Json(new { message = "ошибка создания пользователя", status = 0 });
+
+        }
+
+        [Authorize]
+        [HttpPut]
+        [PullToken]
+        public async Task<IActionResult> EditUser([FromBody] User_DTO user)
+        {
+            Response.StatusCode = 200;
+            var tokenModel = HttpContext.GeTokenModel();
+            if (tokenModel != null && user.phone == tokenModel.Phone)
+            {          
+
+                if (!ModelState.IsValid){
+                    return Json(new { message = "данные пользователя не валидны", status = 0 });
+                }
+
+
+                var findedUser = await _account.Users.GetUserByName(user.phone);
+                var findedClient = _account.Clients.GetClientByPhone(user.phone).FirstOrDefault();
+
+                if (findedUser == null || findedClient?.id == null)
+                    return Json(new { message = "ошибка редактирования пользователя", status = 0 });
+
+                // update client
+                var client = _account.Users.ToClient(user);
+                var clientCreated = _account.Clients.CreateOrUpdateClient(client);
+
+                if (clientCreated?.id == null)
+                    return Json(new { message = "ошибка создания пользователя", status = 0 });
+
+                // update user
+                findedUser.Email = clientCreated.email;
+                findedUser.NormalizedEmail = clientCreated.email.ToUpper();
+                var identityUser = await _account.Users.UserEngine.UpdateAsync(findedUser);
+
+                if (identityUser == null)
+                    return Json(new { message = "ошибка создания identity пользователя", status = 0 });
+
+                return Json(new { content = _account.Users.Swap(clientCreated, _crypto.Encrypt), message = "пользователь успешно обновлен", status = 2 });
+            }
+
+            Response.StatusCode = 401;
+            return Json(new { message = "ошибка авторизации пользователя", status = 0 });
+        }
+
+        [Authorize]
+        [HttpPost("changePass")]
+        [PullToken]
+        public async Task<IActionResult> ChangePassword([FromBody] PasswdModel passwd)
+        {
+            Response.StatusCode = 200;
+            var tokenModel = HttpContext.GeTokenModel();
+            if (tokenModel != null)
+            {
+                if (!ModelState.IsValid){
+                    return Json(new { message = "данные не валидны", status = 0 });
+                }
+
+                var resultCompare = await _account.Users.CheckUser(tokenModel.Phone, passwd.Password);
+                if (!resultCompare) return Json(new { message = "не удалось связать пользователя и пароль", status = 0 });
+
+                var identityUser = await _account.Users.GetUserByName(tokenModel.Phone);
+                var result = await _account.Users.UserEngine.ChangePasswordAsync(identityUser, passwd.Password, passwd.NewPassword);
+                if(!result.Succeeded) return Json(new { message = "ошибка смены пароля", status = 0 });
+
+                return Json(new { message = "пароль успешно изменен", status = 2 });
+            }
+
+            Response.StatusCode = 401;
+            return Json(new { message = "ошибка авторизации пользователя", status = 0 });
         }
     }
 }

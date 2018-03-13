@@ -94,6 +94,61 @@ namespace Wsds.WebApp
             var redisCache = new Context(redisConfig);
             services.AddSingleton(redisCache);
 
+            EntityConfigDictionary.AddConfig("actions",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'name' value name," +
+                                         "'dateStart' value date_start, 'dateEnd' value date_end," +
+                                         "'img_url' value img_url,'priority' value priority," +
+                                         "'isActive' value is_active, 'sketch_content' value sketch_content," +
+                                         "'action_content' value action_content) as value from actions")
+                    .AddSqlCommandWhere("where is_active = 1")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Action2Json")
+            );
+
+            EntityConfigDictionary.AddConfig("pages",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'name' value name,'content' value content) as value " +
+                                         "from pages")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Page2Json")
+            );
+
+            EntityConfigDictionary.AddConfig("poll_question_answers",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'idPollQuestions' value id_poll_questions,'answer' value answer) as value " +
+                                         "from poll_question_answers")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+            );
+
+            EntityConfigDictionary.AddConfig("poll_questions",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'idPoll' value id_poll," +
+                                         "'order' value priority, 'question' value question_text,'answerType' value answer_type) as value from poll_questions")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+            );
+
+            EntityConfigDictionary.AddConfig("polls",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'dateStart' value date_start," +
+                                         "'dateEnd' value date_end, 'urlBanner' value banner_url,'bannerText' value banner_text) as value from polls")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+            );
+
+            EntityConfigDictionary.AddConfig("client_poll_answers",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'idPoll' value id_poll," +
+                                         "'idPollQuestions' value id_poll_question, 'idClient' value id_client," +
+                                         "'clientAnswer' value client_answer) as value from client_poll_answers")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+            );
+
             EntityConfigDictionary.AddConfig("client_address",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.*, Json_object('id' value id, 'idClient' value id_client, " +
@@ -488,6 +543,9 @@ namespace Wsds.WebApp
             services.AddScoped<IAuthSender,FSAuthSender>();
             services.AddScoped<ISmsService, FSSmsService>();
             services.AddScoped<INoveltyRepository, FSNoveltyRepository>();
+            services.AddScoped<IPollRepository, FSPollRepository>();
+            services.AddScoped<IPageRepository, FSPageRepository>();
+            services.AddScoped<IActionRepository, FSActionRepository>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
@@ -582,6 +640,14 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<NoveltyDetails_DTO>),
                 p => new CacheService<NoveltyDetails_DTO>
                     ("novelty_details", 1000000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Page_DTO>),
+                p => new CacheService<Page_DTO>
+                    ("pages", 100000000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Action_DTO>),
+                p => new CacheService<Action_DTO>
+                    ("actions", 100000000, redisCache, true), ServiceLifetime.Singleton));
         }
 
         public void Configure(IApplicationBuilder app,

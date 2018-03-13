@@ -413,6 +413,7 @@
     <Compile Include="Entities\Credit_Entity.cs" />
     <Compile Include="Entities\Credit_Product.cs" />
     <Compile Include="Entities\Communication\DeliveryCostRequest.cs" />
+    <Compile Include="Entities\DTO\Action_DTO.cs" />
     <Compile Include="Entities\DTO\City_DTO.cs" />
     <Compile Include="Entities\DTO\NoveltyDetails_DTO.cs" />
     <Compile Include="Entities\DTO\Novelty_DTO.cs" />
@@ -420,6 +421,8 @@
     <Compile Include="Entities\DTO\ClientAddress_DTO.cs" />
     <Compile Include="Entities\DTO\ClientOrderProduct_DTO.cs" />
     <Compile Include="Entities\DTO\ClientOrder_DTO.cs" />
+    <Compile Include="Entities\DTO\ClientPollAnswer_DTO.cs" />
+    <Compile Include="Entities\DTO\ClientPoolAnswers.cs" />
     <Compile Include="Entities\DTO\Client_DTO.cs" />
     <Compile Include="Entities\DTO\Country_DTO.cs" />
     <Compile Include="Entities\DTO\CreditProduct_DTO.cs" />
@@ -436,7 +439,11 @@
     <Compile Include="Entities\DTO\LoSupplEntity_DTO.cs" />
     <Compile Include="Entities\DTO\LoTrackLog.cs" />
     <Compile Include="Entities\DTO\Measure_Unit_DTO.cs" />
+    <Compile Include="Entities\DTO\Page_DTO.cs" />
     <Compile Include="Entities\DTO\PersonInfo_DTO.cs" />
+    <Compile Include="Entities\DTO\PollQuestionAnswer_DTO.cs" />
+    <Compile Include="Entities\DTO\PollQuestion_DTO.cs" />
+    <Compile Include="Entities\DTO\Poll_DTO.cs" />
     <Compile Include="Entities\DTO\ProductStorePlace_DTO.cs" />
     <Compile Include="Entities\DTO\ProductSupplCreditGrade_DTO.cs" />
     <Compile Include="Entities\DTO\Product_Groups_DTO.cs" />
@@ -486,6 +493,7 @@
     <Compile Include="Entities\Variant_Item.cs" />
     <Compile Include="Identity\AppIdentityDbContext.cs" />
     <Compile Include="Identity\AppUser.cs" />
+    <Compile Include="Identity\AppUserManipulationModel.cs" />
     <Compile Include="Infrastructure\DataFieldAttribute.cs" />
     <Compile Include="Infrastructure\Extensions\CollectionExtension.cs" />
     <Compile Include="Infrastructure\Extensions\OrmExtension.cs" />
@@ -506,6 +514,7 @@
     <Compile Include="Providers\EntityConfigDictionary.cs" />
     <Compile Include="Providers\EntityProvider.cs" />
     <Compile Include="Providers\SingletonProvider.cs" />
+    <Compile Include="Repository\Abstract\IActionRepository.cs" />
     <Compile Include="Repository\Abstract\ICartRepository.cs" />
     <Compile Include="Repository\Abstract\IClientRepository.cs" />
     <Compile Include="Repository\Abstract\ICreditRepository.cs" />
@@ -519,12 +528,17 @@
     <Compile Include="Repository\Abstract\IMeasureUnitRepository.cs" />
     <Compile Include="Repository\Abstract\INoveltyRepository.cs" />
     <Compile Include="Repository\Abstract\IOrdersRepository.cs" />
+    <Compile Include="Repository\Abstract\IPageRepository.cs" />
+    <Compile Include="Repository\Abstract\IPollRepository.cs" />
     <Compile Include="Repository\Abstract\IProductGroupRepository.cs" />
     <Compile Include="Repository\Abstract\IProductRepository.cs" />
     <Compile Include="Repository\Abstract\IQuotationProductRepository.cs" />
     <Compile Include="Repository\Abstract\IQuotationRepository.cs" />
     <Compile Include="Repository\Abstract\IRoleRepository.cs" />
     <Compile Include="Repository\Specific\FSNoveltyRepository.cs" />
+    <Compile Include="Repository\Specific\FSActionRepository.cs" />
+    <Compile Include="Repository\Specific\FSPageRepository.cs" />
+    <Compile Include="Repository\Specific\FSPollRepository.cs" />
     <Compile Include="Services\Abstract\IAuthSender.cs" />
     <Compile Include="Services\Abstract\ISmsService.cs" />
     <Compile Include="Repository\Abstract\ISupplierRepository.cs" />
