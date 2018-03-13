@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,7 @@ namespace Wsds.DAL.Entities
         public Prop_DTO id_Prop { get; set; }
         public string  prop_Value_Str { get; set; }
         public decimal? prop_Value_Number { get; set; }
+        //[JsonConverter(typeof(BooleanJsonConverter))]
         public bool? prop_Value_Bool { get; set; }
         //public long? prop_Value_Enum { get; set; }
         public Prop_Enum_List_DTO prop_Value_Enum { get; set; }
