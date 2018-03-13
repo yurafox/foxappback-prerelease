@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
+using Wsds.DAL.Entities.DTO;
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -26,11 +27,34 @@ namespace Wsds.DAL.Repository.Specific
             return prov.GetItems("id_Quotation_Product = :idQuot and qty>0", new OracleParameter("a", idQuot));
         }
 
+        public IEnumerable<Store_DTO> GetStores()
+        {
+            var cnfg = EntityConfigDictionary.GetConfig("stores");
+            var prov = new EntityProvider<Store_DTO>(cnfg);
+            return prov.GetItems();
+        }
+
         public ProductStorePlace_DTO ProductStorePlace(long id)
         {
             throw new NotImplementedException();
         }
 
         public StorePlace_DTO StorePlace(long id) => _csStorePlace.Item(id);
+
+        public IEnumerable<StoreReview_DTO> GetStoreReviewsByStoreId(long id)
+        {
+            var cnfg = EntityConfigDictionary.GetConfig("store_reviews");
+            var prov = new EntityProvider<StoreReview_DTO>(cnfg);
+            var reviews = prov.GetItems("id_store = :id", new OracleParameter("a", id));
+            return reviews;
+        }
+
+        public IEnumerable<StoreReview_DTO> GetStoreReviews()
+        {
+            var cnfg = EntityConfigDictionary.GetConfig("store_reviews");
+            var prov = new EntityProvider<StoreReview_DTO>(cnfg);
+            var reviews = prov.GetItems();
+            return reviews;
+        }
     }
 }

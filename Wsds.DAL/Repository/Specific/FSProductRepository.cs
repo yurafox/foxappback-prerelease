@@ -159,5 +159,13 @@ namespace Wsds.DAL.Repository.Specific
         {
             return _csp.Items.Values.Where(x => IsFound(x.name, srchString));
         }
+
+        public IEnumerable<ProductReview_DTO> GetProductReviews(long id)
+        {
+            var cnfg = EntityConfigDictionary.GetConfig("product_reviews");
+            var prov = new EntityProvider<ProductReview_DTO>(cnfg);
+            var reviews = prov.GetItems("id_product = :id", new OracleParameter("id", id));
+            return reviews;
+        }
     }
 }

@@ -17,6 +17,12 @@ namespace Wsds.WebApp.Controllers
         private IStorePlaceRepository _spRepo;
         public StorePlaceController(IStorePlaceRepository spRepo) => _spRepo = spRepo;
 
+        [HttpGet("Stores")]
+        public IActionResult GetStores()
+        {
+            return Ok(_spRepo.GetStores());
+        }
+
         [HttpGet("StorePlace/{id}")]
         public IActionResult GetStorePlaceById(long id) {
             return Ok(_spRepo.StorePlace(id));
@@ -33,6 +39,18 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetStorePlaces()
         {
             return Ok(_spRepo.StorePlaces);
+        }
+
+        [HttpGet("GetStoreReviewsByStoreId/{id}")]
+        public IActionResult GetStoreReviewsByStoreId(long id)
+        {
+            return Ok(_spRepo.GetStoreReviewsByStoreId(id));
+        }
+
+        [HttpGet("GetStoreReviews")]
+        public IActionResult GetStoreReviews()
+        {
+            return Ok(_spRepo.GetStoreReviews());
         }
 
     }

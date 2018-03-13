@@ -165,6 +165,19 @@ namespace Wsds.WebApp
                     .SetSerializerFunc("Serialization.Store_place2Json")
                 );
 
+            EntityConfigDictionary.AddConfig("stores",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id," +
+                                         "'idCity' value id_city," +
+                                         "'address' value address_line, 'lat' value lat,'lng' value lng," +
+                                         "'openTime' value open_time, 'closeTime' value close_time, " +
+                                         "'rating' value rating, 'idFeedbacks' value id_feedbacks) as value from STORE_PLACES t ")
+                    .AddSqlCommandWhere("where t.type=1  and t.lat is not null  and t.lng is not null  and t.is_active=1")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Store2Json")
+                );
+
             EntityConfigDictionary.AddConfig("product_store_place",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.*, " +
@@ -402,6 +415,30 @@ namespace Wsds.WebApp
                     .SetSerializerFunc("Serialization_Branch.ProductGroups2Json")
             );
 
+            EntityConfigDictionary.AddConfig("product_reviews",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.ProductReviews2Json(t.id) as value from product_reviews t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.ProductReviews2Json")
+            );
+
+            EntityConfigDictionary.AddConfig("store_reviews",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.StoreReviews2Json(t.id) as value from store_reviews t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.StoreReviews2Json")
+            );
+
+            EntityConfigDictionary.AddConfig("novelty_details",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.NoveltyDetails2Json(t.id) as value from novelty_details t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.NoveltyDetails2Json")
+            );
+
             services.AddScoped<FoxStoreDBContext>(_ =>
                 new FoxStoreDBContext(mainDataConnString));
 
@@ -450,6 +487,7 @@ namespace Wsds.WebApp
             services.AddScoped<ICrypto, FSCryptoProvider>();
             services.AddScoped<IAuthSender,FSAuthSender>();
             services.AddScoped<ISmsService, FSSmsService>();
+            services.AddScoped<INoveltyRepository, FSNoveltyRepository>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
@@ -520,7 +558,11 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<StorePlace_DTO>),
                 p => new CacheService<StorePlace_DTO>
                     ("store_place", 1000000, redisCache, true), ServiceLifetime.Singleton));
-            
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Store_DTO>),
+                p => new CacheService<Store_DTO>
+                    ("stores", 1000000, redisCache, true), ServiceLifetime.Singleton));
+
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoSupplEntity_DTO>),
                 p => new CacheService<LoSupplEntity_DTO>
                     ("lo_suppl_entity", 7200000, redisCache, true), ServiceLifetime.Singleton));
@@ -528,6 +570,18 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<CreditProduct_DTO>),
                 p => new CacheService<CreditProduct_DTO>
                     ("credit_product", 7200000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<ProductReview_DTO>),
+                p => new CacheService<ProductReview_DTO>
+                    ("product_reviews", 1000000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<StoreReview_DTO>),
+                p => new CacheService<StoreReview_DTO>
+                    ("store_reviews", 1000000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<NoveltyDetails_DTO>),
+                p => new CacheService<NoveltyDetails_DTO>
+                    ("novelty_details", 1000000, redisCache, true), ServiceLifetime.Singleton));
         }
 
         public void Configure(IApplicationBuilder app,
