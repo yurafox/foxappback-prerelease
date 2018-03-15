@@ -233,6 +233,16 @@ namespace Wsds.WebApp
                     .SetSerializerFunc("Serialization.Store2Json")
                 );
 
+            EntityConfigDictionary.AddConfig("favorite_stores",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id, 'idClient' value id_client, 'idStore' value id_store_places) as value from FAVORITE_STORES t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.FavoriteStore2Json")
+                    .SetSequence("FAVORITE_STORES_SEQ")
+                    .SetBaseTable("FAVORITE_STORES")
+                );
+
             EntityConfigDictionary.AddConfig("product_store_place",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.*, " +
@@ -476,6 +486,8 @@ namespace Wsds.WebApp
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.ProductReviews2Json")
+                    .SetSequence("SEQ_PRODUCT_REVIEWS")
+                    .SetBaseTable("product_reviews")
             );
 
             EntityConfigDictionary.AddConfig("store_reviews",
@@ -484,6 +496,8 @@ namespace Wsds.WebApp
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.StoreReviews2Json")
+                    .SetSequence("SEQ_STORE_REVIEWS")
+                    .SetBaseTable("store_reviews")
             );
 
             EntityConfigDictionary.AddConfig("novelty_details",

@@ -13,8 +13,13 @@ namespace Wsds.DAL.Repository.Abstract
         IEnumerable<StorePlace_DTO> StorePlaces { get; }
         StorePlace_DTO StorePlace(long id);
 
-        IEnumerable<Store_DTO> GetStores();
+        IEnumerable<Store_DTO> Stores { get; }
+        Store_DTO GetStore(long id);
         IEnumerable<StoreReview_DTO> GetStoreReviews();
         IEnumerable<StoreReview_DTO> GetStoreReviewsByStoreId(long id);
+
+        IEnumerable<Store_DTO> GetFavoriteStores(long idClient);
+        long AddFavoriteStore(long idStore, long idClient);
+        long DeleteFavoriteStore(long idStore, long idClient);
     }
 }
