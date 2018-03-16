@@ -508,6 +508,16 @@ namespace Wsds.WebApp
                     .SetSerializerFunc("Serialization.NoveltyDetails2Json")
             );
 
+            EntityConfigDictionary.AddConfig("device_data",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.DeviceData2Json(t.id) as value from device_data t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.DeviceData2Json")
+                    .SetSequence("SEQ_DEVICE_DATA")
+                    .SetBaseTable("device_data")
+            );
+
             services.AddScoped<FoxStoreDBContext>(_ =>
                 new FoxStoreDBContext(mainDataConnString));
 
