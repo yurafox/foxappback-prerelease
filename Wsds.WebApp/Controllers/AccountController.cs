@@ -169,6 +169,8 @@ namespace Wsds.WebApp.Controllers
 
                 // update client
                 var client = _account.Users.ToClient(user);
+                client.barcode = findedClient.barcode;
+
                 var clientCreated = _account.Clients.CreateOrUpdateClient(client);
 
                 if (clientCreated?.id == null)

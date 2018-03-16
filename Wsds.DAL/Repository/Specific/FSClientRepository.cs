@@ -298,7 +298,7 @@ namespace Wsds.DAL.Repository.Specific
                 }
                 catch (OracleException ex)
                 {
-                    var tst = ex;
+                    //TODO: create handler logic after discussion
                 }
                 finally
                 {
