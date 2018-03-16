@@ -77,8 +77,13 @@ namespace Wsds.DAL.Repository.Specific
                 idClient = idClient,
                 idStore = idStore
             };
-            var addedStore = prov.InsertItem(favStore);
-            return (long)addedStore.id;
+            var stores = prov.GetItems("t.id_client = :clientId and t.id_store_places = :storeId", new OracleParameter("clientId", idClient), new OracleParameter("storeId", idStore));
+            if (stores.Count() == 0)
+            {
+                var addedStore = prov.InsertItem(favStore);
+                return addedStore.idStore;
+            }
+            return 0;
         }
 
         public long DeleteFavoriteStore(long idStore, long idClient)
@@ -88,10 +93,17 @@ namespace Wsds.DAL.Repository.Specific
             var stores = prov.GetItems("t.id_client = :clientId and t.id_store_places = :storeId", new OracleParameter("clientId", idClient), new OracleParameter("storeId", idStore));
             if (stores.Count() > 0)
             {
-                var store = stores.FirstOrDefault();
-                prov.DeleteItem((long)store.id);
+                FavoriteStore_DTO[] storesArr = stores.ToArray();
+                if (0 < storesArr.Length)
+                {
+                    for (long i = 0; i < storesArr.Length; i++)
+                    {
+                        prov.DeleteItem((long)storesArr[i].id);
+                    }
+                    return storesArr[0].idStore;
+                }
             }
-            return idStore;
+            return 0;
         }
     }
 }

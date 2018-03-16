@@ -81,9 +81,9 @@ namespace Wsds.WebApp.Controllers
                 {
                     return Ok(_spRepo.GetFavoriteStores((long)client.id));
                 }
-                return null;
+                return BadRequest();
             }
-            return null;
+            return BadRequest();
         }
 
         [Authorize]
@@ -97,11 +97,16 @@ namespace Wsds.WebApp.Controllers
                 var client = _cRepo.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
                 if (client?.id != null)
                 {
-                    return StatusCode(201, _spRepo.AddFavoriteStore(id, (long)client.id));
+                    long result = _spRepo.AddFavoriteStore(id, (long)client.id);
+                    if (0 < result)
+                    {
+                        return StatusCode(201, result);
+                    }
+                    else return StatusCode(200, 0);
                 }
-                return null;
+                return BadRequest();
             }
-            return null;
+            return BadRequest();
         }
 
         [Authorize]
@@ -115,11 +120,16 @@ namespace Wsds.WebApp.Controllers
                 var client = _cRepo.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
                 if (client?.id != null)
                 {
-                    return StatusCode(200, _spRepo.DeleteFavoriteStore(id, (long)client.id));
+                    long result = _spRepo.DeleteFavoriteStore(id, (long)client.id);
+                    if (0 < result)
+                    {
+                        return Ok(result);
+                    }
+                    else return StatusCode(200, 0);
                 }
-                return null;
+                return BadRequest();
             }
-            return null;
+            return BadRequest();
         }
     }
 }
