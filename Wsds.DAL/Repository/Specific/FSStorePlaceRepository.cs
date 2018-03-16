@@ -93,15 +93,9 @@ namespace Wsds.DAL.Repository.Specific
             var stores = prov.GetItems("t.id_client = :clientId and t.id_store_places = :storeId", new OracleParameter("clientId", idClient), new OracleParameter("storeId", idStore));
             if (stores.Count() > 0)
             {
-                FavoriteStore_DTO[] storesArr = stores.ToArray();
-                if (0 < storesArr.Length)
-                {
-                    for (long i = 0; i < storesArr.Length; i++)
-                    {
-                        prov.DeleteItem((long)storesArr[i].id);
-                    }
-                    return storesArr[0].idStore;
-                }
+                FavoriteStore_DTO store = stores.FirstOrDefault();
+                prov.DeleteItem((long)store.id);
+                return store.idStore;
             }
             return 0;
         }

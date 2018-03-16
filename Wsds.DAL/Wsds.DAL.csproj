@@ -415,6 +415,7 @@
     <Compile Include="Entities\Communication\DeliveryCostRequest.cs" />
     <Compile Include="Entities\DTO\Action_DTO.cs" />
     <Compile Include="Entities\DTO\City_DTO.cs" />
+    <Compile Include="Entities\DTO\DeviceData_DTO.cs" />
     <Compile Include="Entities\DTO\FavoriteStore_DTO.cs" />
     <Compile Include="Entities\DTO\NoveltyDetails_DTO.cs" />
     <Compile Include="Entities\DTO\Novelty_DTO.cs" />
@@ -519,6 +520,7 @@
     <Compile Include="Repository\Abstract\ICartRepository.cs" />
     <Compile Include="Repository\Abstract\IClientRepository.cs" />
     <Compile Include="Repository\Abstract\ICreditRepository.cs" />
+    <Compile Include="Repository\Abstract\IDeviceDataRepository.cs" />
     <Compile Include="Repository\Abstract\IFinRepository.cs" />
     <Compile Include="Repository\Abstract\IGeoRepository.cs" />
     <Compile Include="Repository\Abstract\ILocalizationRepository.cs" />
@@ -536,6 +538,7 @@
     <Compile Include="Repository\Abstract\IQuotationProductRepository.cs" />
     <Compile Include="Repository\Abstract\IQuotationRepository.cs" />
     <Compile Include="Repository\Abstract\IRoleRepository.cs" />
+    <Compile Include="Repository\Specific\FSDeviceDataRepository.cs" />
     <Compile Include="Repository\Specific\FSNoveltyRepository.cs" />
     <Compile Include="Repository\Specific\FSActionRepository.cs" />
     <Compile Include="Repository\Specific\FSPageRepository.cs" />

@@ -570,6 +570,7 @@ namespace Wsds.WebApp
             services.AddScoped<IPollRepository, FSPollRepository>();
             services.AddScoped<IPageRepository, FSPageRepository>();
             services.AddScoped<IActionRepository, FSActionRepository>();
+            services.AddScoped<IDeviceDataRepository, FSDeviceDataRepository>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
