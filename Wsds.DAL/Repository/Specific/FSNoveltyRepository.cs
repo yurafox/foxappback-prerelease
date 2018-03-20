@@ -30,7 +30,7 @@ namespace Wsds.DAL.Repository.Specific
             IEnumerable<Novelty_DTO> novelties = new List<Novelty_DTO>();
             using (IDbConnection db = new OracleConnection(OraConnectionString))
             {
-                novelties = db.Query<Novelty_DTO>("SELECT t.id, t.id_product as idProduct, t.name, t.img_url, t.priority, t.sketch_content, t.novelty_content FROM Novelties t").ToList();
+                novelties = db.Query<Novelty_DTO>("SELECT t.id, t.id_product as idProduct, t.name, t.img_url, t.priority, t.sketch_content, t.novelty_content FROM Novelties t WHERE t.is_active = 1").ToList();
             }
             return novelties;
         }
@@ -40,7 +40,7 @@ namespace Wsds.DAL.Repository.Specific
             Novelty_DTO novelty = null;
             using (IDbConnection db = new OracleConnection(OraConnectionString))
             {
-                novelty = db.Query<Novelty_DTO>("SELECT t.id, t.id_product as idProduct, t.name, t.img_url, t.priority, t.sketch_content, t.novelty_content FROM Novelties t WHERE t.id = :id", new { id }).FirstOrDefault();
+                novelty = db.Query<Novelty_DTO>("SELECT t.id, t.id_product as idProduct, t.name, t.img_url, t.priority, t.sketch_content, t.novelty_content FROM Novelties t WHERE t.is_active = 1 and t.id = :id", new { id }).FirstOrDefault();
             }
             return novelty;
         }

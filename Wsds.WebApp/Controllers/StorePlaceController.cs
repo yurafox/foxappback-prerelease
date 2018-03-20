@@ -56,18 +56,6 @@ namespace Wsds.WebApp.Controllers
             return Ok(_spRepo.StorePlaces);
         }
 
-        [HttpGet("GetStoreReviewsByStoreId/{id}")]
-        public IActionResult GetStoreReviewsByStoreId(long id)
-        {
-            return Ok(_spRepo.GetStoreReviewsByStoreId(id));
-        }
-
-        [HttpGet("GetStoreReviews")]
-        public IActionResult GetStoreReviews()
-        {
-            return Ok(_spRepo.GetStoreReviews());
-        }
-
         [Authorize]
         [HttpGet("GetFavoriteStores")]
         [PullToken]

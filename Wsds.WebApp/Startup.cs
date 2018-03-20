@@ -222,12 +222,9 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("stores",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id," +
-                                         "'idCity' value id_city," +
-                                         "'address' value address_line, 'lat' value lat,'lng' value lng," +
-                                         "'openTime' value open_time, 'closeTime' value close_time, " +
-                                         "'rating' value rating, 'idFeedbacks' value id_feedbacks) as value from STORE_PLACES t ")
-                    .AddSqlCommandWhere("where t.type=1  and t.lat is not null  and t.lng is not null  and t.is_active=1")
+                    .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id, 'idCity' value id_city, 'address' value address_line, 'lat' value lat,'lng' value lng," +
+                                         "'openTime' value open_time, 'closeTime' value close_time, 'rating' value rating, 'idFeedbacks' value id_feedbacks) as value from STORE_PLACES t ")
+                    .AddSqlCommandWhere("where t.type=1  and t.lat is not null  and t.lng is not null  and t.is_active=1 and t.open_time is not null and t.close_time is not null")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Store2Json")
@@ -518,6 +515,15 @@ namespace Wsds.WebApp
                     .SetBaseTable("device_data")
             );
 
+            EntityConfigDictionary.AddConfig("banner_slides",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.BannerSlide2Json(t.id) as value from banner_slides t")
+                    .AddSqlCommandWhere("where t.is_active=1")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.BannerSlide2Json")
+            );
+
             services.AddScoped<FoxStoreDBContext>(_ =>
                 new FoxStoreDBContext(mainDataConnString));
 
@@ -571,6 +577,8 @@ namespace Wsds.WebApp
             services.AddScoped<IPageRepository, FSPageRepository>();
             services.AddScoped<IActionRepository, FSActionRepository>();
             services.AddScoped<IDeviceDataRepository, FSDeviceDataRepository>();
+            services.AddScoped<IReviewRepository, FSReviewRepository>();
+            services.AddScoped<IBannerSlideRepository, FSBannerSlideRepository>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
@@ -644,7 +652,7 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Store_DTO>),
                 p => new CacheService<Store_DTO>
-                    ("stores", 1000000, redisCache, true), ServiceLifetime.Singleton));
+                    ("stores", 10000000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoSupplEntity_DTO>),
                 p => new CacheService<LoSupplEntity_DTO>
@@ -656,11 +664,11 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<ProductReview_DTO>),
                 p => new CacheService<ProductReview_DTO>
-                    ("product_reviews", 1000000, redisCache, true), ServiceLifetime.Singleton));
+                    ("product_reviews", 10000000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<StoreReview_DTO>),
                 p => new CacheService<StoreReview_DTO>
-                    ("store_reviews", 1000000, redisCache, true), ServiceLifetime.Singleton));
+                    ("store_reviews", 10000000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<NoveltyDetails_DTO>),
                 p => new CacheService<NoveltyDetails_DTO>
@@ -673,6 +681,10 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<Action_DTO>),
                 p => new CacheService<Action_DTO>
                     ("actions", 100000000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<BannerSlide_DTO>),
+                p => new CacheService<BannerSlide_DTO>
+                    ("banner_slides", 600000, redisCache, true), ServiceLifetime.Singleton));
         }
 
         public void Configure(IApplicationBuilder app,

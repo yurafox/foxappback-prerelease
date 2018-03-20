@@ -414,6 +414,7 @@
     <Compile Include="Entities\Credit_Product.cs" />
     <Compile Include="Entities\Communication\DeliveryCostRequest.cs" />
     <Compile Include="Entities\DTO\Action_DTO.cs" />
+    <Compile Include="Entities\DTO\BannerSlide_DTO.cs" />
     <Compile Include="Entities\DTO\City_DTO.cs" />
     <Compile Include="Entities\DTO\DeviceData_DTO.cs" />
     <Compile Include="Entities\DTO\FavoriteStore_DTO.cs" />
@@ -517,6 +518,7 @@
     <Compile Include="Providers\EntityProvider.cs" />
     <Compile Include="Providers\SingletonProvider.cs" />
     <Compile Include="Repository\Abstract\IActionRepository.cs" />
+    <Compile Include="Repository\Abstract\IBannerSlideRepository.cs" />
     <Compile Include="Repository\Abstract\ICartRepository.cs" />
     <Compile Include="Repository\Abstract\IClientRepository.cs" />
     <Compile Include="Repository\Abstract\ICreditRepository.cs" />
@@ -537,12 +539,15 @@
     <Compile Include="Repository\Abstract\IProductRepository.cs" />
     <Compile Include="Repository\Abstract\IQuotationProductRepository.cs" />
     <Compile Include="Repository\Abstract\IQuotationRepository.cs" />
+    <Compile Include="Repository\Abstract\IReviewRepository.cs" />
     <Compile Include="Repository\Abstract\IRoleRepository.cs" />
+    <Compile Include="Repository\Specific\FSBannerSlideRepository.cs" />
     <Compile Include="Repository\Specific\FSDeviceDataRepository.cs" />
     <Compile Include="Repository\Specific\FSNoveltyRepository.cs" />
     <Compile Include="Repository\Specific\FSActionRepository.cs" />
     <Compile Include="Repository\Specific\FSPageRepository.cs" />
     <Compile Include="Repository\Specific\FSPollRepository.cs" />
+    <Compile Include="Repository\Specific\FSReviewRepository.cs" />
     <Compile Include="Services\Abstract\IAuthSender.cs" />
     <Compile Include="Services\Abstract\ISmsService.cs" />
     <Compile Include="Repository\Abstract\ISupplierRepository.cs" />
