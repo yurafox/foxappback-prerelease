@@ -16,6 +16,8 @@ using Dapper;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Configuration;
 using System.Data;
+using System.Diagnostics;
+using Wsds.DAL.Entities.DTO;
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -246,7 +248,7 @@ namespace Wsds.DAL.Repository.Specific
         }
 
 
-        public IEnumerable<Client_DTO> GetClientByPhone(string phone)
+        public Client_DTO GetClientByPhone(string phone)
         {
             string res = "";
             var ConnString = _config.GetConnectionString("MainDataConnection");
@@ -267,7 +269,18 @@ namespace Wsds.DAL.Repository.Specific
                     con.Close();
                 }
             };
-            return new List<Client_DTO> { JsonConvert.DeserializeObject<Client_DTO>(res) };
+
+            if (String.IsNullOrEmpty(res))
+                return null;
+
+            var client = JsonConvert.DeserializeObject<Client_DTO>(res);
+            if (client?.id != null)
+            {
+                var applicationKey = GetApplicationKeyByClientId(client.id.Value);
+                client.appKey = applicationKey?.key;
+            }
+
+            return client;
         }
 
         public Client_DTO CreateOrUpdateClient(Client_DTO client)
@@ -307,6 +320,20 @@ namespace Wsds.DAL.Repository.Specific
             };
                 return JsonConvert.DeserializeObject<Client_DTO>(res);
         }
-        
+
+        public AppKeys_DTO GetApplicationKeyByClientId(long idClient)
+        {
+            var akCnfg = EntityConfigDictionary.GetConfig("application_keys");
+            var prov = new EntityProvider<AppKeys_DTO>(akCnfg);
+            return prov.GetItems("id_client =:idClient and k.date_end >= sysdate and k.date_start <=sysdate",
+                new OracleParameter("id_client", idClient)).FirstOrDefault();
+        }
+
+        public AppKeys_DTO CreateApplicationKey(AppKeys_DTO key)
+        {
+            var akCnfg = EntityConfigDictionary.GetConfig("application_keys");
+            var prov = new EntityProvider<AppKeys_DTO>(akCnfg);
+            return prov.InsertItem(key);
+        }
     }
 }

@@ -414,6 +414,7 @@
     <Compile Include="Entities\Credit_Product.cs" />
     <Compile Include="Entities\Communication\DeliveryCostRequest.cs" />
     <Compile Include="Entities\DTO\Action_DTO.cs" />
+    <Compile Include="Entities\DTO\AppKeys_DTO.cs" />
     <Compile Include="Entities\DTO\City_DTO.cs" />
     <Compile Include="Entities\DTO\NoveltyDetails_DTO.cs" />
     <Compile Include="Entities\DTO\Novelty_DTO.cs" />
