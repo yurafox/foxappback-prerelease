@@ -480,6 +480,7 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("product_reviews",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("SELECT t.id, Serialization.ProductReviews2Json(t.id) as value from product_reviews t")
+                    .AddSqlCommandOrderBy("order by t.review_date")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.ProductReviews2Json")
@@ -490,6 +491,7 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("store_reviews",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("SELECT t.id, Serialization.StoreReviews2Json(t.id) as value from store_reviews t")
+                    .AddSqlCommandOrderBy("order by t.review_date")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.StoreReviews2Json")
@@ -522,6 +524,16 @@ namespace Wsds.WebApp
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.BannerSlide2Json")
+            );
+
+            EntityConfigDictionary.AddConfig("client_messages",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.ClientMessage2Json(t.id) as value from client_messages_to_support t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.ClientMessage2Json")
+                    .SetSequence("SEQ_CLIENT_MESSAGES")
+                    .SetBaseTable("client_messages_to_support")
             );
 
             services.AddScoped<FoxStoreDBContext>(_ =>
@@ -579,6 +591,7 @@ namespace Wsds.WebApp
             services.AddScoped<IDeviceDataRepository, FSDeviceDataRepository>();
             services.AddScoped<IReviewRepository, FSReviewRepository>();
             services.AddScoped<IBannerSlideRepository, FSBannerSlideRepository>();
+            services.AddScoped<IClientMessageRepository, FSClientMessageRepository>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
