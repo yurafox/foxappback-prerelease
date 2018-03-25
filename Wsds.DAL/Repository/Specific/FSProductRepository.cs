@@ -124,7 +124,7 @@ namespace Wsds.DAL.Repository.Specific
                     OracleDataReader dr = cmd.ExecuteReader();
                     dr.FetchSize = cmd.RowSize * 100;
                     var j = 0;
-                    while (dr.Read() && (j<=149))
+                    while (dr.Read() && (j<=99))
                     {
                         var item = _csp.Item(Int64.Parse(dr["id"].ToString()));
                         if (item != null)

@@ -15,7 +15,6 @@ using System.Net.Http.Headers;
 using Dapper;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Configuration;
-using System.Data;
 
 namespace Wsds.DAL.Repository.Specific
 {

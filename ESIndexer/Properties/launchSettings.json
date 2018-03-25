@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ESIndexer": {
+      "commandName": "Project",
+      "commandLineArgs": "index=product esconnstring=\"http://localhost:9200\" oraconnstring=\"DATA SOURCE=//oratest10g64.mc.gcf:1521/FOXTROTUA; USER ID = FOXSTORE; PASSWORD=fox,store;\" curl=\"c:\\Program Files\\Curl\\bin\\curl.exe\" batchsize=2000 cmdtext=\"select t.id, t.json_data from products t where t.price<>0 and t.json_data is not null\""
+    }
+  }
+}

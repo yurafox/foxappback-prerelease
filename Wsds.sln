@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wsds.WebApp", "Wsds.WebApp\Wsds.WebApp.csproj", "{787EFB04-FD05-4289-8DC5-6804CFE9850B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wsds.WebApp", "Wsds.WebApp\Wsds.WebApp.csproj", "{787EFB04-FD05-4289-8DC5-6804CFE9850B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wsds.DAL", "Wsds.DAL\Wsds.DAL.csproj", "{2D7A0CE5-175E-4255-9227-60AAD238B725}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ESIndexer", "ESIndexer\ESIndexer.csproj", "{0742CFBD-B401-4858-86F7-94EAD2FE1A69}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{2D7A0CE5-175E-4255-9227-60AAD238B725}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D7A0CE5-175E-4255-9227-60AAD238B725}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D7A0CE5-175E-4255-9227-60AAD238B725}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0742CFBD-B401-4858-86F7-94EAD2FE1A69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0742CFBD-B401-4858-86F7-94EAD2FE1A69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0742CFBD-B401-4858-86F7-94EAD2FE1A69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0742CFBD-B401-4858-86F7-94EAD2FE1A69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
