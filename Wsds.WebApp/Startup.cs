@@ -234,15 +234,22 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("stores",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id," +
-                                         "'idCity' value id_city," +
-                                         "'address' value address_line, 'lat' value lat,'lng' value lng," +
-                                         "'openTime' value open_time, 'closeTime' value close_time, " +
-                                         "'rating' value rating, 'idFeedbacks' value id_feedbacks) as value from STORE_PLACES t ")
-                    .AddSqlCommandWhere("where t.type=1  and t.lat is not null  and t.lng is not null  and t.is_active=1")
+                    .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id, 'idCity' value id_city, 'address' value address_line, 'lat' value lat,'lng' value lng," +
+                                         "'openTime' value open_time, 'closeTime' value close_time, 'rating' value rating, 'idFeedbacks' value id_feedbacks) as value from STORE_PLACES t ")
+                    .AddSqlCommandWhere("where t.type=1  and t.lat is not null  and t.lng is not null  and t.is_active=1 and t.open_time is not null and t.close_time is not null")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Store2Json")
+                );
+
+            EntityConfigDictionary.AddConfig("favorite_stores",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id, 'idClient' value id_client, 'idStore' value id_store_places) as value from FAVORITE_STORES t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.FavoriteStore2Json")
+                    .SetSequence("FAVORITE_STORES_SEQ")
+                    .SetBaseTable("FAVORITE_STORES")
                 );
 
             EntityConfigDictionary.AddConfig("product_store_place",
@@ -485,17 +492,23 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("product_reviews",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("SELECT t.id, Serialization.ProductReviews2Json(t.id) as value from product_reviews t")
+                    .AddSqlCommandOrderBy("order by t.review_date")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.ProductReviews2Json")
+                    .SetSequence("SEQ_PRODUCT_REVIEWS")
+                    .SetBaseTable("product_reviews")
             );
 
             EntityConfigDictionary.AddConfig("store_reviews",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("SELECT t.id, Serialization.StoreReviews2Json(t.id) as value from store_reviews t")
+                    .AddSqlCommandOrderBy("order by t.review_date")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.StoreReviews2Json")
+                    .SetSequence("SEQ_STORE_REVIEWS")
+                    .SetBaseTable("store_reviews")
             );
 
             EntityConfigDictionary.AddConfig("novelty_details",
@@ -504,6 +517,35 @@ namespace Wsds.WebApp
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.NoveltyDetails2Json")
+            );
+
+            EntityConfigDictionary.AddConfig("device_data",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.DeviceData2Json(t.id) as value from device_data t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.DeviceData2Json")
+                    .SetSequence("SEQ_DEVICE_DATA")
+                    .SetBaseTable("device_data")
+            );
+
+            EntityConfigDictionary.AddConfig("banner_slides",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.BannerSlide2Json(t.id) as value from banner_slides t")
+                    .AddSqlCommandWhere("where t.is_active=1")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.BannerSlide2Json")
+            );
+
+            EntityConfigDictionary.AddConfig("client_messages",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.ClientMessage2Json(t.id) as value from client_messages_to_support t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.ClientMessage2Json")
+                    .SetSequence("SEQ_CLIENT_MESSAGES")
+                    .SetBaseTable("client_messages_to_support")
             );
 
             services.AddScoped<FoxStoreDBContext>(_ =>
@@ -558,6 +600,10 @@ namespace Wsds.WebApp
             services.AddScoped<IPollRepository, FSPollRepository>();
             services.AddScoped<IPageRepository, FSPageRepository>();
             services.AddScoped<IActionRepository, FSActionRepository>();
+            services.AddScoped<IDeviceDataRepository, FSDeviceDataRepository>();
+            services.AddScoped<IReviewRepository, FSReviewRepository>();
+            services.AddScoped<IBannerSlideRepository, FSBannerSlideRepository>();
+            services.AddScoped<IClientMessageRepository, FSClientMessageRepository>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
@@ -631,7 +677,7 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Store_DTO>),
                 p => new CacheService<Store_DTO>
-                    ("stores", 1000000, redisCache, true), ServiceLifetime.Singleton));
+                    ("stores", 10000000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoSupplEntity_DTO>),
                 p => new CacheService<LoSupplEntity_DTO>
@@ -643,11 +689,11 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<ProductReview_DTO>),
                 p => new CacheService<ProductReview_DTO>
-                    ("product_reviews", 1000000, redisCache, true), ServiceLifetime.Singleton));
+                    ("product_reviews", 10000000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<StoreReview_DTO>),
                 p => new CacheService<StoreReview_DTO>
-                    ("store_reviews", 1000000, redisCache, true), ServiceLifetime.Singleton));
+                    ("store_reviews", 10000000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<NoveltyDetails_DTO>),
                 p => new CacheService<NoveltyDetails_DTO>
@@ -660,6 +706,10 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<Action_DTO>),
                 p => new CacheService<Action_DTO>
                     ("actions", 100000000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<BannerSlide_DTO>),
+                p => new CacheService<BannerSlide_DTO>
+                    ("banner_slides", 600000, redisCache, true), ServiceLifetime.Singleton));
 
             // add roles
             IdentityInit(services.BuildServiceProvider()).Wait();

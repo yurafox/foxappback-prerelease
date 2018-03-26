@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository;
 using Wsds.DAL.Repository.Abstract;
 using Wsds.WebApp.Attributes;
+using Microsoft.AspNetCore.Authorization;
+using Wsds.WebApp.Filters;
+using Wsds.WebApp.WebExtensions;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -15,12 +18,24 @@ namespace Wsds.WebApp.Controllers
     public class StorePlaceController : Controller
     {
         private IStorePlaceRepository _spRepo;
-        public StorePlaceController(IStorePlaceRepository spRepo) => _spRepo = spRepo;
+        private IClientRepository _cRepo;
+
+        public StorePlaceController(IClientRepository cRepo, IStorePlaceRepository spRepo)
+        {
+            _cRepo = cRepo;
+            _spRepo = spRepo;
+        }
 
         [HttpGet("Stores")]
         public IActionResult GetStores()
         {
-            return Ok(_spRepo.GetStores());
+            return Ok(_spRepo.Stores);
+        }
+
+        [HttpGet("Store/{id}")]
+        public IActionResult GetStore(long id)
+        {
+            return Ok(_spRepo.GetStore(id));
         }
 
         [HttpGet("StorePlace/{id}")]
@@ -41,17 +56,68 @@ namespace Wsds.WebApp.Controllers
             return Ok(_spRepo.StorePlaces);
         }
 
-        [HttpGet("GetStoreReviewsByStoreId/{id}")]
-        public IActionResult GetStoreReviewsByStoreId(long id)
+        [Authorize]
+        [HttpGet("GetFavoriteStores")]
+        [PullToken]
+        public IActionResult GetFavoriteStores()
         {
-            return Ok(_spRepo.GetStoreReviewsByStoreId(id));
+            var tokenModel = HttpContext.GeTokenModel();
+            if (tokenModel != null)
+            {
+                var client = _cRepo.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
+                if (client?.id != null)
+                {
+                    return Ok(_spRepo.GetFavoriteStores((long)client.id));
+                }
+                return BadRequest();
+            }
+            return BadRequest();
         }
 
-        [HttpGet("GetStoreReviews")]
-        public IActionResult GetStoreReviews()
+        [Authorize]
+        [HttpPost("AddFavoriteStore/{id}")]
+        [PullToken]
+        public IActionResult AddFavoriteStore(long id)
         {
-            return Ok(_spRepo.GetStoreReviews());
+            var tokenModel = HttpContext.GeTokenModel();
+            if (tokenModel != null && 0 < id)
+            {
+                var client = _cRepo.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
+                if (client?.id != null)
+                {
+                    long result = _spRepo.AddFavoriteStore(id, (long)client.id);
+                    if (0 < result)
+                    {
+                        return StatusCode(201, result);
+                    }
+                    else return StatusCode(200, 0);
+                }
+                return BadRequest();
+            }
+            return BadRequest();
         }
 
+        [Authorize]
+        [HttpPost("DeleteFavoriteStore/{id}")]
+        [PullToken]
+        public IActionResult DeleteFavoriteStore(long id)
+        {
+            var tokenModel = HttpContext.GeTokenModel();
+            if (tokenModel != null && 0 < id)
+            {
+                var client = _cRepo.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
+                if (client?.id != null)
+                {
+                    long result = _spRepo.DeleteFavoriteStore(id, (long)client.id);
+                    if (0 < result)
+                    {
+                        return Ok(result);
+                    }
+                    else return StatusCode(200, 0);
+                }
+                return BadRequest();
+            }
+            return BadRequest();
+        }
     }
 }

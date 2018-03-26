@@ -57,11 +57,5 @@ namespace Wsds.WebApp.Controllers
             return Ok(_prodRepo.SearchProducts(srch));
         }
 
-        [HttpGet("GetProductReviews/{id}")]
-        public IActionResult GetProductReviews(long id)
-        {
-            return Ok(_prodRepo.GetProductReviews(id));
-        }
-
     }
 }
