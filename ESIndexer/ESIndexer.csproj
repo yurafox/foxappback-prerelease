@@ -6,6 +6,65 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="output_product1 - Copy.json.log" />
+    <None Remove="output_product1.json.log" />
+    <None Remove="output_product10 - Copy.json.log" />
+    <None Remove="output_product10.json.log" />
+    <None Remove="output_product11 - Copy.json.log" />
+    <None Remove="output_product11.json.log" />
+    <None Remove="output_product12 - Copy.json.log" />
+    <None Remove="output_product12.json.log" />
+    <None Remove="output_product13 - Copy.json.log" />
+    <None Remove="output_product13.json.log" />
+    <None Remove="output_product14 - Copy.json.log" />
+    <None Remove="output_product14.json.log" />
+    <None Remove="output_product15 - Copy.json.log" />
+    <None Remove="output_product15.json.log" />
+    <None Remove="output_product16 - Copy.json.log" />
+    <None Remove="output_product16.json.log" />
+    <None Remove="output_product17 - Copy.json.log" />
+    <None Remove="output_product17.json.log" />
+    <None Remove="output_product18 - Copy.json.log" />
+    <None Remove="output_product18.json.log" />
+    <None Remove="output_product19 - Copy.json.log" />
+    <None Remove="output_product19.json.log" />
+    <None Remove="output_product2 - Copy.json.log" />
+    <None Remove="output_product2.json.log" />
+    <None Remove="output_product3 - Copy.json.log" />
+    <None Remove="output_product3.json.log" />
+    <None Remove="output_product4 - Copy.json.log" />
+    <None Remove="output_product4.json.log" />
+    <None Remove="output_product5 - Copy.json.log" />
+    <None Remove="output_product5.json.log" />
+    <None Remove="output_product6 - Copy.json.log" />
+    <None Remove="output_product6.json.log" />
+    <None Remove="output_product7 - Copy.json.log" />
+    <None Remove="output_product7.json.log" />
+    <None Remove="output_product8 - Copy.json.log" />
+    <None Remove="output_product8.json.log" />
+    <None Remove="output_product9.json.log" />
+    <None Remove="product1.json" />
+    <None Remove="product10.json" />
+    <None Remove="product11.json" />
+    <None Remove="product12.json" />
+    <None Remove="product13.json" />
+    <None Remove="product14.json" />
+    <None Remove="product15.json" />
+    <None Remove="product16.json" />
+    <None Remove="product17.json" />
+    <None Remove="product18.json" />
+    <None Remove="product19.json" />
+    <None Remove="product2.json" />
+    <None Remove="product3.json" />
+    <None Remove="product4.json" />
+    <None Remove="product5.json" />
+    <None Remove="product6.json" />
+    <None Remove="product7.json" />
+    <None Remove="product8.json" />
+    <None Remove="product9.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.12.0-beta2" />
   </ItemGroup>
 
