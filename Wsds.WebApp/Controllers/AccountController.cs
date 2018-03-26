@@ -42,16 +42,17 @@ namespace Wsds.WebApp.Controllers
                 else
                 {
                     var user = await _account.Users.UserEngine.FindByNameAsync(auth.Phone.ToLower());
+                    var roles = await _account.Users.UserEngine.GetRolesAsync(user);
                     //TODO: check this role method when we will be create admin panel
                     //var roles = await _userRepository.UserEngine.GetRolesAsync(user);
 
                     // get clients
-                    var client = _account.Clients.GetClientByPhone(user.UserName).FirstOrDefault();
+                    var client = _account.Clients.GetClientByPhone(user.UserName);
                     if (client?.id != null)
                     {
-                        var jToken = AuthOpt.GetToken(user,client.id);
-                        // get favorite stores
-                        //var favoriteStores = _account.Clients.GetFavoriteStore(user.Card);
+                        // get token
+                        var jToken = AuthOpt.GetToken(user,client.id,roles);
+                  
                         var responseObj = new
                         {
                             token = jToken,
@@ -78,10 +79,9 @@ namespace Wsds.WebApp.Controllers
             var tokenModel = HttpContext.GeTokenModel();
             if (tokenModel != null)
             {
-                var client = _account.Clients.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
+                var client = _account.Clients.GetClientByPhone(tokenModel.Phone);
                 if (client?.id != null)
                 {
-                    //var favoriteStores = _account.Clients.GetFavoriteStore(tokenModel.Client);
                     var user = _account.Users.Swap(client,_crypto.Encrypt);
 
                     await Response.WriteAsync(JsonConvert.SerializeObject(user,
@@ -102,7 +102,7 @@ namespace Wsds.WebApp.Controllers
 
             // get user and client
             var user = await _account.Users.GetUserByName(vm.Phone);
-            var client = _account.Clients.GetClientByPhone(vm.Phone).FirstOrDefault();
+            var client = _account.Clients.GetClientByPhone(vm.Phone);
             var data = await _account.Users.UserVerifyStrategy(vm.Phone, user, client);
 
             // send json
@@ -119,7 +119,7 @@ namespace Wsds.WebApp.Controllers
             
 
             var findedUser = await _account.Users.GetUserByName(user.phone);
-            var findedClient = _account.Clients.GetClientByPhone(user.phone).FirstOrDefault();
+            var findedClient = _account.Clients.GetClientByPhone(user.phone);
 
             if (findedUser != null || findedClient?.id != null)
                 return Json(new { message = "пользователь уже существует в системе", status = 0});
@@ -162,13 +162,15 @@ namespace Wsds.WebApp.Controllers
 
 
                 var findedUser = await _account.Users.GetUserByName(user.phone);
-                var findedClient = _account.Clients.GetClientByPhone(user.phone).FirstOrDefault();
+                var findedClient = _account.Clients.GetClientByPhone(user.phone);
 
                 if (findedUser == null || findedClient?.id == null)
                     return Json(new { message = "ошибка редактирования пользователя", status = 0 });
 
                 // update client
                 var client = _account.Users.ToClient(user);
+                client.barcode = findedClient.barcode;
+
                 var clientCreated = _account.Clients.CreateOrUpdateClient(client);
 
                 if (clientCreated?.id == null)
@@ -214,6 +216,17 @@ namespace Wsds.WebApp.Controllers
 
             Response.StatusCode = 401;
             return Json(new { message = "ошибка авторизации пользователя", status = 0 });
+        }
+
+        [Authorize(Roles = "retail")]
+        [HttpPost("key")]
+        public IActionResult CreateAppKey([FromBody] AppKeys_DTO key)
+        {
+            if(!ModelState.IsValid)
+                return BadRequest();
+
+            var createdKey = _account.Clients.CreateApplicationKey(key);
+            return (createdKey != null) ? Ok(createdKey) : (IActionResult) BadRequest();
         }
     }
 }

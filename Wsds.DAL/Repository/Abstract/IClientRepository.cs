@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Wsds.DAL.Entities;
+using Wsds.DAL.Entities.DTO;
 
 namespace Wsds.DAL.Repository.Abstract
 {
@@ -25,8 +26,10 @@ namespace Wsds.DAL.Repository.Abstract
         ClientAddress_DTO CreateClientAddress(ClientAddress_DTO item);
         ClientAddress_DTO UpdateClientAddress(ClientAddress_DTO item);
         void DeleteClientAddress(long id);
-        IEnumerable<Client_DTO> GetClientByPhone(string phone);
+        Client_DTO GetClientByPhone(string phone);
         IEnumerable<StorePlace_DTO> GetFavoriteStore(long clientId);
         Client_DTO CreateOrUpdateClient(Client_DTO client);
+        AppKeys_DTO GetApplicationKeyByClientId(long idClient);
+        AppKeys_DTO CreateApplicationKey(AppKeys_DTO key);
     }
 }

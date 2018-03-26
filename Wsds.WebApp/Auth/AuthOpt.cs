@@ -50,7 +50,7 @@ namespace Wsds.WebApp.Auth
                 new Claim("clientId",clientId.ToString())
             };
 
-            if(roles!=null)
+            if(roles!=null && roles.Any())
                claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, roles.First()));
 
             ClaimsIdentity claimsIdentity =

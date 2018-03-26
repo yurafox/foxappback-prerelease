@@ -94,6 +94,18 @@ namespace Wsds.WebApp
             var redisCache = new Context(redisConfig);
             services.AddSingleton(redisCache);
 
+            EntityConfigDictionary.AddConfig("application_keys",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select k.id, JSON_OBJECT ('id' value id, 'key' value key," +
+                                         "'dateStart' value date_start, 'dateEnd' value date_end,'IdClient' value id_client) as value " +
+                                         "from application_keys k")
+                    .AddSqlCommandOrderBy("order by k.date_end desc fetch first 1 row only")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSequence("APPLICATION_KEYS_SEQ")
+                    .SetBaseTable("APPLICATION_KEYS")
+            );
+
             EntityConfigDictionary.AddConfig("actions",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select id, Json_object('id' value id, 'name' value name," +
@@ -648,6 +660,9 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<Action_DTO>),
                 p => new CacheService<Action_DTO>
                     ("actions", 100000000, redisCache, true), ServiceLifetime.Singleton));
+
+            // add roles
+            IdentityInit(services.BuildServiceProvider()).Wait();
         }
 
         public void Configure(IApplicationBuilder app,
@@ -680,11 +695,11 @@ namespace Wsds.WebApp
             //IdentityInit(app.ApplicationServices).Wait();
         }
 
-        [Obsolete]
+        //[Obsolete]
         public async Task IdentityInit(IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var defaultRoles = new[] { "admin", "user" };
+            var defaultRoles = new[] { "admin", "user","retail" };
 
             foreach (var role in defaultRoles)
             {
