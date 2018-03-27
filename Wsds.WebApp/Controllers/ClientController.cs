@@ -43,7 +43,7 @@ namespace Wsds.WebApp.Controllers
         [Link("phone")]
         public IActionResult GetClientByPhone([FromQuery]string phone)
         {
-            return Ok(_cliRepo.GetClientByPhone(phone));
+            return Ok(_cliRepo.GetClientsByPhone(phone));
         }
 
         [HttpGet("person/{id}")]

@@ -27,7 +27,7 @@ namespace Wsds.WebApp.Controllers
         [PullToken]
         public IActionResult SaveProductReview([FromBody] ProductReview_DTO review)
         {
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null)
             {
                 var client = _cRepo.GetClientByPhone(tokenModel.Phone);
@@ -51,7 +51,7 @@ namespace Wsds.WebApp.Controllers
         [PullToken]
         public IActionResult SaveStoreReview([FromBody] StoreReview_DTO review)
         {
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null)
             {
                 var client = _cRepo.GetClientByPhone(tokenModel.Phone);

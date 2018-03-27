@@ -46,7 +46,7 @@ namespace Wsds.WebApp.Controllers
         [PullToken]
         public IActionResult ClientPollAnswer(long id)
         {
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             return Ok(_pollRepository.GetClientPollAnswersByPollId(id,tokenModel.ClientId));
         }
 
@@ -55,7 +55,7 @@ namespace Wsds.WebApp.Controllers
         [PullToken]
         public IActionResult ClientAnswers([FromBody] ClientPoolAnswers pollAnswers)
         {
-            var tokenData = HttpContext.GeTokenModel();
+            var tokenData = HttpContext.GetTokenModel();
             var data=_pollRepository.SaveClientAnswers(pollAnswers, tokenData.ClientId);
             return (data != null) ? Ok(data) : (IActionResult) BadRequest();
         }
