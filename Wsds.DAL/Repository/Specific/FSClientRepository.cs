@@ -248,8 +248,9 @@ namespace Wsds.DAL.Repository.Specific
         }
 
 
-        public Client_DTO GetClientByPhone(string phone)
+        public IEnumerable<Client_DTO> GetClientsByPhone(string phone)
         {
+            var clientList = new List<Client_DTO>();
             string res = "";
             var ConnString = _config.GetConnectionString("MainDataConnection");
             using (var con = new OracleConnection(ConnString))
@@ -274,13 +275,16 @@ namespace Wsds.DAL.Repository.Specific
                 return null;
 
             var client = JsonConvert.DeserializeObject<Client_DTO>(res);
+          
+
             if (client?.id != null)
             {
                 var applicationKey = GetApplicationKeyByClientId(client.id.Value);
                 client.appKey = applicationKey?.key;
+                clientList.Add(client);
             }
 
-            return client;
+            return clientList;
         }
 
         public Client_DTO CreateOrUpdateClient(Client_DTO client)
@@ -334,6 +338,11 @@ namespace Wsds.DAL.Repository.Specific
             var akCnfg = EntityConfigDictionary.GetConfig("application_keys");
             var prov = new EntityProvider<AppKeys_DTO>(akCnfg);
             return prov.InsertItem(key);
+        }
+
+        public Client_DTO GetClientByPhone(string phone)
+        {
+            return GetClientsByPhone(phone).FirstOrDefault();
         }
     }
 }

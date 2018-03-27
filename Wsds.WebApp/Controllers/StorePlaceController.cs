@@ -64,7 +64,7 @@ namespace Wsds.WebApp.Controllers
             var tokenModel = HttpContext.GeTokenModel();
             if (tokenModel != null)
             {
-                var client = _cRepo.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
+                var client = _cRepo.GetClientByPhone(tokenModel.Phone);
                 if (client?.id != null)
                 {
                     return Ok(_spRepo.GetFavoriteStores((long)client.id));
@@ -82,7 +82,7 @@ namespace Wsds.WebApp.Controllers
             var tokenModel = HttpContext.GeTokenModel();
             if (tokenModel != null && 0 < id)
             {
-                var client = _cRepo.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
+                var client = _cRepo.GetClientByPhone(tokenModel.Phone);
                 if (client?.id != null)
                 {
                     long result = _spRepo.AddFavoriteStore(id, (long)client.id);
@@ -105,7 +105,7 @@ namespace Wsds.WebApp.Controllers
             var tokenModel = HttpContext.GeTokenModel();
             if (tokenModel != null && 0 < id)
             {
-                var client = _cRepo.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
+                var client = _cRepo.GetClientByPhone(tokenModel.Phone);
                 if (client?.id != null)
                 {
                     long result = _spRepo.DeleteFavoriteStore(id, (long)client.id);

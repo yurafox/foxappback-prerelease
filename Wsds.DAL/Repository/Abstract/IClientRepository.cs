@@ -27,6 +27,7 @@ namespace Wsds.DAL.Repository.Abstract
         ClientAddress_DTO UpdateClientAddress(ClientAddress_DTO item);
         void DeleteClientAddress(long id);
         Client_DTO GetClientByPhone(string phone);
+        IEnumerable<Client_DTO> GetClientsByPhone(string phone);
         IEnumerable<StorePlace_DTO> GetFavoriteStore(long clientId);
         Client_DTO CreateOrUpdateClient(Client_DTO client);
         AppKeys_DTO GetApplicationKeyByClientId(long idClient);

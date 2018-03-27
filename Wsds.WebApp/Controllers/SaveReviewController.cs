@@ -30,7 +30,7 @@ namespace Wsds.WebApp.Controllers
             var tokenModel = HttpContext.GeTokenModel();
             if (tokenModel != null)
             {
-                var client = _cRepo.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
+                var client = _cRepo.GetClientByPhone(tokenModel.Phone);
                 if (client?.id != null)
                 {
                     if (review != null)
@@ -54,7 +54,7 @@ namespace Wsds.WebApp.Controllers
             var tokenModel = HttpContext.GeTokenModel();
             if (tokenModel != null)
             {
-                var client = _cRepo.GetClientByPhone(tokenModel.Phone).FirstOrDefault();
+                var client = _cRepo.GetClientByPhone(tokenModel.Phone);
                 if (client?.id != null)
                 {
                     if (review != null)

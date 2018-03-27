@@ -10,76 +10,107 @@ namespace ESIndexer
     //"c:\Program Files\Curl\bin\curl.exe" 
     /*
 PUT product
-{
-  "mappings": {
-    "_doc": {
-      "properties": {
-	"id": {
-	  "type": "long"
-	},
-        "name": {
-          "type": "text"
-        },
-        "price": {
-          "type": "float"
-        },
-        "oldPrice": {
-          "type": "float"
-        },
-        "bonuses": {
-          "type": "float"
-        },
-        "manufacturerId": {
-          "type": "long"
-        },
-	"imageUrl": {
-	  "type": "text"
-	},
-	"rating": {
-	  "type": "short"
-	},
-	"recall": {
-	  "type": "short"
-	},
-	"supplOffers": {
-	  "type": "short"
-	},
-	"barcode": {
-	  "type": "text"
-	},
-	"popularity": {
-	  "type": "long"
-	},
-	"description": {
-	  "type": "text"
-	},
-	"manufacturer": {
-	  "type": "object",
-          "properties": {
-	     "id": {"type": "long"},
-	     "name": {"type": "text"}
-	  }
-	},
-        "Props": {
-	  "type": "nested",
-        	  "properties": {
-           	    	"id":         		{ "type": "long"  },
-            	    	"id_Product": 	        { "type": "long"  },
-            		"id_Prop":    		{ "type": "object"   },
-            		"prop_Value_Number":    { "type": "float"   },
-            		"prop_Value_Bool":      { "type": "byte"    },
-            		"prop_Value_Enum":      { "type": "object"    },
-            		"id_Measure_Unit":      { "type": "long"    },
-            		"idx":      		{ "type": "integer"    },
-            		"out_bmask":   		{ "type": "integer"    }
-          }
-	}
-
+{  
+   "mappings":{  
+      "_doc":{  
+         "properties":{  
+            "id":{  
+               "type":"long"
+            },
+            "name":{  
+               "type":"text"
+            },
+            "price":{  
+               "type":"float"
+            },
+            "oldPrice":{  
+               "type":"float"
+            },
+            "bonuses":{  
+               "type":"float"
+            },
+            "manufacturerId":{  
+               "type":"long"
+            },
+            "imageUrl":{  
+               "type":"text"
+            },
+            "rating":{  
+               "type":"short"
+            },
+            "recall":{  
+               "type":"short"
+            },
+            "supplOffers":{  
+               "type":"short"
+            },
+            "barcode":{  
+               "type":"text"
+            },
+            "popularity":{  
+               "type":"long"
+            },
+            "description":{  
+               "type":"text"
+            },
+            "groups":{  
+               "type":"nested",
+               "properties":{  
+                  "id":{  
+                     "type":"long"
+                  },
+                  "name":{  
+                     "type":"text"
+                  }
+               }
+            },
+            "manufacturer":{  
+               "type":"object",
+               "properties":{  
+                  "id":{  
+                     "type":"long"
+                  },
+                  "name":{  
+                     "type":"text"
+                  }
+               }
+            },
+            "Props":{  
+               "type":"nested",
+               "properties":{  
+                  "id":{  
+                     "type":"long"
+                  },
+                  "id_Product":{  
+                     "type":"long"
+                  },
+                  "id_Prop":{  
+                     "type":"object"
+                  },
+                  "prop_Value_Number":{  
+                     "type":"float"
+                  },
+                  "prop_Value_Bool":{  
+                     "type":"byte"
+                  },
+                  "prop_Value_Enum":{  
+                     "type":"object"
+                  },
+                  "id_Measure_Unit":{  
+                     "type":"long"
+                  },
+                  "idx":{  
+                     "type":"integer"
+                  },
+                  "out_bmask":{  
+                     "type":"integer"
+                  }
+               }
+            }
+         }
       }
-    }
-  }
+   }
 }
-
      */
 
     /*
