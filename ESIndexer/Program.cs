@@ -160,7 +160,7 @@ PUT product
                             if (tw != null) {
                                 tw.Close();
                             };
-                            var path = paramsDict["index"] + j.ToString() + ".json";
+                            string path = paramsDict["index"] + j.ToString() + ".json";
                             File.Create(path).Dispose();
                             tw = new StreamWriter(path, true);
                             fList.Add(path);
@@ -179,10 +179,10 @@ PUT product
                 }
             };
 
-            foreach (var file in fList) {
-                var cmdText = " -s -H \"Content-Type: application/json\" -XPOST  \"" 
+            foreach (string file in fList) {
+                string cmdParams = " -s -H \"Content-Type: application/json\" -XPOST  \"" 
                     + paramsDict["esconnstring"] + "/_bulk\" --data-binary @" + file + " -o output_" + file + ".log";
-                System.Diagnostics.Process.Start(paramsDict["curl"], cmdText);
+                System.Diagnostics.Process.Start(paramsDict["curl"], cmdParams);
             };
 
 
