@@ -548,6 +548,17 @@ namespace Wsds.WebApp
                     .SetBaseTable("client_messages_to_support")
             );
 
+            EntityConfigDictionary.AddConfig("global_localization",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.GlobalLocalization2Json(t.id) as value from global_localization t")
+                    .AddSqlCommandWhere("WHERE t.is_front_or_back=1")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.GlobalLocalization2Json")
+                    .SetSequence("SEQ_GLOBAL_LOCALIZATION")
+                    .SetBaseTable("global_localization")
+            );
+
             services.AddScoped<FoxStoreDBContext>(_ =>
                 new FoxStoreDBContext(mainDataConnString));
 
@@ -604,6 +615,7 @@ namespace Wsds.WebApp
             services.AddScoped<IReviewRepository, FSReviewRepository>();
             services.AddScoped<IBannerSlideRepository, FSBannerSlideRepository>();
             services.AddScoped<IClientMessageRepository, FSClientMessageRepository>();
+            services.AddScoped<IAppLocalizationRepository, FSAppLocalizationRepository>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
@@ -710,6 +722,10 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<BannerSlide_DTO>),
                 p => new CacheService<BannerSlide_DTO>
                     ("banner_slides", 600000, redisCache, true), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<Localization_DTO>),
+                p => new CacheService<Localization_DTO>
+                    ("global_localization", 600000, redisCache), ServiceLifetime.Singleton));
 
             // add roles
             IdentityInit(services.BuildServiceProvider()).Wait();

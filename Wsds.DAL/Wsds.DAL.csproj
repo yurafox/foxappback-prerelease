@@ -420,6 +420,7 @@
     <Compile Include="Entities\DTO\ClientMessage_DTO.cs" />
     <Compile Include="Entities\DTO\DeviceData_DTO.cs" />
     <Compile Include="Entities\DTO\FavoriteStore_DTO.cs" />
+    <Compile Include="Entities\DTO\Localization_DTO.cs" />
     <Compile Include="Entities\DTO\NoveltyDetails_DTO.cs" />
     <Compile Include="Entities\DTO\Novelty_DTO.cs" />
     <Compile Include="Entities\DTO\ProductReview_DTO.cs" />
@@ -520,6 +521,7 @@
     <Compile Include="Providers\EntityProvider.cs" />
     <Compile Include="Providers\SingletonProvider.cs" />
     <Compile Include="Repository\Abstract\IActionRepository.cs" />
+    <Compile Include="Repository\Abstract\IAppLocalizationRepository.cs" />
     <Compile Include="Repository\Abstract\IBannerSlideRepository.cs" />
     <Compile Include="Repository\Abstract\ICartRepository.cs" />
     <Compile Include="Repository\Abstract\IClientMessageRepository.cs" />
@@ -544,6 +546,7 @@
     <Compile Include="Repository\Abstract\IQuotationRepository.cs" />
     <Compile Include="Repository\Abstract\IReviewRepository.cs" />
     <Compile Include="Repository\Abstract\IRoleRepository.cs" />
+    <Compile Include="Repository\Specific\FSAppLocalizationRepository.cs" />
     <Compile Include="Repository\Specific\FSBannerSlideRepository.cs" />
     <Compile Include="Repository\Specific\FSClientMessageRepository.cs" />
     <Compile Include="Repository\Specific\FSDeviceDataRepository.cs" />

@@ -57,7 +57,7 @@ namespace Wsds.WebApp.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetFavoriteStores")]
+        [HttpGet("FavoriteStores")]
         [PullToken]
         public IActionResult GetFavoriteStores()
         {
@@ -75,7 +75,7 @@ namespace Wsds.WebApp.Controllers
         }
 
         [Authorize]
-        [HttpPost("AddFavoriteStore/{id}")]
+        [HttpPost("FavoriteStores/{id}")]
         [PullToken]
         public IActionResult AddFavoriteStore(long id)
         {
@@ -98,7 +98,7 @@ namespace Wsds.WebApp.Controllers
         }
 
         [Authorize]
-        [HttpPost("DeleteFavoriteStore/{id}")]
+        [HttpDelete("FavoriteStores/{id}")]
         [PullToken]
         public IActionResult DeleteFavoriteStore(long id)
         {
