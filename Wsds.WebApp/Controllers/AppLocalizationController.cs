@@ -19,22 +19,7 @@ namespace Wsds.WebApp.Controllers
         [HttpGet]
         public IActionResult GetAppLocalization()
         {
-            return Ok(_alRepo.GetLocale());
+            return Ok(_alRepo.GetFrontLocale());
         }
-
-        //[HttpPost("PostLocale")]
-        //public IActionResult SaveLocale([FromBody] Localization_DTO data)
-        //{
-
-        //    if (data != null)
-        //    {
-        //        Localization_DTO result = _alRepo.SaveLocalization(data);
-        //        if (result != null)
-        //        {
-        //            return CreatedAtRoute("", result);
-        //        }
-        //    }
-        //    return Ok(data.text);
-        //}
     }
 }

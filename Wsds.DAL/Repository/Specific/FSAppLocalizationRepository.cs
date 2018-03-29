@@ -2,7 +2,6 @@
 using Wsds.DAL.Entities.DTO;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
-using Oracle.ManagedDataAccess.Client;
 using System.Linq;
 
 namespace Wsds.DAL.Repository.Specific
@@ -16,27 +15,22 @@ namespace Wsds.DAL.Repository.Specific
             _csl = csl;
         }
 
-        public IEnumerable<Localization_DTO> GetLocale()
+        public IEnumerable<Localization_DTO> GetFrontLocale()
         {
             var cnfg = EntityConfigDictionary.GetConfig("global_localization");
             var prov = new EntityProvider<Localization_DTO>(cnfg);
-            var loc = prov.GetItems();
+            var loc = prov.GetItems("t.is_front_or_back=1");
             if (loc != null && loc.Count() > 0) return loc;
             return null;
         }
 
-        //public Localization_DTO SaveLocalization(Localization_DTO localization)
-        //{
-        //    var cnfg = EntityConfigDictionary.GetConfig("global_localization");
-        //    var prov = new EntityProvider<Localization_DTO>(cnfg);
-        //    localization.frontOrBack = 1;
-        //    if (localization.componentName != null && localization.tagName != null && localization.text != null)
-        //    {
-        //        var loc = prov.GetItems("t.component_name = :compName and t.tag_name = :tagName and t.id_lang = :lang and t.locale_text = :text", new OracleParameter("compName", localization.componentName), new OracleParameter("compName", localization.tagName), new OracleParameter("lang", localization.lang), new OracleParameter("text", localization.text));
-        //        if (loc != null && loc.Count() > 0) return null;
-        //        return prov.InsertItem(localization);
-        //    }
-        //    return null;
-        //}
+        public IEnumerable<Localization_DTO> GetBackLocale()
+        {
+            var cnfg = EntityConfigDictionary.GetConfig("global_localization");
+            var prov = new EntityProvider<Localization_DTO>(cnfg);
+            var loc = prov.GetItems("t.is_front_or_back=0");
+            if (loc != null && loc.Count() > 0) return loc;
+            return null;
+        }
     }
 }

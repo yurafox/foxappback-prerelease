@@ -5,8 +5,7 @@ namespace Wsds.DAL.Repository.Abstract
 {
     public interface IAppLocalizationRepository
     {
-        IEnumerable<Localization_DTO> GetLocale();
-
-        //Localization_DTO SaveLocalization(Localization_DTO localization);
+        IEnumerable<Localization_DTO> GetFrontLocale();
+        IEnumerable<Localization_DTO> GetBackLocale();
     }
 }
