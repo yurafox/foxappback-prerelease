@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Configuration;
 using Wsds.WebApp.Auth;
 
 namespace Wsds.WebApp.Filters
@@ -12,7 +13,10 @@ namespace Wsds.WebApp.Filters
         {
             var headers = context.HttpContext.Request.Headers;
             var currency = headers["X-Currency"].FirstOrDefault();
-            var lang = headers["X-Lang"].FirstOrDefault();
+
+            // get lang from current instance
+            var config = context.HttpContext.RequestServices.GetService(typeof(IConfiguration)) as IConfiguration;
+            var lang = config?["AppOptions:lang"];
 
             // create token model
             var settingsModel = new SettingsModel()
