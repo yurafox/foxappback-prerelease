@@ -553,6 +553,7 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("global_localization",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("SELECT t.id, Serialization.GlobalLocalization2Json(t.id) as value from global_localization t")
+                    .AddSqlCommandWhere($"WHERE t.id_lang={langId}")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.GlobalLocalization2Json")

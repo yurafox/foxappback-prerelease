@@ -32,5 +32,12 @@ namespace Wsds.DAL.Repository.Specific
             if (loc != null && loc.Count() > 0) return loc;
             return null;
         }
+
+        public string GetBackLocaleString(string compName, string tagName)
+        {
+            var locales = GetBackLocale();
+            var localeRow = locales.FirstOrDefault(l=>l.componentName==compName && l.tagName== tagName);
+            return localeRow?.text;
+        }
     }
 }

@@ -7,5 +7,6 @@ namespace Wsds.DAL.Repository.Abstract
     {
         IEnumerable<Localization_DTO> GetFrontLocale();
         IEnumerable<Localization_DTO> GetBackLocale();
+        string GetBackLocaleString(string compName, string tagName);
     }
 }
