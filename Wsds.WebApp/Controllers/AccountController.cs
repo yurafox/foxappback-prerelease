@@ -76,7 +76,7 @@ namespace Wsds.WebApp.Controllers
         [PullToken]
         public async Task Get()
         {
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null)
             {
                 var client = _account.Clients.GetClientByPhone(tokenModel.Phone);
@@ -152,7 +152,7 @@ namespace Wsds.WebApp.Controllers
         public async Task<IActionResult> EditUser([FromBody] User_DTO user)
         {
             Response.StatusCode = 200;
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null && user.phone == tokenModel.Phone)
             {          
 
@@ -197,7 +197,7 @@ namespace Wsds.WebApp.Controllers
         public async Task<IActionResult> ChangePassword([FromBody] PasswdModel passwd)
         {
             Response.StatusCode = 200;
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null)
             {
                 if (!ModelState.IsValid){

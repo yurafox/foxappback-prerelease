@@ -68,6 +68,7 @@ namespace Wsds.WebApp
                 {
                     builder
                         .AllowAnyOrigin()
+                        .AllowAnyHeader()
                         .AllowAnyMethod();
                 });
             });
@@ -78,6 +79,7 @@ namespace Wsds.WebApp
             services.AddSingleton<IConfiguration>(Configuration);
 
             var virtualCatalogId = Convert.ToInt64(Configuration["AppOptions:virtualId"]);
+            var langId = Convert.ToInt64(Configuration["AppOptions:lang"]);
 
             var redisConfig = new ConfigurationOptions
             {

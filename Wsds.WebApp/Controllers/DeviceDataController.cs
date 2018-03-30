@@ -27,7 +27,7 @@ namespace Wsds.WebApp.Controllers
         [PullToken]
         public IActionResult SaveDeviceData([FromBody] DeviceData_DTO data)
         {
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null)
             {
                 var client = _cRepo.GetClientByPhone(tokenModel.Phone);
