@@ -36,7 +36,7 @@ namespace Wsds.DAL.Repository.Specific
         public string GetBackLocaleString(string compName, string tagName)
         {
             var locales = GetBackLocale();
-            var localeRow = locales.FirstOrDefault(l=>l.componentName==compName && l.tagName== tagName);
+            var localeRow = locales.FirstOrDefault((locale) => (locale.componentName == compName && locale.tagName == tagName));
             return localeRow?.text;
         }
     }
