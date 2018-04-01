@@ -20,6 +20,7 @@ namespace Wsds.DAL.Entities
         //public long? prop_Value_Enum { get; set; }
         public Prop_Enum_List_DTO prop_Value_Enum { get; set; }
         public string prop_Value_Long { get; set; }
+        public string pVal { get; set; }
         public long? id_Measure_Unit { get; set; }
         public long? idx { get; set; }
         public long? out_bmask { get; set; }
