@@ -18,11 +18,16 @@ namespace Wsds.DAL.Repository.Specific
 {
     public class FSUserRepository : IUserRepository
     {
+        private const string CompName = "UserRepository";
         private ISmsService _smsService;
-        public FSUserRepository(UserManager<AppUser> manager, ISmsService smsService)
+        private IAppLocalizationRepository _appLocalization;
+        public FSUserRepository(UserManager<AppUser> manager,
+                                ISmsService smsService,
+                                IAppLocalizationRepository appLocalization)
         {
             UserEngine = manager;
             _smsService = smsService;
+            _appLocalization = appLocalization;
         }
 
         public UserManager<AppUser> UserEngine { get; }
@@ -242,8 +247,7 @@ namespace Wsds.DAL.Repository.Specific
             get
             {
                 // TODO:change after localization logic will be Ok 
-                return "Ожидайте временного пароля в SMS сообщении. Обязательно измените пароль " +
-                       "в настройках после авторизации";
+                return $"{_appLocalization.GetBackLocaleString(CompName, "WaitTempPass")}";
             }
         }
         private string GetUserInSystemLocalizationString
@@ -251,7 +255,7 @@ namespace Wsds.DAL.Repository.Specific
             get
             {
                 // TODO:change after localization logic will be Ok 
-                return "Вы уже зарегистрированы в системе";
+                return $"{_appLocalization.GetBackLocaleString(CompName, "AlreadyRegistered")}";
             }
         }
         private string GetSendSmsErrorLocalizationString
@@ -259,7 +263,7 @@ namespace Wsds.DAL.Repository.Specific
             get
             {
                 // TODO:change after localization logic will be Ok 
-                return "Сервис sms занят. Ожидайте смс";
+                return $"{_appLocalization.GetBackLocaleString(CompName, "SmsServiceBusy")}";
             }
         }
         #endregion

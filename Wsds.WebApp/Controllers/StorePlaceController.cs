@@ -57,11 +57,11 @@ namespace Wsds.WebApp.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetFavoriteStores")]
+        [HttpGet("FavoriteStores")]
         [PullToken]
         public IActionResult GetFavoriteStores()
         {
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null)
             {
                 var client = _cRepo.GetClientByPhone(tokenModel.Phone);
@@ -75,11 +75,11 @@ namespace Wsds.WebApp.Controllers
         }
 
         [Authorize]
-        [HttpPost("AddFavoriteStore/{id}")]
+        [HttpPost("FavoriteStores/{id}")]
         [PullToken]
         public IActionResult AddFavoriteStore(long id)
         {
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null && 0 < id)
             {
                 var client = _cRepo.GetClientByPhone(tokenModel.Phone);
@@ -98,11 +98,11 @@ namespace Wsds.WebApp.Controllers
         }
 
         [Authorize]
-        [HttpPost("DeleteFavoriteStore/{id}")]
+        [HttpDelete("FavoriteStores/{id}")]
         [PullToken]
         public IActionResult DeleteFavoriteStore(long id)
         {
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null && 0 < id)
             {
                 var client = _cRepo.GetClientByPhone(tokenModel.Phone);

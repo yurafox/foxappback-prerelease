@@ -22,6 +22,7 @@ namespace Wsds.WebApp.Controllers
     [Route("api/[controller]")]
     public class AccountController : Controller
     {
+        private const string CompName = "AccountController";
         private AccountUserFacade _account;
         private ICrypto _crypto;
 
@@ -34,11 +35,11 @@ namespace Wsds.WebApp.Controllers
         [HttpPost("login")]
         public async Task Login([FromBody] AuthModel auth)
         {
-            var resultMessage = "Invalid Authentication Data";
+            var resultMessage = $"{_account.Locale.GetBackLocaleString(CompName, "LoginInvalidAuth")}";
             if (ModelState.IsValid)
             {
                 var resultCompare = await _account.Users.CheckUser(auth.Phone, auth.Password);
-                if (!resultCompare) resultMessage = "Login or Password incorrect";
+                if (!resultCompare) resultMessage = $"{_account.Locale.GetBackLocaleString(CompName, "LoginIncorrectAuth")}";
                 else
                 {
                     var user = await _account.Users.UserEngine.FindByNameAsync(auth.Phone.ToLower());
@@ -63,7 +64,7 @@ namespace Wsds.WebApp.Controllers
                             new JsonSerializerSettings {Formatting = Formatting.Indented}));
                         return;
                     }
-                    resultMessage = "Can't find client";
+                    resultMessage = $"{_account.Locale.GetBackLocaleString(CompName, "LoginNotClient")}";
                 }
             }
 
@@ -76,7 +77,7 @@ namespace Wsds.WebApp.Controllers
         [PullToken]
         public async Task Get()
         {
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null)
             {
                 var client = _account.Clients.GetClientByPhone(tokenModel.Phone);
@@ -98,7 +99,7 @@ namespace Wsds.WebApp.Controllers
         public async Task<IActionResult> Verify([FromBody] VerifyModel vm)
         {
             if (!_account.Users.VerifyUserPhoneInputData(vm.Phone))
-                return Json(new {message = "Номер не валидный", status = 0});
+                return Json(new {message = $"{_account.Locale.GetBackLocaleString(CompName, "VerifyPhoneNotValid")}", status = 0});
 
             // get user and client
             var user = await _account.Users.GetUserByName(vm.Phone);
@@ -115,14 +116,14 @@ namespace Wsds.WebApp.Controllers
             Response.StatusCode = 200; // init status code like always error
   
             if (!ModelState.IsValid)
-                return Json(new {message = "данные пользователя не валидны", status = 0});
+                return Json(new {message = $"{_account.Locale.GetBackLocaleString(CompName, "CreateAccountNotValid")}", status = 0});
             
 
             var findedUser = await _account.Users.GetUserByName(user.phone);
             var findedClient = _account.Clients.GetClientByPhone(user.phone);
 
             if (findedUser != null || findedClient?.id != null)
-                return Json(new { message = "пользователь уже существует в системе", status = 0});
+                return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "CreateAccountExists")}", status = 0});
             
 
             // create client
@@ -130,7 +131,7 @@ namespace Wsds.WebApp.Controllers
             var clientCreated=_account.Clients.CreateOrUpdateClient(client);
 
             if(clientCreated?.id == null)
-                return Json(new { message = "ошибка создания пользователя", status = 0 });
+                return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "CreateAccountErrorСreating")}", status = 0 });
             
 
             // create identity user
@@ -142,7 +143,7 @@ namespace Wsds.WebApp.Controllers
             }
 
             
-            return Json(new { message = "ошибка создания пользователя", status = 0 });
+            return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "CreateAccountErrorСreating")}", status = 0 });
 
         }
 
@@ -152,12 +153,12 @@ namespace Wsds.WebApp.Controllers
         public async Task<IActionResult> EditUser([FromBody] User_DTO user)
         {
             Response.StatusCode = 200;
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null && user.phone == tokenModel.Phone)
             {          
 
                 if (!ModelState.IsValid){
-                    return Json(new { message = "данные пользователя не валидны", status = 0 });
+                    return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "CreateAccountNotValid")}", status = 0 });
                 }
 
 
@@ -165,7 +166,7 @@ namespace Wsds.WebApp.Controllers
                 var findedClient = _account.Clients.GetClientByPhone(user.phone);
 
                 if (findedUser == null || findedClient?.id == null)
-                    return Json(new { message = "ошибка редактирования пользователя", status = 0 });
+                    return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "EditAccountErrorEdit")}", status = 0 });
 
                 // update client
                 var client = _account.Users.ToClient(user);
@@ -174,7 +175,7 @@ namespace Wsds.WebApp.Controllers
                 var clientCreated = _account.Clients.CreateOrUpdateClient(client);
 
                 if (clientCreated?.id == null)
-                    return Json(new { message = "ошибка создания пользователя", status = 0 });
+                    return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "EditAccountErrorEdit")}", status = 0 });
 
                 // update user
                 findedUser.Email = clientCreated.email;
@@ -182,13 +183,17 @@ namespace Wsds.WebApp.Controllers
                 var identityUser = await _account.Users.UserEngine.UpdateAsync(findedUser);
 
                 if (identityUser == null)
-                    return Json(new { message = "ошибка создания identity пользователя", status = 0 });
+                    return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "EditAccountIdentityError")}", status = 0 });
 
-                return Json(new { content = _account.Users.Swap(clientCreated, _crypto.Encrypt), message = "пользователь успешно обновлен", status = 2 });
+                return Json(new
+                { content = _account.Users.Swap(clientCreated, _crypto.Encrypt),
+                  message = $"{_account.Locale.GetBackLocaleString(CompName, "EditAccountUpdateSuccess")}",
+                  status = 2 }
+                );
             }
 
             Response.StatusCode = 401;
-            return Json(new { message = "ошибка авторизации пользователя", status = 0 });
+            return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "EditAccountAuthError")}", status = 0 });
         }
 
         [Authorize]
@@ -197,25 +202,25 @@ namespace Wsds.WebApp.Controllers
         public async Task<IActionResult> ChangePassword([FromBody] PasswdModel passwd)
         {
             Response.StatusCode = 200;
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null)
             {
                 if (!ModelState.IsValid){
-                    return Json(new { message = "данные не валидны", status = 0 });
+                    return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "ChangePasswordNotValid")}", status = 0 });
                 }
 
                 var resultCompare = await _account.Users.CheckUser(tokenModel.Phone, passwd.Password);
-                if (!resultCompare) return Json(new { message = "не удалось связать пользователя и пароль", status = 0 });
+                if (!resultCompare) return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "ChangePasswordFailedLink")}", status = 0 });
 
                 var identityUser = await _account.Users.GetUserByName(tokenModel.Phone);
                 var result = await _account.Users.UserEngine.ChangePasswordAsync(identityUser, passwd.Password, passwd.NewPassword);
-                if(!result.Succeeded) return Json(new { message = "ошибка смены пароля", status = 0 });
+                if(!result.Succeeded) return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "ChangePasswordFailedChange")}", status = 0 });
 
-                return Json(new { message = "пароль успешно изменен", status = 2 });
+                return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "ChangePasswordSuccessChange")}", status = 2 });
             }
 
             Response.StatusCode = 401;
-            return Json(new { message = "ошибка авторизации пользователя", status = 0 });
+            return Json(new { message = $"{_account.Locale.GetBackLocaleString(CompName, "ChangePasswordErrorAuth")}", status = 0 });
         }
 
         [Authorize(Roles = "retail")]
