@@ -55,7 +55,7 @@ PUT product
                      "type":"long"
                   },
                   "name":{  
-                     "type":"text"
+                     "type":"keyword"
                   }
                }
             },
@@ -66,7 +66,7 @@ PUT product
                      "type":"long"
                   },
                   "name":{  
-                     "type":"text"
+                     "type":"keyword"
                   }
                }
             },
@@ -80,7 +80,24 @@ PUT product
                      "type":"long"
                   },
                   "id_Prop":{  
-                     "type":"object"
+                     "type":"object",
+                      "properties":{  
+                        "id":{  
+                           "type":"long"
+                        },
+                        "name":{  
+                           "type":"keyword"
+                        },
+                        "prop_type": {
+                          "type": "short"
+                        },
+                        "is_Multi_Select": {
+                          "type": "short"
+                        },
+                        "url": {  
+                           "type":"text"
+                        }
+                     }
                   },
                   "prop_Value_Str":{  
                      "type":"text"
@@ -398,7 +415,7 @@ GET /product/_search?pretty=true
    },
    "aggs": {
     "mnfAgg": {
-      "terms": { "field": "manufacturerId" } 
+      "terms":{"script":"doc['manufacturer.id'].value + '|' + doc['manufacturer.name'].value"}
     },
     "propsAgg": {
       "nested": {
@@ -406,10 +423,10 @@ GET /product/_search?pretty=true
       },
       "aggs": {
         "idProp": {
-          "terms": {"field": "props.id_Prop.id", "size": 10},
+          "terms": {"script":"doc ['props.id_Prop.id'].value + '|' + doc ['props.id_Prop.name'].value + '|' + doc ['props.out_bmask'].value"},
           "aggs": {
             "propVal": {
-              "terms": {"field": "props.pVal", "size": 5 }
+              "terms": {"field": "props.pVal" }
             }
           }
         }
