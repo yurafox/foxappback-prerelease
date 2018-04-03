@@ -124,12 +124,66 @@ PUT product
                      "type":"integer"
                   }
                }
-            }
+            },
+            "propsF":{  
+               "type":"nested",
+               "properties":{  
+                  "id":{  
+                     "type":"long"
+                  },
+                  "id_Product":{  
+                     "type":"long"
+                  },
+                  "id_Prop":{  
+                     "type":"object",
+                      "properties":{  
+                        "id":{  
+                           "type":"long"
+                        },
+                        "name":{  
+                           "type":"keyword"
+                        },
+                        "prop_type": {
+                          "type": "short"
+                        },
+                        "is_Multi_Select": {
+                          "type": "short"
+                        },
+                        "url": {  
+                           "type":"text"
+                        }
+                     }
+                  },
+                  "prop_Value_Str":{  
+                     "type":"text"
+                  },
+                  "prop_Value_Number":{  
+                     "type":"float"
+                  },
+                  "prop_Value_Bool":{  
+                     "type":"byte"
+                  },
+                  "prop_Value_Enum":{  
+                     "type":"object"
+                  },
+                  "pVal":{  
+                     "type":"keyword"
+                  },                  
+                  "id_Measure_Unit":{  
+                     "type":"long"
+                  },
+                  "idx":{  
+                     "type":"integer"
+                  },
+                  "out_bmask":{  
+                     "type":"integer"
+                  }
+               }
+            }  
          }
       }
    }
 }
-
 
 ************************
 **** Generic query *****
@@ -346,21 +400,21 @@ GET /product/_search?pretty=true
                   "must":[  
                      {  
                         "nested":{  
-                           "path":"props",
+                           "path":"propsF",
                            "query":{  
                               "bool":{  
                                  "must":[  
                                     {  
                                       "bool": {
                                        "should": [
-                                         {"match_phrase":{"props.pVal":"71\" и более"}},
-                                         {"match_phrase":{"props.pVal":"49-50\""}}
+                                         {"match_phrase":{"propsF.pVal":"71\" и более"}},
+                                         {"match_phrase":{"propsF.pVal":"49-50\""}}
                                        ] 
                                       } 
                                     },
                                     {  
                                        "term":{  
-                                          "props.id_Prop.id":{  
+                                          "propsF.id_Prop.id":{  
                                              "value":"8796361294431"
                                           }
                                        }
@@ -372,20 +426,20 @@ GET /product/_search?pretty=true
                      },
                      {  
                         "nested":{  
-                           "path":"props",
+                           "path":"propsF",
                            "query":{  
                               "bool":{  
                                  "must":[  
                                     {  
                                       "bool": {
                                        "should": [
-                                         {"match_phrase":{"props.pVal":"3840 x 2160 (4K UHD)"}}
+                                         {"match_phrase":{"propsF.pVal":"3840 x 2160 (4K UHD)"}}
                                        ] 
                                       }                                      
                                     },
                                     {  
                                        "term":{  
-                                          "props.id_Prop.id":{  
+                                          "propsF.id_Prop.id":{  
                                              "value":"8796186083935"
                                           }
                                        }
@@ -419,14 +473,14 @@ GET /product/_search?pretty=true
     },
     "propsAgg": {
       "nested": {
-        "path": "props"
+        "path": "propsF"
       },
       "aggs": {
         "idProp": {
-          "terms": {"script":"doc ['props.id_Prop.id'].value + '|' + doc ['props.id_Prop.name'].value + '|' + doc ['props.out_bmask'].value"},
+          "terms": {"script":"doc ['propsF.id_Prop.id'].value + '|' + doc ['propsF.id_Prop.name'].value + '|' + doc ['propsF.out_bmask'].value"},
           "aggs": {
             "propVal": {
-              "terms": {"field": "props.pVal" }
+              "terms": {"field": "propsF.pVal" }
             }
           }
         }
