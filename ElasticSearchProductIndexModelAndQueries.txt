@@ -7,7 +7,7 @@ PUT product
       "_doc":{  
          "properties":{  
             "id":{  
-               "type":"long"
+               "type":"keyword"
             },
             "name":{  
                "type":"text"
@@ -184,6 +184,7 @@ PUT product
       }
    }
 }
+
 
 ************************
 **** Generic query *****
