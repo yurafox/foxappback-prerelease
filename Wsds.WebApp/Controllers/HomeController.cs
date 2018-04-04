@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Wsds.DAL.Infrastructure.Facade;
 using Wsds.WebApp.Infrastructure;
+using Serilog;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -13,17 +14,21 @@ namespace Wsds.WebApp.Controllers
     {
         #region init cash on instance app
         private AccountUserFacade _accountFacade;
+        ILogger _logger;
         #endregion
 
         #region ghost DI instance in .ctor
-        public HomeController(AccountUserFacade accountFacade)
+        public HomeController(AccountUserFacade accountFacade, ILogger logger)
         {
             _accountFacade = accountFacade;
+            _logger = logger;
         }
         #endregion
 
         public IActionResult Index()
         {
+            _logger.Information("Invoked Index method");
+
             return View();
         }
     }

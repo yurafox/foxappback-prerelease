@@ -24,6 +24,9 @@ using StackExchange.Redis;
 using Wsds.DAL.Services.Abstract;
 using Wsds.DAL.Services.Specific;
 using Wsds.WebApp.Auth.Protection;
+using Serilog;
+using Serilog.Sinks;
+using System.IO;
 
 namespace Wsds.WebApp
 {
@@ -42,9 +45,16 @@ namespace Wsds.WebApp
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
-        }
 
-        
+            //configuring Serilog
+            //https://serilog.net/
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.RollingFile(Path.Combine(env.ContentRootPath, "Logs\\log-{Date}.log"))
+                .WriteTo.Console()
+                .WriteTo.Seq("http://localhost:5341")
+                .CreateLogger();
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -76,6 +86,9 @@ namespace Wsds.WebApp
 
             var mainDataConnString = Configuration.GetConnectionString("MainDataConnection");
             services.AddSingleton<IConfiguration>(Configuration);
+            
+            //creating Serilog Singleton
+            services.AddSingleton<Serilog.ILogger>(Log.Logger);
 
             var virtualCatalogId = Convert.ToInt64(Configuration["AppOptions:virtualId"]);
 
@@ -719,6 +732,9 @@ namespace Wsds.WebApp
                               IHostingEnvironment env,
                               ILoggerFactory loggerFactory)
         {
+            //add Serilog configuration
+            loggerFactory.AddSerilog();
+            
             loggerFactory.AddConsole();
             app.UseStatusCodePages();
 
