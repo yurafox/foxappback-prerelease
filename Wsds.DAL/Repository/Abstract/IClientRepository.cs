@@ -20,7 +20,7 @@ namespace Wsds.DAL.Repository.Abstract
 
         object GetClientBonusesInfo(long idClient);
         IEnumerable<object> GetClientBonusesExpireInfo(long idClient);
-        void LogProductView(long idProduct, string viewParams);
+        void LogProductView(long idProduct, string viewParams,long clientId);
         ClientAddress_DTO ClientAddress(long id);
         IEnumerable<ClientAddress_DTO> GetClientAddressesByClientId(long id);
         ClientAddress_DTO CreateClientAddress(ClientAddress_DTO item);

@@ -242,30 +242,12 @@ namespace Wsds.DAL.Repository.Specific
         #endregion
 
         // service localize str for message
-        private string GetSmsWaitLocalizationString
-        {
-            get
-            {
-                // TODO:change after localization logic will be Ok 
-                return $"{_appLocalization.GetBackLocaleString(CompName, "WaitTempPass")}";
-            }
-        }
-        private string GetUserInSystemLocalizationString
-        {
-            get
-            {
-                // TODO:change after localization logic will be Ok 
-                return $"{_appLocalization.GetBackLocaleString(CompName, "AlreadyRegistered")}";
-            }
-        }
-        private string GetSendSmsErrorLocalizationString
-        {
-            get
-            {
-                // TODO:change after localization logic will be Ok 
-                return $"{_appLocalization.GetBackLocaleString(CompName, "SmsServiceBusy")}";
-            }
-        }
+        private string GetSmsWaitLocalizationString => $"{_appLocalization.GetBackLocaleString(CompName, "WaitTempPass")}";
+
+        private string GetUserInSystemLocalizationString => $"{_appLocalization.GetBackLocaleString(CompName, "AlreadyRegistered")}";
+
+        private string GetSendSmsErrorLocalizationString => $"{_appLocalization.GetBackLocaleString(CompName, "SmsServiceBusy")}";
+
         #endregion
     }
 }

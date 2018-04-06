@@ -43,7 +43,7 @@ namespace Wsds.WebApp.Controllers
                     }
                 }
             }
-            return BadRequest();
+            return Ok();
         }
     }
 }

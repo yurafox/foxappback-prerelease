@@ -765,18 +765,6 @@ namespace Wsds.WebApp
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-          
-            // this is obsolete call 
-            //TODO: check this method when we will be create admin panel
-           // IdentityInit(app.ApplicationServices).Wait();
-
-            // create global dependency collection ICacheService
-            /*
-            var services = app.ApplicationServices.GetServices<ICacheService>();
-            AppDepResolver.InitCollection(services);
-             */ 
-
-            //IdentityInit(app.ApplicationServices).Wait();
         }
 
         //[Obsolete]

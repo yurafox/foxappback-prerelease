@@ -44,7 +44,7 @@ namespace Wsds.WebApp.Controllers
                 {
                     var user = await _account.Users.UserEngine.FindByNameAsync(auth.Phone.ToLower());
                     var roles = await _account.Users.UserEngine.GetRolesAsync(user);
-                    //TODO: check this role method when we will be create admin panel
+         
                     //var roles = await _userRepository.UserEngine.GetRolesAsync(user);
 
                     // get clients
