@@ -1,0 +1,491 @@
+﻿************************
+*** Product Index ******
+************************
+PUT product
+{  
+   "mappings":{  
+      "_doc":{  
+         "properties":{  
+            "id":{  
+               "type":"keyword"
+            },
+            "name":{  
+               "type":"text"
+            },
+            "price":{  
+               "type":"float"
+            },
+            "oldPrice":{  
+               "type":"float"
+            },
+            "bonuses":{  
+               "type":"float"
+            },
+            "manufacturerId":{  
+               "type":"long"
+            },
+            "imageUrl":{  
+               "type":"text"
+            },
+            "rating":{  
+               "type":"short"
+            },
+            "recall":{  
+               "type":"short"
+            },
+            "supplOffers":{  
+               "type":"short"
+            },
+            "barcode":{  
+               "type":"text"
+            },
+            "popularity":{  
+               "type":"long"
+            },
+            "description":{  
+               "type":"text"
+            },
+            "srchString":{  
+               "type":"text"
+            },            
+            "groups":{  
+               "type":"nested",
+               "properties":{  
+                  "id":{  
+                     "type":"long"
+                  },
+                  "name":{  
+                     "type":"keyword"
+                  }
+               }
+            },
+            "manufacturer":{  
+               "type":"object",
+               "properties":{  
+                  "id":{  
+                     "type":"long"
+                  },
+                  "name":{  
+                     "type":"keyword"
+                  }
+               }
+            },
+            "props":{  
+               "type":"nested",
+               "properties":{  
+                  "id":{  
+                     "type":"long"
+                  },
+                  "id_Product":{  
+                     "type":"long"
+                  },
+                  "id_Prop":{  
+                     "type":"object",
+                      "properties":{  
+                        "id":{  
+                           "type":"long"
+                        },
+                        "name":{  
+                           "type":"keyword"
+                        },
+                        "prop_type": {
+                          "type": "short"
+                        },
+                        "is_Multi_Select": {
+                          "type": "short"
+                        },
+                        "url": {  
+                           "type":"text"
+                        }
+                     }
+                  },
+                  "prop_Value_Str":{  
+                     "type":"text"
+                  },
+                  "prop_Value_Number":{  
+                     "type":"float"
+                  },
+                  "prop_Value_Bool":{  
+                     "type":"byte"
+                  },
+                  "prop_Value_Enum":{  
+                     "type":"object"
+                  },
+                  "pVal":{  
+                     "type":"keyword"
+                  },                  
+                  "id_Measure_Unit":{  
+                     "type":"long"
+                  },
+                  "idx":{  
+                     "type":"integer"
+                  },
+                  "out_bmask":{  
+                     "type":"integer"
+                  }
+               }
+            },
+            "propsF":{  
+               "type":"nested",
+               "properties":{  
+                  "id":{  
+                     "type":"long"
+                  },
+                  "id_Product":{  
+                     "type":"long"
+                  },
+                  "id_Prop":{  
+                     "type":"object",
+                      "properties":{  
+                        "id":{  
+                           "type":"long"
+                        },
+                        "name":{  
+                           "type":"keyword"
+                        },
+                        "prop_type": {
+                          "type": "short"
+                        },
+                        "is_Multi_Select": {
+                          "type": "short"
+                        },
+                        "url": {  
+                           "type":"text"
+                        }
+                     }
+                  },
+                  "prop_Value_Str":{  
+                     "type":"text"
+                  },
+                  "prop_Value_Number":{  
+                     "type":"float"
+                  },
+                  "prop_Value_Bool":{  
+                     "type":"byte"
+                  },
+                  "prop_Value_Enum":{  
+                     "type":"object"
+                  },
+                  "pVal":{  
+                     "type":"keyword"
+                  },                  
+                  "id_Measure_Unit":{  
+                     "type":"long"
+                  },
+                  "idx":{  
+                     "type":"integer"
+                  },
+                  "out_bmask":{  
+                     "type":"integer"
+                  }
+               }
+            }  
+         }
+      }
+   }
+}
+
+
+************************
+**** Generic query *****
+************************
+GET /product/_search?pretty=true
+{
+  "from" : 0, "size" : 30,
+  "sort" : [
+    { "price" : {"order" : "asc"}}
+  ],
+  "query": {
+    "bool": {
+      "must": [
+        /* MANUFACTURERS */
+        {
+          "bool": {
+            "should": [
+                {"term": {"manufacturerId": "220"}},
+                {"term": {"manufacturerId": "109483"}}
+            ]
+          }
+        },
+        
+        /* PROPS */
+        {
+          "bool": {
+            "must": [
+              {
+                "nested": {
+                  "path": "props",
+                  "query": {
+                    "bool": {
+                      "must": [
+                        {
+                            "match_phrase": {
+                              "props.pVal": "белый"
+                            }
+                        },
+                        {
+                          "term": {
+                            "props.id_Prop.id": {"value": "8796232286815"}
+                          }
+                        }
+                        
+                      ] 
+                    } 
+                  }
+                }
+              } ,
+
+              {
+                "nested": {
+                  "path": "props",
+                  "query": {
+                    "bool": {
+                      "must": [
+                        {
+                            "match_phrase": {
+                              "props.pVal": "чехол-книжка"
+                            }
+                        },
+                        {
+                          "term": {
+                            "props.id_Prop.id": {"value": "8796239004255"}
+                          }
+                        }
+                        
+                      ] 
+                    } 
+                  }
+                }
+              }                      
+            ]
+          }
+        },
+
+        /* SEARCH BY TEXT */
+        {
+          "simple_query_string" : {
+            "query": "samsung",
+            "fields": [ "name", "description", "_id"],
+            "default_operator": "AND"
+          }
+        },
+        
+        /* GROUPS */        
+        {
+          "nested" : {
+              "path" : "groups",
+              "query" : {
+                    "term": {
+                      "groups.id": {
+                        "value": "8796753985678"
+                      }
+                    }
+                  }
+              }
+          }          
+      ]
+    }
+  }
+}
+******************************************************************
+******* Multiple Props (with logical OR for same PropID) *********
+******************************************************************
+GET /product/_search?pretty=true
+{  
+   "from":0,
+   "size":30,
+   "sort":[  
+      {  
+         "price":{  
+            "order":"asc"
+         }
+      }
+   ],
+   "query":{  
+      "bool":{  
+         "must":[  
+            {  
+               "bool":{  
+                  "must":[  
+                     {  
+                        "nested":{  
+                           "path":"props",
+                           "query":{  
+                              "bool":{  
+                                 "must":[  
+                                    {  
+                                      "bool": {
+                                       "should": [
+                                         {"match_phrase":{"props.pVal":"71\" и более"}},
+                                         {"match_phrase":{"props.pVal":"49-50\""}}
+                                       ] 
+                                      } 
+                                    },
+                                    {  
+                                       "term":{  
+                                          "props.id_Prop.id":{  
+                                             "value":"8796361294431"
+                                          }
+                                       }
+                                    }
+                                 ]
+                              }
+                           }
+                        }
+                     },
+                     {  
+                        "nested":{  
+                           "path":"props",
+                           "query":{  
+                              "bool":{  
+                                 "must":[  
+                                    {  
+                                      "bool": {
+                                       "should": [
+                                         {"match_phrase":{"props.pVal":"3840 x 2160 (4K UHD)"}}
+                                       ] 
+                                      }                                      
+                                    },
+                                    {  
+                                       "term":{  
+                                          "props.id_Prop.id":{  
+                                             "value":"8796186083935"
+                                          }
+                                       }
+                                    }
+                                 ]
+                              }
+                           }
+                        }
+                     }
+                  ]
+               }
+            },
+            {  
+               "simple_query_string":{  
+                  "query":"lcdtv",
+                  "fields":[  
+                     "name",
+                     "description",
+                     "srchString",
+                     "_id"
+                  ],
+                  "default_operator":"and"
+               }
+            }
+         ]
+      }
+   }
+}
+
+***************************************************************************
+******* Multiple Props With Aggregation by Manufacturer and PropId ********
+***************************************************************************
+GET /product/_search?pretty=true
+{  
+   "from":0,
+   "size":30,
+   "sort":[  
+      {  
+         "price":{  
+            "order":"asc"
+         }
+      }
+   ],
+   "query":{  
+      "bool":{  
+         "must":[  
+            
+            {  
+               "bool":{  
+                  "must":[  
+                     {  
+                        "nested":{  
+                           "path":"propsF",
+                           "query":{  
+                              "bool":{  
+                                 "must":[  
+                                    {  
+                                      "bool": {
+                                       "should": [
+                                         {"match_phrase":{"propsF.pVal":"71\" и более"}},
+                                         {"match_phrase":{"propsF.pVal":"49-50\""}}
+                                       ] 
+                                      } 
+                                    },
+                                    {  
+                                       "term":{  
+                                          "propsF.id_Prop.id":{  
+                                             "value":"8796361294431"
+                                          }
+                                       }
+                                    }
+                                 ]
+                              }
+                           }
+                        }
+                     },
+                     {  
+                        "nested":{  
+                           "path":"propsF",
+                           "query":{  
+                              "bool":{  
+                                 "must":[  
+                                    {  
+                                      "bool": {
+                                       "should": [
+                                         {"match_phrase":{"propsF.pVal":"3840 x 2160 (4K UHD)"}}
+                                       ] 
+                                      }                                      
+                                    },
+                                    {  
+                                       "term":{  
+                                          "propsF.id_Prop.id":{  
+                                             "value":"8796186083935"
+                                          }
+                                       }
+                                    }
+                                 ]
+                              }
+                           }
+                        }
+                     }
+                  ]
+               }
+            },
+            {  
+               "simple_query_string":{  
+                  "query":"lcdtv",
+                  "fields":[  
+                     "name",
+                     "description",
+                     "srchString",
+                     "_id"
+                  ],
+                  "default_operator":"and"
+               }
+            }
+         ]
+      }
+   },
+   "aggs": {
+    "mnfAgg": {
+      "terms":{"script":"doc['manufacturer.id'].value + '|' + doc['manufacturer.name'].value"}
+    },
+    "propsAgg": {
+      "nested": {
+        "path": "propsF"
+      },
+      "aggs": {
+        "idProp": {
+          "terms": {"script":"doc ['propsF.id_Prop.id'].value + '|' + doc ['propsF.id_Prop.name'].value + '|' + doc ['propsF.out_bmask'].value"},
+          "aggs": {
+            "propVal": {
+              "terms": {"field": "propsF.pVal" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -96,6 +96,14 @@ namespace Wsds.WebApp
             var redisCache = new Context(redisConfig);
             services.AddSingleton(redisCache);
 
+            EntityConfigDictionary.AddConfig("app_params",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, Json_object('id' value t.id, 'propName' value t.prop_name, 'propVal' value t.prop_value) as value " +
+                                            "from APP_PROPS t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+            );
+
             EntityConfigDictionary.AddConfig("application_keys",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select k.id, JSON_OBJECT ('id' value id, 'key' value key," +
@@ -587,6 +595,7 @@ namespace Wsds.WebApp
             });
 
 
+            services.AddScoped<IAppParamsRepository, FSAppParamsRepository>();
             services.AddScoped<ICreditRepository, FSCreditRepository>();
             services.AddScoped<IStorePlaceRepository, FSStorePlaceRepository>();
             services.AddScoped<ICartRepository, FSCartRepository>();
@@ -624,10 +633,13 @@ namespace Wsds.WebApp
             //services.AddScoped<IRoleRepository, FSRoleRepository>();
             //services.AddScoped<IBrandRepository, FSBrandRepository>();
 
+            services.Add(new ServiceDescriptor(typeof(ICacheService<AppParam_DTO>),
+                    p => new CacheService<AppParam_DTO>
+                    ("app_params", 100000, redisCache, true), ServiceLifetime.Singleton));
+
             services.Add(new ServiceDescriptor(typeof(ICacheService<Client_DTO>),
                     p => new CacheService<Client_DTO>
                     ("client", 1000000, redisCache, false), ServiceLifetime.Singleton));
-
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Quotation_DTO>),
                     p => new CacheService<Quotation_DTO>
