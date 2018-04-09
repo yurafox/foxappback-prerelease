@@ -114,5 +114,19 @@ namespace Wsds.WebApp.Controllers
             _cliRepo.DeleteClientAddress(id);
             return NoContent();
         }
+
+        [HttpGet("OrderDatesRanges")]
+        public IActionResult GetClientOrderDatesRanges()
+        {
+            return Ok(_cliRepo.GetClientOrderDatesRanges());
+        }
+
+        [HttpGet("OrderDatesRanges")]
+        [Link("isDefault")]
+        public IActionResult GetDefaultClientOrderDatesRange([FromQuery] bool isDefault)
+        {
+            return Ok(_cliRepo.GetClientOrderDatesRanges().Where(x => x.isDefault == isDefault).FirstOrDefault());
+        }
+
     }
 }

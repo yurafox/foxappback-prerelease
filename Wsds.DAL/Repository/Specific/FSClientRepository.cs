@@ -18,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Diagnostics;
 using Wsds.DAL.Entities.DTO;
+using System.Globalization;
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -343,6 +344,32 @@ namespace Wsds.DAL.Repository.Specific
         public Client_DTO GetClientByPhone(string phone)
         {
             return GetClientsByPhone(phone).FirstOrDefault();
+        }
+
+
+        private DateTime GetClientRegisterDate(long idClient) {
+            return DateTime.ParseExact("20151120",  //TODO return client creation date from T22
+                                       "yyyyMMdd",
+                                       CultureInfo.InvariantCulture);
+        }
+
+        public IEnumerable<ClientOrderDatesRange_DTO> GetClientOrderDatesRanges()
+        {
+            var idClient = 100; //TODO я
+
+            List<ClientOrderDatesRange_DTO> res = new List<ClientOrderDatesRange_DTO> {
+                new ClientOrderDatesRange_DTO { key = "30d", displayName = "Last 30 days" }, //TODO localization
+                new ClientOrderDatesRange_DTO { key = "6m", displayName = "Last 6 months" , isDefault = true}  //TODO localization
+            };
+
+            int yearReg = GetClientRegisterDate(idClient).Year;
+            int yearNow = DateTime.Now.Year;
+
+            for (var i = yearNow; i >= yearReg; i--) {
+                res.Add(new ClientOrderDatesRange_DTO { key = i.ToString(), displayName = i.ToString() });
+            }
+
+            return res;
         }
     }
 }

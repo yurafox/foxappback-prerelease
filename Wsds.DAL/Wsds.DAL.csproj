@@ -405,6 +405,7 @@
     <Compile Include="Entities\Client_Prop_Value.cs" />
     <Compile Include="Entities\Communication\CalculateCartRequest.cs" />
     <Compile Include="Entities\Communication\CalculateCartResponse.cs" />
+    <Compile Include="Entities\DTO\ClientOrderProductsByDate_DTO.cs" />
     <Compile Include="Entities\Communication\DeliveryCostResponse.cs" />
     <Compile Include="Entities\Communication\DeliveryDateRequest.cs" />
     <Compile Include="Entities\Communication\DeliveryDateResponse.cs" />
@@ -419,6 +420,7 @@
     <Compile Include="Entities\DTO\AppKeys_DTO.cs" />
     <Compile Include="Entities\DTO\City_DTO.cs" />
     <Compile Include="Entities\DTO\ClientMessage_DTO.cs" />
+    <Compile Include="Entities\DTO\ClientOrderDatesRange_DTO.cs" />
     <Compile Include="Entities\DTO\DeviceData_DTO.cs" />
     <Compile Include="Entities\DTO\FavoriteStore_DTO.cs" />
     <Compile Include="Entities\DTO\Localization_DTO.cs" />

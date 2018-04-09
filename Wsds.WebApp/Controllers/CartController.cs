@@ -56,10 +56,16 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cartRepo.GetClientOrderProductsByOrderId(idOrder));
         }
 
-        [HttpGet("GetClientOrders")]
+        [HttpGet("ClientOrder")]
         public IActionResult GetClientOrders()
         {
             return Ok(_cartRepo.GetClientOrders());
+        }
+
+        [HttpGet("ClientOrder/{id}")]
+        public IActionResult GetClientOrders(long id)
+        {
+            return Ok(_cartRepo.GetClientOrder(id));
         }
 
         [HttpPut("ClientDraftOrder")]
@@ -78,6 +84,12 @@ namespace Wsds.WebApp.Controllers
         public IActionResult PostOrder([FromBody] ClientOrder_DTO order)
         {
             return Ok(_cartRepo.PostOrder(order));
+        }
+
+        [HttpGet("ClientOrderProductsByDate")]
+        public IActionResult GetClientOrderProductsByDate([FromQuery] string datesRange)
+        {
+            return Ok(_cartRepo.GetOrderProductsByDate(datesRange));
         }
     }
 }

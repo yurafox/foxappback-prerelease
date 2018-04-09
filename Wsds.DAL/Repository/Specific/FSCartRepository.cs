@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Oracle.ManagedDataAccess.Client;
+using Oracle.ManagedDataAccess.Types;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -21,12 +22,16 @@ namespace Wsds.DAL.Repository.Specific
         private readonly IClientRepository _clRepo;
         private readonly IConfiguration _config;
         private ICacheService<Quotation_Product_DTO> _csQProduct;
+        private IProductRepository _prodRepo;
+
         public FSCartRepository(IClientRepository clRepo, 
                                 IConfiguration config,
+                                IProductRepository prodRepo,
                                 ICacheService<Quotation_Product_DTO> csQProduct)
         {
             _clRepo = clRepo;
             _config = config;
+            _prodRepo = prodRepo;
             _csQProduct = csQProduct;
         }
 
@@ -296,6 +301,89 @@ namespace Wsds.DAL.Repository.Specific
                 }
             };
             return res;
+        }
+
+        public IEnumerable<ClientOrderProductsByDate_DTO> GetOrderProductsByDate(string datesRange)
+        {
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            var clientId = 100; //TODO
+            DateTime d1 = new DateTime();
+            DateTime d2 = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 00, 00, 00);
+
+            if (datesRange.ToLower() == "30d")
+            {
+                d1 = d2.AddDays(-31);
+            }
+            else if (datesRange.ToLower() == "6m")
+            {
+                d1 = d2.AddDays(-183);
+            }
+            else {
+                int year = Int32.Parse(datesRange);
+                d1 = new DateTime(year, 01, 01);
+                d2 = new DateTime(year, 12, 31);
+            };
+            List<ClientOrderProductsByDate_DTO> res = new List<ClientOrderProductsByDate_DTO>();
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("select o.id as orderId, o.order_date, s.id as orderSpecId, qp.id_product, s.lo_track_ticket, s.id_quotation " +
+                                                "from CLIENT_ORDERS o, ORDER_SPEC_PRODUCTS s, QUOTATIONS_PRODUCTS qp " +
+                                                "where o.id = s.id_order and o.id_client = :idClient and s.id_quotation = qp.id " +
+                                                "and trunc(o.order_date) between :d1 and :d2 and o.id_status>0 and o.id_status<=200 " +
+                                                "order by o.order_date desc", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add(new OracleParameter("idClient", clientId));
+                    OracleParameter fromDate = new OracleParameter("d1", OracleDbType.Date)
+                    {
+                        Value = (OracleDate)d1
+                    };
+                    cmd.Parameters.Add(fromDate);
+
+                    OracleParameter toDate = new OracleParameter("d2", OracleDbType.Date)
+                    {
+                        Value = (OracleDate)d2
+                    };
+                    cmd.Parameters.Add(toDate);
+
+                    con.Open();
+
+                    var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var prodId = (long)reader["id_product"];
+                        Product_DTO product = _prodRepo.Product(prodId);
+
+                        ClientOrderProductsByDate_DTO item = new ClientOrderProductsByDate_DTO {
+                            orderId = (long)reader["orderid"],
+                            orderDate = (DateTime)reader["order_date"],
+                            orderSpecId = (long)reader["orderspecid"],
+                            idProduct = (long)reader["id_product"],
+                            productName = product.name,
+                            productImageUrl = product.imageUrl,
+                            loTrackTicket = reader["lo_track_ticket"].ToString(),
+                            idQuotation = (long)reader["id_quotation"]
+                        };
+                        res.Add(item);
+                    };
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+            return res;
+        }
+
+        public ClientOrder_DTO GetClientOrder(long orderId)
+        {
+            var coaCnfg = EntityConfigDictionary.GetConfig("client_order_all");
+            var prov = new EntityProvider<ClientOrder_DTO>(coaCnfg);
+
+            return prov.GetItems("t.id_client = :idClient and t.id = :id", 
+                                 new OracleParameter("idClient", 100),
+                                 new OracleParameter("id", orderId)
+                                 ).FirstOrDefault(); //TODO я
         }
     }
 }

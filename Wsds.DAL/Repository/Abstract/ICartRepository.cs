@@ -19,7 +19,9 @@ namespace Wsds.DAL.Repository.Abstract
         void DeleteCartProduct(long id);
         IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByOrderId(long orderId);
         IEnumerable<ClientOrder_DTO> GetClientOrders();
+        ClientOrder_DTO GetClientOrder(long orderId);
         IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj);
         PostOrderResponse PostOrder(ClientOrder_DTO order);
+        IEnumerable<ClientOrderProductsByDate_DTO> GetOrderProductsByDate(string datesRange);
     }
 }
