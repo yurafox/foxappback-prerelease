@@ -52,8 +52,7 @@ namespace Wsds.DAL.Repository.Specific
         }
 
 
-        private bool CanUpdateOrder(long id) {
-            var idClient = 100; // TODO я
+        private bool CanUpdateOrder(long id,long idClient) {
             var cOrders = EntityConfigDictionary.GetConfig("client_order");
             var ordersProv = new EntityProvider<ClientOrder_DTO>(cOrders);
 
@@ -65,9 +64,9 @@ namespace Wsds.DAL.Repository.Specific
 
             return ((order != null) && (order.idStatus == 0)); 
         }
-        public ClientOrderProduct_DTO UpdateCartProduct(ClientOrderProduct_DTO item)
+        public ClientOrderProduct_DTO UpdateCartProduct(ClientOrderProduct_DTO item,long clientId)
         {
-            if (CanUpdateOrder((long)item.idOrder))
+            if (CanUpdateOrder((long)item.idOrder, clientId))
             {
                 var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
                 var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
@@ -76,33 +75,31 @@ namespace Wsds.DAL.Repository.Specific
             else return null; //if order does not exists => do nothing and return null
         }
 
-        public ClientOrderProduct_DTO InsertCartProduct(ClientOrderProduct_DTO item)
+        public ClientOrderProduct_DTO InsertCartProduct(ClientOrderProduct_DTO item, long clientId, long currency)
         {
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
-            item.idOrder = GetOrCreateClientDraftOrder().id;
+            item.idOrder = GetOrCreateClientDraftOrder(clientId,currency).id;
             return prov.InsertItem(item);
         }
 
-        public void DeleteCartProduct(long id)
+        public void DeleteCartProduct(long id, long clientId)
         {
             
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
             var item = prov.GetItem(id);
 
-            if (CanUpdateOrder((long)item.idOrder)) { 
+            if (CanUpdateOrder((long)item.idOrder,clientId)) { 
                 prov.DeleteItem(id);
             }
         }
 
-        public ClientOrder_DTO GetOrCreateClientDraftOrder() {
-            var idClient = 100; // TODO я
-            var idCur = 0; //TODO грн
+        public ClientOrder_DTO GetOrCreateClientDraftOrder(long clientId, long currencyId) {
             var confOrders = EntityConfigDictionary.GetConfig("client_order");
             var ordersProv = new EntityProvider<ClientOrder_DTO>(confOrders);
 
-            ClientOrder_DTO order = ordersProv.GetItems("id_client = :idclient", new OracleParameter("idclient", idClient))
+            ClientOrder_DTO order = ordersProv.GetItems("id_client = :idclient", new OracleParameter("idclient", clientId))
                                                 .FirstOrDefault();
             if (!(order == null))
             {
@@ -111,9 +108,9 @@ namespace Wsds.DAL.Repository.Specific
             else
             {
                 ClientOrder_DTO newDraftOrder = new ClientOrder_DTO();
-                newDraftOrder.idClient = idClient;
+                newDraftOrder.idClient = clientId;
                 newDraftOrder.orderDate = DateTime.Now;
-                newDraftOrder.idCur = idCur;
+                newDraftOrder.idCur = currencyId;
                 newDraftOrder.total = 0; 
                 newDraftOrder.idPaymentMethod = 1; //наличньіе
                 newDraftOrder.idPaymentStatus = 1; //не оплачен
@@ -131,20 +128,20 @@ namespace Wsds.DAL.Repository.Specific
             return prov.GetItems("t.id_order = :orderId", new OracleParameter("orderId", orderId));
         }
 
-        public IEnumerable<ClientOrder_DTO> GetClientOrders() //TODO обьєдинить с данньіми из Т22
+        public IEnumerable<ClientOrder_DTO> GetClientOrders(long clientId) //TODO обьєдинить с данньіми из Т22
         {
             var coaCnfg = EntityConfigDictionary.GetConfig("client_order_all");
             var prov = new EntityProvider<ClientOrder_DTO>(coaCnfg);
 
-            return prov.GetItems("t.id_client = :idClient", new OracleParameter("idClient", 100))
-                    .OrderByDescending(x => x.orderDate); //TODO я
+            return prov.GetItems("t.id_client = :idClient", new OracleParameter("idClient", clientId))
+                    .OrderByDescending(x => x.orderDate);
         }
 
-        public ClientOrder_DTO SaveClientOrder(ClientOrder_DTO order)
+        public ClientOrder_DTO SaveClientOrder(ClientOrder_DTO order, long clientId)
         {
             var confOrders = EntityConfigDictionary.GetConfig("client_order");
             var ordersProv = new EntityProvider<ClientOrder_DTO>(confOrders);
-            if (CanUpdateOrder((long)order.id))
+            if (CanUpdateOrder((long)order.id,clientId))
             {
                 return ordersProv.UpdateItem(order);
             }
@@ -158,7 +155,7 @@ namespace Wsds.DAL.Repository.Specific
                             .id;
         }
 
-        public IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj)
+        public IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj,long card)
         {
 
             var itemsList = new List<CalcCartRequestT22_Item>();
@@ -174,11 +171,11 @@ namespace Wsds.DAL.Repository.Specific
                 itemsList.Add(s);
             }
 
-            string clientId = "+11049778713"; //TODO 
+            string barcode = $"+{card}";//"+11049778713";
 
             var calcCartRequestT22 = new CalcCartRequestT22
             {
-                cnum = clientId, 
+                cnum = barcode, 
                 lptype = 2, //TODO ?
                 promocode = cartObj.promoCode,
                 bonpayamm = cartObj.maxBonusCnt,
@@ -201,7 +198,7 @@ namespace Wsds.DAL.Repository.Specific
                     cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
                     cmd.Parameters["result"].Size = 2000;
                     cmd.Parameters.Add(new OracleParameter("json", requestJson));
-                    cmd.Parameters.Add(new OracleParameter("key", clientId));
+                    cmd.Parameters.Add(new OracleParameter("key", barcode));
                     con.Open();
                     cmd.ExecuteNonQuery();
                     res = cmd.Parameters["result"].Value.ToString();
@@ -241,7 +238,7 @@ namespace Wsds.DAL.Repository.Specific
         public PostOrderResponse PostOrder(ClientOrder_DTO order)
         {
 
-            long clientId = 100; //TODO я
+            long clientId = order.idClient.Value;
             var res = new PostOrderResponse { isSuccess = false, errorMessage = "Your cart is empty" };
 
             var confOrders = EntityConfigDictionary.GetConfig("client_order");

@@ -420,6 +420,7 @@
     <Compile Include="Entities\DTO\AppKeys_DTO.cs" />
     <Compile Include="Entities\DTO\City_DTO.cs" />
     <Compile Include="Entities\DTO\ClientMessage_DTO.cs" />
+    <Compile Include="Entities\DTO\CurrencyRate_DTO.cs" />
     <Compile Include="Entities\DTO\ClientOrderDatesRange_DTO.cs" />
     <Compile Include="Entities\DTO\DeviceData_DTO.cs" />
     <Compile Include="Entities\DTO\FavoriteStore_DTO.cs" />

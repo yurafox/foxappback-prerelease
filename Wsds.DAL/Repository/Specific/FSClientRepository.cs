@@ -124,7 +124,7 @@ namespace Wsds.DAL.Repository.Specific
             return res;
         }
 
-        public void LogProductView(long idProduct, string viewParams)
+        public void LogProductView(long idProduct, string viewParams, long clientId)
         {
             var ConnString = _config.GetConnectionString("MainDataConnection");
             using (var con = new OracleConnection(ConnString))
@@ -138,7 +138,7 @@ namespace Wsds.DAL.Repository.Specific
                 try
                 {
                     con.Open();
-                    cmd.Parameters.Add(new OracleParameter("idClient", 100)); //TODO я
+                    cmd.Parameters.Add(new OracleParameter("idClient", clientId));
                     cmd.Parameters.Add(new OracleParameter("idProduct", idProduct));
                     cmd.Parameters.Add(new OracleParameter("viewParams", viewParams));
                     cmd.ExecuteNonQuery();
@@ -168,7 +168,6 @@ namespace Wsds.DAL.Repository.Specific
         {
             var caCnfg = EntityConfigDictionary.GetConfig("client_address");
             var prov = new EntityProvider<ClientAddress_DTO>(caCnfg);
-            item.idClient = 100; //TODO я
 
             var ConnString = _config.GetConnectionString("MainDataConnection");
             using (var con = new OracleConnection(ConnString))
@@ -196,7 +195,7 @@ namespace Wsds.DAL.Repository.Specific
 
         public ClientAddress_DTO UpdateClientAddress(ClientAddress_DTO item)
         {
-            var idClient = 100; //TODO я
+            var idClient = item.idClient.Value;
             var caCnfg = EntityConfigDictionary.GetConfig("client_address");
             var prov = new EntityProvider<ClientAddress_DTO>(caCnfg);
 

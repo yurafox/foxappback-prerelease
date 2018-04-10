@@ -69,7 +69,8 @@ namespace Wsds.WebApp
                     builder
                         .AllowAnyOrigin()
                         .AllowAnyHeader()
-                        .AllowAnyMethod();
+                        .AllowAnyMethod()
+                        .AllowCredentials();
                 });
             });
 
@@ -569,6 +570,17 @@ namespace Wsds.WebApp
                     .SetBaseTable("global_localization")
             );
 
+            EntityConfigDictionary.AddConfig("currency_rate",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.Rates2Json(t.id) as value from currencies t")
+                    .AddSqlCommandWhere($"WHERE t.id<>4")
+                    .SetKeyField("targetId")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.Rates2Json")
+            );
+
+
+
             services.AddScoped<FoxStoreDBContext>(_ =>
                 new FoxStoreDBContext(mainDataConnString));
 
@@ -741,6 +753,10 @@ namespace Wsds.WebApp
                 p => new CacheService<Localization_DTO>
                     ("global_localization", 600000, redisCache), ServiceLifetime.Singleton));
 
+            services.Add(new ServiceDescriptor(typeof(ICacheService<CurrencyRate_DTO>),
+                p => new CacheService<CurrencyRate_DTO>
+                    ("currency_rate", 100000000, redisCache), ServiceLifetime.Singleton));
+
             // add roles
             IdentityInit(services.BuildServiceProvider()).Wait();
         }
@@ -761,18 +777,6 @@ namespace Wsds.WebApp
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-          
-            // this is obsolete call 
-            //TODO: check this method when we will be create admin panel
-           // IdentityInit(app.ApplicationServices).Wait();
-
-            // create global dependency collection ICacheService
-            /*
-            var services = app.ApplicationServices.GetServices<ICacheService>();
-            AppDepResolver.InitCollection(services);
-             */ 
-
-            //IdentityInit(app.ApplicationServices).Wait();
         }
 
         //[Obsolete]

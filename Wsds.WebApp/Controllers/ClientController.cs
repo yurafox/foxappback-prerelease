@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository.Abstract;
@@ -9,6 +10,8 @@ using Wsds.WebApp.Attributes;
 using Newtonsoft.Json;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Entities.Communication;
+using Wsds.WebApp.Filters;
+using Wsds.WebApp.WebExtensions;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -76,11 +79,13 @@ namespace Wsds.WebApp.Controllers
             return Ok( _cliRepo.GetClientBonusesExpireInfo(clientId));
         }
 
-
+        [Authorize]
         [HttpPost("LogProductView")]
+        [PullToken]
         public IActionResult CreateCartProduct([FromBody] LogProductViewRequest model)
         {
-            _cliRepo.LogProductView(model.idProduct, model.viewParams);
+            var tModel = HttpContext.GetTokenModel();
+            _cliRepo.LogProductView(model.idProduct, model.viewParams,tModel.ClientId);
             return Created("", null);
         }
 
@@ -95,16 +100,26 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cliRepo.GetClientAddressesByClientId(idClient));
         }
 
+        [Authorize]
         [HttpPost("ClientAddress")]
+        [PullToken]
         public IActionResult CreateClientAddress([FromBody] ClientAddress_DTO item)
         {
+            var tModel = HttpContext.GetTokenModel();
+            item.idClient = item.idClient ?? tModel.ClientId;
+
             ClientAddress_DTO result = _cliRepo.CreateClientAddress(item);
             return CreatedAtRoute("", new { id = result.id }, result);
         }
 
+        [Authorize]
         [HttpPut("ClientAddress")]
+        [PullToken]
         public IActionResult UpdateClientAddress([FromBody] ClientAddress_DTO item)
         {
+            var tModel = HttpContext.GetTokenModel();
+            item.idClient = item.idClient ?? tModel.ClientId;
+
             ClientAddress_DTO result = _cliRepo.UpdateClientAddress(item);
             return Ok(result);
         }
