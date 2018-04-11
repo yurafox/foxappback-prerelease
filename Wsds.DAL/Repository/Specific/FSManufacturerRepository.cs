@@ -2,7 +2,6 @@
 using System.Linq;
 using Microsoft.EntityFrameworkCore.Internal;
 using Wsds.DAL.Entities;
-using Wsds.DAL.ORM;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
 

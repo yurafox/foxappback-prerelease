@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Identity;
 using Wsds.DAL.Entities;
-using Wsds.DAL.ORM;
 using Wsds.DAL.Repository.Abstract;
 using Wsds.DAL.Repository.Specific;
 using Wsds.WebApp.Auth;
@@ -579,10 +578,6 @@ namespace Wsds.WebApp
                     .SetSerializerFunc("Serialization.Rates2Json")
             );
 
-
-
-            services.AddScoped<FoxStoreDBContext>(_ =>
-                new FoxStoreDBContext(mainDataConnString));
 
             services.AddDbContext<AppIdentityDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
