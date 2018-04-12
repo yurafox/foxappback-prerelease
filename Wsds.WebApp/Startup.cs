@@ -247,7 +247,7 @@ namespace Wsds.WebApp
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id, 'idCity' value id_city, 'address' value address_line, 'lat' value lat,'lng' value lng," +
                                          "'openTime' value open_time, 'closeTime' value close_time, 'rating' value rating, 'idFeedbacks' value id_feedbacks) as value from STORE_PLACES t ")
-                    .AddSqlCommandWhere("where t.type=1  and t.lat is not null  and t.lng is not null  and t.is_active=1 and t.open_time is not null and t.close_time is not null")
+                    .AddSqlCommandWhere("where t.type=1  and t.lat is not null  and t.lng is not null  and t.is_active=1")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Store2Json")
