@@ -130,17 +130,25 @@ namespace Wsds.WebApp.Controllers
             return NoContent();
         }
 
+        [Authorize]
         [HttpGet("OrderDatesRanges")]
+        [PullToken]
         public IActionResult GetClientOrderDatesRanges()
         {
-            return Ok(_cliRepo.GetClientOrderDatesRanges());
+            var tModel = HttpContext.GetTokenModel();
+            var date = _cliRepo.GetClientByPhone(tModel.Phone).createdDate;
+            return Ok(_cliRepo.GetClientOrderDatesRanges((DateTime)date));
         }
 
+        [Authorize]
         [HttpGet("OrderDatesRanges")]
         [Link("isDefault")]
+        [PullToken]
         public IActionResult GetDefaultClientOrderDatesRange([FromQuery] bool isDefault)
         {
-            return Ok(_cliRepo.GetClientOrderDatesRanges().Where(x => x.isDefault == isDefault).FirstOrDefault());
+            var tModel = HttpContext.GetTokenModel();
+            var date = _cliRepo.GetClientByPhone(tModel.Phone).createdDate;
+            return Ok(_cliRepo.GetClientOrderDatesRanges((DateTime)date).Where(x => x.isDefault == isDefault).FirstOrDefault());
         }
 
     }

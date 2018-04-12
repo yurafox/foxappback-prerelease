@@ -300,10 +300,9 @@ namespace Wsds.DAL.Repository.Specific
             return res;
         }
 
-        public IEnumerable<ClientOrderProductsByDate_DTO> GetOrderProductsByDate(string datesRange)
+        public IEnumerable<ClientOrderProductsByDate_DTO> GetOrderProductsByDate(string datesRange, long clientId)
         {
             var ConnString = _config.GetConnectionString("MainDataConnection");
-            var clientId = 100; //TODO
             DateTime d1 = new DateTime();
             DateTime d2 = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 00, 00, 00);
 
@@ -372,7 +371,7 @@ namespace Wsds.DAL.Repository.Specific
             return res;
         }
 
-        public ClientOrder_DTO GetClientOrder(long orderId)
+        public ClientOrder_DTO GetClientOrder(long orderId, long idClient)
         {
             var coaCnfg = EntityConfigDictionary.GetConfig("client_order_all");
             var prov = new EntityProvider<ClientOrder_DTO>(coaCnfg);

@@ -23,5 +23,6 @@ namespace Wsds.DAL.Entities
         public long? id_currency { get; set; }
         public long? id_lang { get; set; }
         public string appKey { get; set; }
+        public DateTime? createdDate { get; set; }
     }
 }

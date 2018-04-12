@@ -32,6 +32,6 @@ namespace Wsds.DAL.Repository.Abstract
         Client_DTO CreateOrUpdateClient(Client_DTO client);
         AppKeys_DTO GetApplicationKeyByClientId(long idClient);
         AppKeys_DTO CreateApplicationKey(AppKeys_DTO key);
-        IEnumerable<ClientOrderDatesRange_DTO> GetClientOrderDatesRanges();
+        IEnumerable<ClientOrderDatesRange_DTO> GetClientOrderDatesRanges(DateTime clientCreatedDate);
     }
 }

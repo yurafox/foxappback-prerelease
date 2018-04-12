@@ -83,10 +83,13 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cartRepo.GetClientOrders(tModel.ClientId));
         }
 
+        [Authorize]
         [HttpGet("ClientOrder/{id}")]
+        [PullToken]
         public IActionResult GetClientOrders(long id)
         {
-            return Ok(_cartRepo.GetClientOrder(id));
+            var tModel = HttpContext.GetTokenModel();
+            return Ok(_cartRepo.GetClientOrder(id, tModel.ClientId));
         }
 
         [HttpPut("ClientDraftOrder")]
@@ -116,10 +119,13 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cartRepo.PostOrder(order));
         }
 
+        [Authorize]
         [HttpGet("ClientOrderProductsByDate")]
+        [PullToken]
         public IActionResult GetClientOrderProductsByDate([FromQuery] string datesRange)
         {
-            return Ok(_cartRepo.GetOrderProductsByDate(datesRange));
+            var tModel = HttpContext.GetTokenModel();
+            return Ok(_cartRepo.GetOrderProductsByDate(datesRange, tModel.ClientId));
         }
     }
 }
