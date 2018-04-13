@@ -348,8 +348,6 @@ namespace Wsds.DAL.Repository.Specific
 
         public IEnumerable<ClientOrderDatesRange_DTO> GetClientOrderDatesRanges(DateTime clientCreatedDate)
         {
-            //var idClient = 100; //TODO я
-
             List<ClientOrderDatesRange_DTO> res = new List<ClientOrderDatesRange_DTO> {
                 new ClientOrderDatesRange_DTO { key = "30d", displayName = "Last 30 days" }, //TODO localization
                 new ClientOrderDatesRange_DTO { key = "6m", displayName = "Last 6 months" , isDefault = true}  //TODO localization

@@ -379,7 +379,7 @@ namespace Wsds.DAL.Repository.Specific
             return prov.GetItems("t.id_client = :idClient and t.id = :id", 
                                  new OracleParameter("idClient", 100),
                                  new OracleParameter("id", orderId)
-                                 ).FirstOrDefault(); //TODO я
+                                 ).FirstOrDefault();
         }
     }
 }
