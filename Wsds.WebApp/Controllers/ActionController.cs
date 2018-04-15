@@ -5,11 +5,11 @@ namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/[controller]")]
-    public class StockController : Controller
+    public class ActionController : Controller
     {
         private readonly IActionRepository _actionRepository;
 
-        public StockController(IActionRepository actionRepository)
+        public ActionController(IActionRepository actionRepository)
         {
             _actionRepository = actionRepository;
         }
@@ -24,6 +24,12 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetActionById(long id)
         {
             return Ok(_actionRepository.GetActionById(id));
+        }
+
+        [HttpGet("GetProductActions/{id}")]
+        public IActionResult GetProductActions(long id)
+        {
+            return Ok(_actionRepository.GetProductActions(id));
         }
     }
 }

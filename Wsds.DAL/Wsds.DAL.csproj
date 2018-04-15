@@ -405,6 +405,7 @@
     <Compile Include="Entities\Client_Prop_Value.cs" />
     <Compile Include="Entities\Communication\CalculateCartRequest.cs" />
     <Compile Include="Entities\Communication\CalculateCartResponse.cs" />
+    <Compile Include="Entities\DTO\ActionsByProduct_DTO.cs" />
     <Compile Include="Entities\DTO\ClientOrderProductsByDate_DTO.cs" />
     <Compile Include="Entities\Communication\DeliveryCostResponse.cs" />
     <Compile Include="Entities\Communication\DeliveryDateRequest.cs" />
