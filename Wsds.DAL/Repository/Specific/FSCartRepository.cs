@@ -377,7 +377,7 @@ namespace Wsds.DAL.Repository.Specific
             var prov = new EntityProvider<ClientOrder_DTO>(coaCnfg);
 
             return prov.GetItems("t.id_client = :idClient and t.id = :id", 
-                                 new OracleParameter("idClient", 100),
+                                 new OracleParameter("idClient", idClient),
                                  new OracleParameter("id", orderId)
                                  ).FirstOrDefault();
         }
