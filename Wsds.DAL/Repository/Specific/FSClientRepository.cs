@@ -15,7 +15,6 @@ using System.Net.Http.Headers;
 using Dapper;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Configuration;
-using System.Data;
 using System.Diagnostics;
 using Wsds.DAL.Entities.DTO;
 using System.Globalization;
