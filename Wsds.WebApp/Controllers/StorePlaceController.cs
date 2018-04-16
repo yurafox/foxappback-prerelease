@@ -32,7 +32,7 @@ namespace Wsds.WebApp.Controllers
             return Ok(_spRepo.Stores);
         }
 
-        [HttpGet("Store/{id}")]
+        [HttpGet("Stores/{id}")]
         public IActionResult GetStore(long id)
         {
             return Ok(_spRepo.GetStore(id));
