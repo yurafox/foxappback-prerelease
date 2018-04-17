@@ -48,5 +48,8 @@ namespace Wsds.DAL.Entities
         public decimal? payPromoBonusCnt { get; set; }
         [FieldBinding(Field = "earned_bonus_cnt")]
         public decimal? earnedBonusCnt { get; set; }
+        public string complect { get; set; }
+        [FieldBinding(Field = "id_action")]
+        public long? idAction { get; set; }
     }
 }

@@ -165,8 +165,8 @@ namespace Wsds.DAL.Repository.Specific
                     g_id = _csQProduct.Item((long)orderLine.idQuotationProduct).idProduct,
                     qty = orderLine.qty,
                     price = orderLine.price,
-                    is_set = 0, //TODO we don't support sets for a moment
-                    act = 0 //TODO we don't support promos for a moment
+                    is_set = (orderLine.complect == null) ? 0 : 1, //TODO we don't support sets for a moment
+                    act = orderLine.idAction //TODO we don't support promos for a moment
                 };
                 itemsList.Add(s);
             }
@@ -196,7 +196,7 @@ namespace Wsds.DAL.Repository.Specific
                 try
                 {
                     cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
-                    cmd.Parameters["result"].Size = 2000;
+                    cmd.Parameters["result"].Size = 32767;
                     cmd.Parameters.Add(new OracleParameter("json", requestJson));
                     cmd.Parameters.Add(new OracleParameter("key", barcode));
                     con.Open();

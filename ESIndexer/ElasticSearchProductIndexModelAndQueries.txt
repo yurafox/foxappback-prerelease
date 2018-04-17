@@ -47,7 +47,10 @@ PUT product
             },
             "srchString":{  
                "type":"text"
-            },            
+            },      
+            "valueQP":{
+                "type":"long"  
+            },
             "groups":{  
                "type":"nested",
                "properties":{  
