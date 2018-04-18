@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dapper;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
 using Oracle.ManagedDataAccess.Client;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -160,6 +163,38 @@ namespace Wsds.DAL.Repository.Specific
             return _csp.Items.Values.Where(x => IsFound(x.name, srchString));
         }
 
+        // search by action
+        public IEnumerable<Product_DTO> GetByAction(long actionId)
+        {
+            var conStr = _config.GetConnectionString("MainDataConnection");
+            var queryBuilder = new StringBuilder();
+            queryBuilder.Append("select p.id ");
+            queryBuilder.Append("from actions a,action_offers ad, quotations_products qp, products p ");
+            queryBuilder.Append("where a.id = ad.id_action and ad.id_quotation_product=qp.id ");
+            queryBuilder.Append("and p.id = qp.id_product and ad.id_action = :actionId and a.is_active=1 ");
+
+            List<Product_DTO> res = new List<Product_DTO>();
+            using (var con = new OracleConnection(conStr))
+            using (var cmd = new OracleCommand(queryBuilder.ToString(), con))
+            {
+                try
+                {
+                    con.Open();
+                    cmd.Parameters.Add(new OracleParameter("actionId", actionId));
+                    OracleDataReader dr = cmd.ExecuteReader();
+                    while (dr.Read())
+                    {
+                        var prodId = (long)dr["id"];
+                        res.Add(Product(prodId));
+                    }
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+            return res;
+        }
 
 }
 }

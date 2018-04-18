@@ -22,7 +22,9 @@ namespace Wsds.DAL.Repository.Specific
 
         public IEnumerable<Action_DTO> GetActions()
         {
-            return _csAction.Items.Values;
+            var acCnfg = EntityConfigDictionary.GetConfig("actions");
+            var prov = new EntityProvider<Action_DTO>(acCnfg);
+            return prov.GetItems("a.is_landing = :id", new OracleParameter("is_landing", 1));
         }
 
         public Action_DTO GetActionById(long id)
