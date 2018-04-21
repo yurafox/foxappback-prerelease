@@ -314,7 +314,8 @@ namespace Wsds.WebApp
                                          "'warningMessage' value warning_message, 'payPromoCode' value pay_promocode, " +
                                          "'payPromoCodeDiscount' value pay_promocode_discount, 'payBonusCnt' value pay_bonus_cnt, " +
                                          "'payPromoBonusCnt' value pay_promobonus_cnt, 'earnedBonusCnt' value earned_bonus_cnt, " +
-                                         "'warningRead' value warning_read) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
+                                         "'warningRead' value warning_read, 'complect' value complect,'idAction' value id_action, " +
+                                         "'actionList' value action_list, 'actionTitle' value action_title) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
                     .AddSqlCommandWhere("where o.id = t.id_order")
                     .SetKeyField("id")
                     .SetValueField("value")
@@ -322,6 +323,31 @@ namespace Wsds.WebApp
                     .SetSerializerFunc("Serialization.ORDER_SPEC_PRODUCT2Json")
                 );
 
+
+            EntityConfigDictionary.AddConfig("client_order_hist",
+                new EntityConfig(mainDataConnString)
+                    .SetBaseTable("client_order_history")
+                    .AddSqlCommandSelect("select t.*, Serialization.CLIENT_ORDERHIST2JSON(t.id) as value " +
+                                            "from CLIENT_ORDER_HISTORY t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.CLIENT_ORDERHIST2JSON")
+                );
+
+
+            EntityConfigDictionary.AddConfig("client_order_product_hist",
+                new EntityConfig(mainDataConnString)
+                    .SetBaseTable("order_history_spec_products")
+                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value t.id, 'idOrder' value id_order, " +
+                                         "'idQuotationProduct' value id_quotation_product, 'price' value price, " +
+                                         "'qty' value qty, 'idLoEntity' value id_lo_entity, " +
+                                         "'loEstimatedDeliveryDate' value lo_estimated_delivery_date, " +
+                                         "'loDeliveryCompletedDate' value lo_delivery_completed_date, " +
+                                         "'earnedBonusCnt' value earned_bonus_cnt) as value from order_history_spec_products t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.ORDER_SPEC_HIST_PRODUCT2Json")
+                );
 
 
             EntityConfigDictionary.AddConfig("client_order_product",
@@ -337,7 +363,8 @@ namespace Wsds.WebApp
                                          "'warningMessage' value warning_message, 'payPromoCode' value pay_promocode, " +
                                          "'payPromoCodeDiscount' value pay_promocode_discount, 'payBonusCnt' value pay_bonus_cnt, " +
                                          "'payPromoBonusCnt' value pay_promobonus_cnt, 'earnedBonusCnt' value earned_bonus_cnt, " +
-                                         "'warningRead' value warning_read) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
+                                         "'warningRead' value warning_read, 'complect' value complect,'idAction' value id_action, " +
+                                         "'actionList' value action_list, 'actionTitle' value action_title) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
                     .AddSqlCommandWhere("where o.id = t.id_order and o.id_status=0")
                     .SetKeyField("id")
                     .SetValueField("value")

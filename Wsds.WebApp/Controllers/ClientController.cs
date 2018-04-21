@@ -136,7 +136,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetClientOrderDatesRanges()
         {
             var tModel = HttpContext.GetTokenModel();
-            var date = _cliRepo.GetClientByPhone(tModel.Phone).createdDate;
+            var date = _cliRepo.GetClientByPhone("380999851043"/*tModel.Phone*/).createdDate; //TODO uncomment this line
             return Ok(_cliRepo.GetClientOrderDatesRanges((DateTime)date));
         }
 
@@ -147,7 +147,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetDefaultClientOrderDatesRange([FromQuery] bool isDefault)
         {
             var tModel = HttpContext.GetTokenModel();
-            var date = _cliRepo.GetClientByPhone(tModel.Phone).createdDate;
+            var date = _cliRepo.GetClientByPhone("380999851043"/*tModel.Phone*/).createdDate; //TODO uncomment this line
             return Ok(_cliRepo.GetClientOrderDatesRanges((DateTime)date).Where(x => x.isDefault == isDefault).FirstOrDefault());
         }
 

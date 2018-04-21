@@ -23,15 +23,18 @@ namespace Wsds.DAL.Repository.Specific
         private readonly IConfiguration _config;
         private ICacheService<Quotation_Product_DTO> _csQProduct;
         private IProductRepository _prodRepo;
+        private IQuotationProductRepository _qpRepo; 
 
         public FSCartRepository(IClientRepository clRepo, 
                                 IConfiguration config,
                                 IProductRepository prodRepo,
+                                IQuotationProductRepository qpRepo,
                                 ICacheService<Quotation_Product_DTO> csQProduct)
         {
             _clRepo = clRepo;
             _config = config;
             _prodRepo = prodRepo;
+            _qpRepo = qpRepo;
             _csQProduct = csQProduct;
         }
 
@@ -70,7 +73,24 @@ namespace Wsds.DAL.Repository.Specific
             {
                 var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
                 var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
-                return prov.UpdateItem(item);
+                var it = prov.UpdateItem(item);
+
+                // in case of complect update second item qty = qty of main item in complect
+                var cmpl = it.complect;
+                if (cmpl != null) {
+                    var complectItems = prov.GetItems("t.complect = :complect and t.id_order = :idorder and t.id <> :id",
+                                    new OracleParameter("complect", cmpl),
+                                    new OracleParameter("idOrder", item.idOrder),
+                                    new OracleParameter("id", item.id)
+                                    );
+
+                    foreach (var ci in complectItems) {
+                        ci.qty = it.qty;
+                        prov.UpdateItem(ci);
+                    }
+                }
+
+                return it;
             }
             else return null; //if order does not exists => do nothing and return null
         }
@@ -79,8 +99,23 @@ namespace Wsds.DAL.Repository.Specific
         {
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
-            item.idOrder = GetOrCreateClientDraftOrder(clientId,currency).id;
-            return prov.InsertItem(item);
+            long _idOrder = (long)GetOrCreateClientDraftOrder(clientId, currency).id;
+
+            var fndSpec = prov.GetItems("t.id_quotation = :qp and t.id_order = :id_order and t.complect = :complect",
+                                        new OracleParameter("qp", item.idQuotationProduct),
+                                        new OracleParameter("id_Order", _idOrder),
+                                        new OracleParameter("complect", item.complect))
+                                       .FirstOrDefault();
+            if (fndSpec != null)
+            {
+                fndSpec.qty = fndSpec.qty + item.qty;
+                return prov.UpdateItem(fndSpec);
+            }
+            else
+            {
+                item.idOrder = _idOrder;
+                return prov.InsertItem(item);
+            }
         }
 
         public void DeleteCartProduct(long id, long clientId)
@@ -90,9 +125,25 @@ namespace Wsds.DAL.Repository.Specific
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
             var item = prov.GetItem(id);
 
-            if (CanUpdateOrder((long)item.idOrder,clientId)) { 
-                prov.DeleteItem(id);
+            if (!CanUpdateOrder((long)item.idOrder, clientId))
+                return;
+
+            prov.DeleteItem(id);
+
+            // Удяляем составньіе комплекта
+            var cmpl = item.complect;
+            if (cmpl != null)
+            {
+                var secondItems = prov.GetItems("t.complect = :complect and t.id_order = :idorder and t.id <> :id",
+                                new OracleParameter("complect", cmpl),
+                                new OracleParameter("idOrder", item.idOrder),
+                                new OracleParameter("id", item.id)
+                                );
+                foreach (var sitem in secondItems) {
+                    prov.DeleteItem((long)sitem.id);
+                }
             }
+
         }
 
         public ClientOrder_DTO GetOrCreateClientDraftOrder(long clientId, long currencyId) {
@@ -149,29 +200,57 @@ namespace Wsds.DAL.Repository.Specific
                 return null;
         }
 
-        private long MapItem(long g_id, CalculateCartRequest cartObj) {
-            return (long)cartObj.cartContent.FirstOrDefault(
-                            x => _csQProduct.Item((long)x.idQuotationProduct).idProduct == g_id)
-                            .id;
-        }
+        /*
+        private ClientOrderProduct_DTO MapItem(long g_id, long? action_id, long? is_set, CalculateCartRequest cartObj) {
 
-        public IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj,long card)
+            return cartObj.cartContent.FirstOrDefault(
+                            x => (_csQProduct.Item((long)x.idQuotationProduct).idProduct == g_id) 
+                               );
+        }
+        */
+
+        public IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj, long card, long clientId, long currency)
         {
 
+            var ordId = GetOrCreateClientDraftOrder(clientId, currency).id;
             var itemsList = new List<CalcCartRequestT22_Item>();
-            foreach (var orderLine in cartObj.cartContent) {
+
+            var confOrdersSpec = EntityConfigDictionary.GetConfig("client_order_product");
+            var ordersSpecProv = new EntityProvider<ClientOrderProduct_DTO>(confOrdersSpec);
+            var orderSpec = ordersSpecProv.GetItems("t.id_order = :idOrder", new OracleParameter("idOrder", ordId));
+
+            foreach (var orderLine in orderSpec)
+            {
                 var s = new CalcCartRequestT22_Item
                 {
+                    pk_id = orderLine.id,
                     g_id = _csQProduct.Item((long)orderLine.idQuotationProduct).idProduct,
                     qty = orderLine.qty,
                     price = orderLine.price,
-                    is_set = (orderLine.complect == null) ? 0 : 1, //TODO we don't support sets for a moment
-                    act = orderLine.idAction //TODO we don't support promos for a moment
+                    is_set = (orderLine.complect == null) ? 0 : 1,
+                    act = orderLine.idAction
                 };
                 itemsList.Add(s);
             }
 
-            string barcode = $"+{card}";//"+11049778713";
+
+            /*
+            foreach (var orderLine in cartObj.cartContent) {
+                var s = new CalcCartRequestT22_Item
+                {
+                    pk_id = orderLine.id,
+                    g_id = _csQProduct.Item((long)orderLine.idQuotationProduct).idProduct,
+                    qty = orderLine.qty,
+                    price = orderLine.price,
+                    is_set = (orderLine.complect == null) ? 0 : 1,
+                    act = orderLine.idAction //TODO we don't support promos for a moment
+                };
+                itemsList.Add(s);
+            }
+            */
+
+
+            string barcode = "+11049778713"; //TODO //$"+{card}";//"+11049778713";
 
             var calcCartRequestT22 = new CalcCartRequestT22
             {
@@ -219,14 +298,21 @@ namespace Wsds.DAL.Repository.Specific
                     var _bonusDisc = item.bonus_pay;
                     var _promoBonusDisc = item.bonus_sp_pay;
                     var _earnedBonus =item.bonus;
+                    var _pk = item.pk_id;
+                    var _qty = item.qty;
+
+                    
+
+                    //var _mItem = MapItem((long)item.g_id, item.action_id, item.is_set, cartObj);
 
                     lst.Add(
                                 new CalculateCartResponse {
-                                    clOrderSpecProdId = MapItem((long)item.g_id, cartObj),
+                                    clOrderSpecProdId = _pk,
                                     promoCodeDisc = _promoCodeDisc,
                                     bonusDisc= _bonusDisc,
                                     promoBonusDisc = _promoBonusDisc,
-                                    earnedBonus = _earnedBonus
+                                    earnedBonus = _earnedBonus,
+                                    qty = _qty
                                 }
                               );
                 }
@@ -321,14 +407,27 @@ namespace Wsds.DAL.Repository.Specific
             };
             List<ClientOrderProductsByDate_DTO> res = new List<ClientOrderProductsByDate_DTO>();
             using (var con = new OracleConnection(ConnString))
-            using (var cmd = new OracleCommand("select o.id as orderId, o.order_date, s.id as orderSpecId, qp.id_product, s.lo_track_ticket, s.id_quotation " +
+            using (var histCreationCmd = new OracleCommand("begin Pkg_Synch_Data.FillClientOrderHistory(pclientid => :clientId, pdatestart => :pdatestart, pdateend => :pdateend); end;", con))
+            using (var cmd = new OracleCommand("select o.id as orderId, o.order_date, s.id as orderSpecId, s.id_product, s.id_quotation_product, s.lo_track_ticket " +
+                                               "from CLIENT_ORDER_HISTORY o, ORDER_HISTORY_SPEC_PRODUCTS s " +
+                                               "where o.id = s.id_order and o.id_client = :idClient " +
+                                               "and trunc(o.order_date) between :d1 and :d2 order by o.order_date desc", con))
+            /*using (var cmd = new OracleCommand("select o.id as orderId, o.order_date, s.id as orderSpecId, qp.id_product, s.lo_track_ticket, s.id_quotation " +
                                                 "from CLIENT_ORDERS o, ORDER_SPEC_PRODUCTS s, QUOTATIONS_PRODUCTS qp " +
                                                 "where o.id = s.id_order and o.id_client = :idClient and s.id_quotation = qp.id " +
                                                 "and trunc(o.order_date) between :d1 and :d2 and o.id_status>0 and o.id_status<=200 " +
                                                 "order by o.order_date desc", con))
+            */
             {
                 try
                 {
+                    con.Open();
+
+                    histCreationCmd.Parameters.Add("clientId", clientId);
+                    histCreationCmd.Parameters.Add("pdatestart", (OracleDate)d1);
+                    histCreationCmd.Parameters.Add("pdateend", (OracleDate)d2);
+                    histCreationCmd.ExecuteNonQuery();
+
                     cmd.Parameters.Add(new OracleParameter("idClient", clientId));
                     OracleParameter fromDate = new OracleParameter("d1", OracleDbType.Date)
                     {
@@ -342,23 +441,29 @@ namespace Wsds.DAL.Repository.Specific
                     };
                     cmd.Parameters.Add(toDate);
 
-                    con.Open();
+                    
 
                     var reader = cmd.ExecuteReader();
                     while (reader.Read())
                     {
-                        var prodId = (long)reader["id_product"];
+
+                        var qpId = (long)reader["id_quotation_product"];
+                        //_qpRepo
+                        Quotation_Product_DTO qp = _qpRepo.QuotationProduct(qpId);
+
+                        var prodId = qp.idProduct; //(long)reader["id_product"];
                         Product_DTO product = _prodRepo.Product(prodId);
 
-                        ClientOrderProductsByDate_DTO item = new ClientOrderProductsByDate_DTO {
+                        ClientOrderProductsByDate_DTO item = new ClientOrderProductsByDate_DTO
+                        {
                             orderId = (long)reader["orderid"],
                             orderDate = (DateTime)reader["order_date"],
                             orderSpecId = (long)reader["orderspecid"],
-                            idProduct = (long)reader["id_product"],
+                            idProduct = Convert.IsDBNull(reader["id_product"]) ? null : (long?)reader["id_product"],
                             productName = product.name,
                             productImageUrl = product.imageUrl,
                             loTrackTicket = reader["lo_track_ticket"].ToString(),
-                            idQuotation = (long)reader["id_quotation"]
+                            idQuotation = Convert.IsDBNull(reader["id_quotation_product"]) ? null : (long?)reader["id_quotation_product"]
                         };
                         res.Add(item);
                     };
@@ -380,6 +485,24 @@ namespace Wsds.DAL.Repository.Specific
                                  new OracleParameter("idClient", idClient),
                                  new OracleParameter("id", orderId)
                                  ).FirstOrDefault();
+        }
+
+        public ClientOrder_DTO GetClientHistOrder(long orderId, long idClient)
+        {
+            var coaCnfg = EntityConfigDictionary.GetConfig("client_order_hist");
+            var prov = new EntityProvider<ClientOrder_DTO>(coaCnfg);
+
+            return prov.GetItems("t.id_client = :idClient and t.id = :id",
+                                 new OracleParameter("idClient", idClient),
+                                 new OracleParameter("id", orderId)
+                                 ).FirstOrDefault();
+        }
+
+        public IEnumerable<ClientOrderProduct_DTO> GetClientHistOrderProductsByOrderId(long orderId)
+        {
+            var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product_hist");
+            var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
+            return prov.GetItems("t.id_order = :orderId", new OracleParameter("orderId", orderId));
         }
     }
 }

@@ -42,5 +42,9 @@ namespace Wsds.DAL.Entities
         public decimal? promoCodeDiscTotal { get; set; }
         [FieldBinding(Field = "id_person")]
         public long? idPerson { get; set; }
+        [FieldBinding(IsTransient = true)]
+        public string clientHistFIO { get; set; }
+        [FieldBinding(IsTransient = true)]
+        public string clientHistAddress { get; set; }
     }
 }

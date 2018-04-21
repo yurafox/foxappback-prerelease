@@ -12,11 +12,11 @@ namespace Wsds.DAL.Entities
         public long orderId { get; set; }
         public DateTime orderDate { get; set; }
         public long orderSpecId { get; set; }
-        public long idProduct { get; set; }
+        public long? idProduct { get; set; }
         public string productName { get; set; }
         public string productImageUrl { get; set; }
         public string loTrackTicket { get; set; }
-        public long idQuotation { get; set; }
+        public long? idQuotation { get; set; }
         //public Product_DTO product { get; set; }
     }
 }

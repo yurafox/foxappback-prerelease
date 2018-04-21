@@ -8,10 +8,12 @@ namespace Wsds.WebApp.Controllers
     public class ActionController : Controller
     {
         private readonly IActionRepository _actionRepository;
+        private readonly IProductRepository _prodRepo;
 
-        public ActionController(IActionRepository actionRepository)
+        public ActionController(IActionRepository actionRepository, IProductRepository prodRepo)
         {
             _actionRepository = actionRepository;
+            _prodRepo = prodRepo;
         }
 
         [HttpGet]
@@ -31,5 +33,12 @@ namespace Wsds.WebApp.Controllers
         {
             return Ok(_actionRepository.GetProductActions(id));
         }
+
+        [HttpGet("GetProductsOfDay")]
+        public IActionResult GetProductsOfDay() => Ok(_actionRepository.GetProductsOfDay());
+
+        [HttpGet("GetProductsSalesHits")]
+        public IActionResult GetProductsSalesHits() => Ok(_actionRepository.GetProductsSalesHits());
+
     }
 }

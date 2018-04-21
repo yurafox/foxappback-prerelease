@@ -13,12 +13,13 @@ namespace Wsds.DAL.Entities.Communication
         public decimal? bonusDisc { get; set; }
         public decimal? promoBonusDisc { get; set; }
         public decimal? earnedBonus { get; set; }
+        public decimal? qty { get; set; }
     }
 
     [Serializable]
     public class CalcCartResponseT22_Item
     {
-        public string pk_id { get; set; }
+        public long? pk_id { get; set; }
         public long? g_id { get; set; }
         public decimal? qty { get; set; }
         public decimal? price { get; set; }

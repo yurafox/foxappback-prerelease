@@ -37,7 +37,7 @@ namespace Wsds.DAL.Repository.Specific
                         "  from actions a, action_offers ad, quotations_products qp, products p, " +
                         "  (select max(z.id_group) as idGroup, z.id_product from PRODUCTS_IN_GROUPS z group by id_product) pig " +
                         "where ad.id_quotation_product = qp.id " +
-                        "   and p.id = qp.id_product " +
+                        "   and p.id = qp.id_product and a.id_type is not null " +
                         "   and a.id = ad.id_action " +
                         "   and pig.id_product = p.id " +
                         "   and ad.complect in (select ao.complect from actions a, action_offers ao, quotations_products qp " +
@@ -51,7 +51,7 @@ namespace Wsds.DAL.Repository.Specific
                         "       ad.complect, ad.is_main, null as idGroup, p.name, APP_CORE.Get_Image_Root_Url||p.image_url as image_url, a.title " +
                         "  from actions a, action_offers ad, quotations_products qp, products p " +
                         "where ad.id_quotation_product = qp.id " +
-                        "   and p.id = qp.id_product " +
+                        "   and p.id = qp.id_product and a.id_type is not null " +
                         "   and a.id = ad.id_action " +
                         "   and ad.complect is null " +
                         "   and p.id = :id ";
@@ -97,6 +97,66 @@ namespace Wsds.DAL.Repository.Specific
                     con.Close();
                 }
             };
+            return res;
+        }
+
+        public IEnumerable<long> GetProductsOfDay()
+        {
+            var stmt = "select qp.id_product from ACTION_OFFERS t, actions a, quotations_products qp " +
+                       "where t.id_action = a.id and a.id_type = 6 and t.id_quotation_product = qp.id";
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+
+            List<long> res = new List<long>();
+
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand(stmt, con))
+            {
+                try
+                {
+                    con.Open();
+                    OracleDataReader dr = cmd.ExecuteReader();
+                    dr.FetchSize = cmd.RowSize * 10;
+                    while (dr.Read())
+                    {
+                        res.Add((long)dr["id_product"]);
+                    };
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+
+            return res;
+        }
+
+        public IEnumerable<long> GetProductsSalesHits()
+        {
+            var stmt = "select qp.id_product from ACTION_OFFERS t, actions a, quotations_products qp " +
+                       "where t.id_action = a.id and a.id_type = 7 and t.id_quotation_product = qp.id";
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+
+            List<long> res = new List<long>();
+
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand(stmt, con))
+            {
+                try
+                {
+                    con.Open();
+                    OracleDataReader dr = cmd.ExecuteReader();
+                    dr.FetchSize = cmd.RowSize * 10;
+                    while (dr.Read())
+                    {
+                        res.Add((long)dr["id_product"]);
+                    };
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+
             return res;
         }
     }

@@ -51,5 +51,9 @@ namespace Wsds.DAL.Entities
         public string complect { get; set; }
         [FieldBinding(Field = "id_action")]
         public long? idAction { get; set; }
+        [FieldBinding(Field = "action_list")]
+        public long? actionList { get; set; }
+        [FieldBinding(Field = "action_title")]
+        public string actionTitle { get; set; }
     }
 }

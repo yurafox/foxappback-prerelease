@@ -13,5 +13,7 @@ namespace Wsds.DAL.Repository.Abstract
         IEnumerable<Action_DTO> GetActions();
         Action_DTO GetActionById(long id);
         IEnumerable<ActionsByProduct_DTO> GetProductActions(long id);
+        IEnumerable<long> GetProductsOfDay();
+        IEnumerable<long> GetProductsSalesHits();
     }
 }

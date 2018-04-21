@@ -68,11 +68,20 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cartRepo.GetOrCreateClientDraftOrder(tModel.ClientId,tModel.CurrencyId));
         }
 
+        [Authorize]
         [HttpGet("GetCartProductsByOrderId")]
         public IActionResult GetClientOrderProductsByOrderId([FromQuery] long idOrder)
         {
             return Ok(_cartRepo.GetClientOrderProductsByOrderId(idOrder));
         }
+
+        [Authorize]
+        [HttpGet("GetClientHistProductsByOrderId")]
+        public IActionResult GetClientHistOrderProductsByOrderId([FromQuery] long idOrder)
+        {
+            return Ok(_cartRepo.GetClientHistOrderProductsByOrderId(idOrder));
+        }
+
 
         [Authorize]
         [HttpGet("GetClientOrders")]
@@ -92,6 +101,16 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cartRepo.GetClientOrder(id, tModel.ClientId));
         }
 
+        [Authorize]
+        [HttpGet("ClientHistOrder/{id}")]
+        [PullToken]
+        public IActionResult GetClientHistOrder(long id)
+        {
+            var tModel = HttpContext.GetTokenModel();
+            return Ok(_cartRepo.GetClientHistOrder(id, 11049778713 /*tModel.ClientId*/)); //TODO uncomment param
+        }
+        
+
         [HttpPut("ClientDraftOrder")]
         [PullToken]
         public IActionResult SaveClientOrder([FromBody] ClientOrder_DTO order)
@@ -106,7 +125,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult CalculateCart([FromBody] CalculateCartRequest cart)
         {
             var tModel = HttpContext.GetTokenModel();
-            return Ok(_cartRepo.CalculateCart(cart,tModel.Card));
+            return Ok(_cartRepo.CalculateCart(cart, tModel.Card, tModel.ClientId, tModel.CurrencyId));
         }
 
         [Authorize]
@@ -125,7 +144,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetClientOrderProductsByDate([FromQuery] string datesRange)
         {
             var tModel = HttpContext.GetTokenModel();
-            return Ok(_cartRepo.GetOrderProductsByDate(datesRange, tModel.ClientId));
+            return Ok(_cartRepo.GetOrderProductsByDate(datesRange, 11049778713 /*tModel.ClientId*/)); //TODO uncomment param
         }
     }
 }

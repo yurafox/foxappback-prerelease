@@ -18,10 +18,13 @@ namespace Wsds.DAL.Repository.Abstract
         ClientOrder_DTO SaveClientOrder(ClientOrder_DTO order,long clientId);
         void DeleteCartProduct(long id,long clientId);
         IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByOrderId(long orderId);
+        IEnumerable<ClientOrderProduct_DTO> GetClientHistOrderProductsByOrderId(long orderId);
+
         IEnumerable<ClientOrder_DTO> GetClientOrders(long clientId);
-        IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj,long card);
+        IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj, long card, long clientId, long currency);
         PostOrderResponse PostOrder(ClientOrder_DTO order);
         IEnumerable<ClientOrderProductsByDate_DTO> GetOrderProductsByDate(string datesRange, long clientId);
         ClientOrder_DTO GetClientOrder(long orderId, long idClient);
+        ClientOrder_DTO GetClientHistOrder(long orderId, long idClient);
     }
 }
