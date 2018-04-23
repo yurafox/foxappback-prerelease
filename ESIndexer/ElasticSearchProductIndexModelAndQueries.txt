@@ -62,6 +62,10 @@ PUT product
                   }
                }
             },
+			"actions":{
+               "type": "integer",
+               "store": true
+            },
             "manufacturer":{  
                "type":"object",
                "properties":{  

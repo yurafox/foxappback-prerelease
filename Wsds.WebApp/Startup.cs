@@ -118,12 +118,8 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("actions",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'name' value name," +
-                                         "'dateStart' value date_start, 'dateEnd' value date_end," +
-                                         "'img_url' value img_url,'priority' value priority," +
-                                         "'isActive' value is_active, 'sketch_content' value sketch_content," +
-                                         "'action_content' value action_content) as value from actions")
-                    .AddSqlCommandWhere("where is_active = 1")
+                    .AddSqlCommandSelect("select a.id, Serialization.Action2Json(a.id) as value from actions a")
+                    .AddSqlCommandWhere("where a.is_active = 1 and a.date_start <= trunc(sysdate) and trunc(sysdate) <= a.date_end")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Action2Json")

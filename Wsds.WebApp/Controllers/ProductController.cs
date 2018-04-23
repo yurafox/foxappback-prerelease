@@ -57,5 +57,11 @@ namespace Wsds.WebApp.Controllers
             return Ok(_prodRepo.SearchProducts(srch));
         }
 
+        [HttpGet("GetByAction/{actionId}")]
+        public IActionResult GetByAction(long actionId)
+        {
+            var data = _prodRepo.GetByAction(actionId);
+            return (data != null) ? Ok(data) : (IActionResult)BadRequest();
+        }
     }
 }
