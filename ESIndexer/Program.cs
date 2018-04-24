@@ -62,8 +62,10 @@ namespace ESIndexer
                             fList.Add(path);
                             j++;
                         }
+                        string idStr = (Convert.IsDBNull(dr["id"])) ? "" : ", \"_id\" : "
+                                     + dr["id"].ToString();
                         tw.WriteLine("{ \"index\" : { \"_index\" : \"" + paramsDict["index"] + 
-                                     "\", \"_type\" : \"_doc\", \"_id\" : " + dr["id"].ToString() + " } }");
+                                     "\", \"_type\" : \"" + paramsDict["type"] + "\"" + idStr + " } }");
                         tw.WriteLine(dr["json_data"].ToString());
                         i++;
                     };
