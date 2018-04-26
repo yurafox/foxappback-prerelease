@@ -52,7 +52,8 @@ PUT product
                 "type":"long"  
             },
 			"suggest" : {
-				"type" : "completion"
+				"type" : "completion",
+				"analyzer" : "standard"
             },
             "groups":{  
                "type":"nested",
