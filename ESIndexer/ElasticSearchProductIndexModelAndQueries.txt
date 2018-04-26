@@ -51,6 +51,9 @@ PUT product
             "valueQP":{
                 "type":"long"  
             },
+			"suggest" : {
+				"type" : "completion"
+            },
             "groups":{  
                "type":"nested",
                "properties":{  
