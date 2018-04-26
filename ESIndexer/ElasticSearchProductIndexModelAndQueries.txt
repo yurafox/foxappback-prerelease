@@ -509,3 +509,21 @@ index=product esconnstring="http://localhost:9200" oraconnstring="DATA SOURCE=10
 /*
 index=test esconnstring="http://localhost:9200" oraconnstring="DATA SOURCE=10.1.4.18:1521/foxua.mc.gcf; USER ID = FOXSTORE; PASSWORD=fox,store;" curl="c:\Program Files\Curl\bin\curl.exe" batchsize=2000 type="test" cmdtext="select null as id, json_object('title' value t.phrase_txt) as json_data from ES_PHRASE_SUGGESTS t"
 */
+
+
+/**************
+Suggest query
+**************/
+POST product/_search?pretty
+{
+    "suggest": {
+        "phrase-suggest" : {
+            "prefix" : "samsung j3 (2016", 
+            "completion" : { 
+                "field" : "suggest",
+                "size" : 10
+                
+            }
+        }
+    }
+}
