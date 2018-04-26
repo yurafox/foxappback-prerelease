@@ -54,7 +54,7 @@ PUT product
       		"suggest" : {
       			"type" : "completion",
       			"analyzer" : "standard"
-                },
+			},
             "groups":{  
                "type":"nested",
                "properties":{  
