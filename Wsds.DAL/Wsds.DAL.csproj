@@ -450,6 +450,8 @@
     <Compile Include="Entities\DTO\Quotation_DTO.cs" />
     <Compile Include="Entities\DTO\Quotation_Product_DTO.cs" />
     <Compile Include="Entities\DTO\Region_DTO.cs" />
+    <Compile Include="Entities\DTO\Shipment_DTO.cs" />
+    <Compile Include="Entities\DTO\Shipment_Items_DTO.cs" />
     <Compile Include="Entities\DTO\StorePlace_DTO.cs" />
     <Compile Include="Entities\DTO\StoreReview_DTO.cs" />
     <Compile Include="Entities\DTO\Store_DTO.cs" />

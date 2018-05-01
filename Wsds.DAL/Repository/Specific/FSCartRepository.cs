@@ -67,6 +67,28 @@ namespace Wsds.DAL.Repository.Specific
 
             return ((order != null) && (order.idStatus == 0)); 
         }
+
+        private void UpdateShipmentItem(long id, decimal qty)
+        {
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin update shipment_items a set qty = :a where a.id_order_spec_prod = :b ; commit; end;", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add(new OracleParameter("a", qty));
+                    cmd.Parameters.Add(new OracleParameter("b", id));
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+        }
+
+
         public ClientOrderProduct_DTO UpdateCartProduct(ClientOrderProduct_DTO item,long clientId)
         {
             if (CanUpdateOrder((long)item.idOrder, clientId))
@@ -74,6 +96,7 @@ namespace Wsds.DAL.Repository.Specific
                 var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
                 var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
                 var it = prov.UpdateItem(item);
+                UpdateShipmentItem((long)it.id, (decimal)it.qty);
 
                 // in case of complect update second item qty = qty of main item in complect
                 var cmpl = it.complect;
@@ -87,6 +110,7 @@ namespace Wsds.DAL.Repository.Specific
                     foreach (var ci in complectItems) {
                         ci.qty = it.qty;
                         prov.UpdateItem(ci);
+                        UpdateShipmentItem((long)ci.id, (decimal)ci.qty);
                     }
                 }
 
@@ -118,6 +142,24 @@ namespace Wsds.DAL.Repository.Specific
             }
         }
 
+        private void DeleteShipmentItem(long id) {
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin delete from shipment_items a where a.id_order_spec_prod = :b ; commit; end;", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add(new OracleParameter("b", id));
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+        }
+
         public void DeleteCartProduct(long id, long clientId)
         {
             
@@ -128,7 +170,8 @@ namespace Wsds.DAL.Repository.Specific
             if (!CanUpdateOrder((long)item.idOrder, clientId))
                 return;
 
-            prov.DeleteItem(id);
+
+
 
             // Удяляем составньіе комплекта
             var cmpl = item.complect;
@@ -140,9 +183,13 @@ namespace Wsds.DAL.Repository.Specific
                                 new OracleParameter("id", item.id)
                                 );
                 foreach (var sitem in secondItems) {
+                    DeleteShipmentItem((long)sitem.id);
                     prov.DeleteItem((long)sitem.id);
                 }
             }
+
+            DeleteShipmentItem(id);
+            prov.DeleteItem(id);
 
         }
 
@@ -321,6 +368,13 @@ namespace Wsds.DAL.Repository.Specific
         }
 
 
+        private decimal GetShiippingTotal(long idOrder) {
+            var ship = EntityConfigDictionary.GetConfig("shipment");
+            var shipProv = new EntityProvider<Shipment_DTO>(ship);
+            return (decimal)shipProv.GetItems("id_order = :idOrder", new OracleParameter("idOrder", idOrder))
+                .Sum(s => s.loDeliveryCost);
+        }
+
         public PostOrderResponse PostOrder(ClientOrder_DTO order)
         {
 
@@ -345,19 +399,20 @@ namespace Wsds.DAL.Repository.Specific
                 {
                     dbOrder.idStatus = 1;
 
+
                     var sums = 
                         ordersSpecProv.GetItems("t.id_order = :idOrder", new OracleParameter("idOrder", dbOrder.id))
                         .GroupBy(x => x.idOrder)
                         .Select(x => new {
                                             _itemsTotal = x.Sum(s => s.qty * s.price),
-                                            _shippingTotal = x.Sum(s => s.loDeliveryCost),
+                                            /*_shippingTotal = x.Sum(s => s.loDeliveryCost),*/
                                             _promoBonusTotal = x.Sum(s => s.payPromoBonusCnt * s.qty),
                                             _bonusTotal = x.Sum(s => s.payBonusCnt * s.qty),
                                             _bonusEarned = x.Sum(s => s.earnedBonusCnt * s.qty)
                                          }
                                );
                     dbOrder.itemsTotal = sums.FirstOrDefault()._itemsTotal;
-                    dbOrder.shippingTotal = sums.FirstOrDefault()._shippingTotal;
+                    dbOrder.shippingTotal = GetShiippingTotal((long)dbOrder.id); //sums.FirstOrDefault()._shippingTotal;
                     dbOrder.promoBonusTotal = sums.FirstOrDefault()._promoBonusTotal;
                     dbOrder.bonusTotal = sums.FirstOrDefault()._bonusTotal;
                     dbOrder.bonusEarned = sums.FirstOrDefault()._bonusEarned;
@@ -476,6 +531,7 @@ namespace Wsds.DAL.Repository.Specific
             return res;
         }
 
+        /*
         public ClientOrder_DTO GetClientOrder(long orderId, long idClient)
         {
             var coaCnfg = EntityConfigDictionary.GetConfig("client_order_all");
@@ -486,6 +542,7 @@ namespace Wsds.DAL.Repository.Specific
                                  new OracleParameter("id", orderId)
                                  ).FirstOrDefault();
         }
+        */
 
         public ClientOrder_DTO GetClientHistOrder(long orderId, long idClient)
         {
@@ -504,5 +561,66 @@ namespace Wsds.DAL.Repository.Specific
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
             return prov.GetItems("t.id_order = :orderId", new OracleParameter("orderId", orderId));
         }
+
+        public IEnumerable<Shipment_DTO> GenerateShipments(long clientId, long currencyId)
+        {
+            var idOrder = GetOrCreateClientDraftOrder(clientId, currencyId).id;
+            var res = new List<Shipment_DTO>();
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmdGenShpmt = new OracleCommand("begin foxstore.lo.Generate_Shipment(:idOrder); end;", con))
+            using (var cmdGetShpmts = new OracleCommand("select serialization.Shipment2Json(t.id) as value from SHIPMENT t where id_order = :idOrder", con))
+            {
+                try
+                {
+                    cmdGenShpmt.Parameters.Add(new OracleParameter("idOrder", idOrder));
+                    con.Open();
+                    cmdGenShpmt.ExecuteNonQuery();
+
+                    cmdGetShpmts.Parameters.Add(new OracleParameter("idOrder", idOrder));
+                    var reader = cmdGetShpmts.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var item = JsonConvert.DeserializeObject<Shipment_DTO>(reader["value"].ToString());
+                        res.Add(item);
+                    }
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+            return res;
+        }
+
+        public Shipment_DTO SaveShipment(Shipment_DTO shipment, long idClient)
+        {
+            var shCnfg = EntityConfigDictionary.GetConfig("shipment");
+            var prov = new EntityProvider<Shipment_DTO>(shCnfg);
+
+            return prov.UpdateItem(shipment);
+
+            /*
+                        var res = new Shipment_DTO();
+                        var ConnString = _config.GetConnectionString("MainDataConnection");
+                        using (var con = new OracleConnection(ConnString))
+                        using (var cmdGetShpmt = new OracleCommand("select serialization.Shipment2Json(t.id) as value from SHIPMENT t where t.id = :id", con))
+                        {
+                            try
+                            {
+                                cmdGetShpmt.Parameters.Add(new OracleParameter("id", shipment.id));
+                                var reader = cmdGetShpmt.ExecuteReader();
+                                reader.Read();
+                                res = JsonConvert.DeserializeObject<Shipment_DTO>(reader["value"].ToString());
+                            }
+                            finally
+                            {
+                                con.Close();
+                            }
+                        };
+                        return res;
+                        */
+        }
+
     }
 }

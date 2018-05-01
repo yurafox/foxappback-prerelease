@@ -59,23 +59,28 @@ namespace Wsds.DAL.Repository.Specific
 
         public LoEntity_DTO LoEntity(long id) => _csLoEnt.Item(id);
 
-        public object GetDeliveryCost(ClientOrderProduct_DTO orderProduct, long loEntityId, long loIdClientAddress)
+        public object GetDeliveryCostByShipment(Shipment_DTO shpmt, long loEntityId, long loIdClientAddress)
         {
-            var s = new DeliveryRequestT22_S_Cost();
-            s.g_id = _csQProduct.Item((long)orderProduct.idQuotationProduct).idProduct; //getProductIDFromQuotProduct
-            s.price = orderProduct.price;
-            s.qty = orderProduct.qty;
+            var closCnfg = EntityConfigDictionary.GetConfig("client_order_product");
+            var prov = new EntityProvider<ClientOrderProduct_DTO>(closCnfg);
 
             var sList = new List<DeliveryRequestT22_S_Cost>();
-            sList.Add(s);
+
+            foreach (var sh in shpmt.shipmentItems)
+            {
+                var s = new DeliveryRequestT22_S_Cost();
+
+                var qp = prov.GetItem((long)sh.idOrderSpecProd).idQuotationProduct;
+                s.g_id = _csQProduct.Item((long)qp).idProduct;
+                s.price = (decimal)_csQProduct.Item((long)qp).price;
+                
+                sList.Add(s);
+            }
+
             var del22_Cost = new DeliveryRequestT22_Cost();
             del22_Cost.sht_id = loEntityId;
             del22_Cost.tcity_id = (long)_clRepo.ClientAddress(loIdClientAddress).idCity; //getCityIDFromClientAddress
-            del22_Cost.seller_id = _csQuot.Item(
-                                                _csQProduct.Item(
-                                                                        (long)orderProduct.idQuotationProduct
-                                                                 ).idQuotation
-                                                ).idSupplier;  // getSellerIDFromQuotProduct
+            del22_Cost.seller_id = shpmt.idSupplier;  // getSellerIDFromQuotProduct
 
             del22_Cost.numfloor = 0;
             del22_Cost.spec = sList;
@@ -105,37 +110,37 @@ namespace Wsds.DAL.Repository.Specific
             //Debug.WriteLine(res);
             var resp = JsonConvert.DeserializeObject<DeliveryResponseT22_Cost>(res)
                         .spec.FirstOrDefault();
-            
+
             return new { assessedCost = resp.deliv + resp.deliv_floor };
-
         }
+        public object GetDeliveryDateByShipment(Shipment_DTO shpmt, long loEntityId, long loIdClientAddress) {
 
-        public object GetDeliveryDate(ClientOrderProduct_DTO orderProduct, long loEntityId, long loIdClientAddress)
-        {
-            var s = new DeliveryRequestT22_S_Date();
-            s.g_id = _csQProduct.Item((long)orderProduct.idQuotationProduct).idProduct; //getProductIDFromQuotProduct
-            s.iz_dozakupka = 0; //TODO
-            
+            var closCnfg = EntityConfigDictionary.GetConfig("client_order_product");
+            var prov = new EntityProvider<ClientOrderProduct_DTO>(closCnfg);
 
             var sList = new List<DeliveryRequestT22_S_Date>();
-            sList.Add(s);
+
+            foreach (var sh in shpmt.shipmentItems) {
+                var s = new DeliveryRequestT22_S_Date();
+
+                var qp = prov.GetItem((long)sh.idOrderSpecProd).idQuotationProduct;
+                s.g_id = _csQProduct.Item((long)qp).idProduct;
+                s.iz_dozakupka = 0; //TODO??
+                sList.Add(s);
+            }
 
             var del22_Date = new DeliveryRequestT22_Date();
 
             del22_Date.sht_id = loEntityId;
             del22_Date.fcity_id = 38044; //TODO
-            del22_Date.tcity_id = _clRepo.ClientAddress(loIdClientAddress).idCity; //getCityIDFromClientAddress
-            del22_Date.seller_id = _csQuot.Item(
-                                                _csQProduct.Item(
-                                                                        (long)orderProduct.idQuotationProduct
-                                                                 ).idQuotation
-                                                ).idSupplier;  // getSellerIDFromQuotProduct
+            del22_Date.tcity_id = _clRepo.ClientAddress(loIdClientAddress).idCity;
+            del22_Date.seller_id = shpmt.idSupplier;
             del22_Date.type_deliv = 1; //TODO
 
             del22_Date.spec = sList;
 
             var requestJson = JsonConvert.SerializeObject(del22_Date);
-            //Debug.WriteLine(requestJson);
+            
 
             string res = "";
             var ConnString = _config.GetConnectionString("MainDataConnection");
@@ -156,12 +161,13 @@ namespace Wsds.DAL.Repository.Specific
                     con.Close();
                 }
             };
-            //Debug.WriteLine(res);
+
             var resp = JsonConvert.DeserializeObject<DeliveryResponseT22_Date>(res)
                         .spec.FirstOrDefault();
-            
+
 
             return new { deliveryDate = DateTime.ParseExact(resp.deliv_date, "dd/MM/yyyy", CultureInfo.InvariantCulture) };
         }
+
     }
 }

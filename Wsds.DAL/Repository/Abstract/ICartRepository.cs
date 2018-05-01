@@ -24,7 +24,9 @@ namespace Wsds.DAL.Repository.Abstract
         IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj, long card, long clientId, long currency);
         PostOrderResponse PostOrder(ClientOrder_DTO order);
         IEnumerable<ClientOrderProductsByDate_DTO> GetOrderProductsByDate(string datesRange, long clientId);
-        ClientOrder_DTO GetClientOrder(long orderId, long idClient);
+        //ClientOrder_DTO GetClientOrder(long orderId, long idClient);
         ClientOrder_DTO GetClientHistOrder(long orderId, long idClient);
+        IEnumerable<Shipment_DTO> GenerateShipments(long idOrder, long currencyId);
+        Shipment_DTO SaveShipment(Shipment_DTO shipment, long idClient);
     }
 }

@@ -96,6 +96,17 @@ namespace Wsds.WebApp
             var redisCache = new Context(redisConfig);
             services.AddSingleton(redisCache);
 
+            EntityConfigDictionary.AddConfig("shipment",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, Serialization.Shipment2Json(t.id) as value " +
+                                            "from shipment t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetBaseTable("shipment")
+                    .SetSerializerFunc("Serialization.Shipment2Json")
+            );
+
+
             EntityConfigDictionary.AddConfig("app_params",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.id, Json_object('id' value t.id, 'propName' value t.prop_name, 'propVal' value t.prop_value) as value " +
@@ -127,7 +138,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("pages",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'name' value name,'content' value content) as value " +
+                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'name' value name,'content' value to_char(content)) as value " +
                                          "from pages")
                     .SetKeyField("id")
                     .SetValueField("value")
@@ -300,18 +311,7 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("client_order_product_all",
                 new EntityConfig(mainDataConnString)
                     .SetBaseTable("ORDER_SPEC_PRODUCTS")
-                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value t.id, 'idOrder' value id_order, " +
-                                         "'idQuotationProduct' value id_quotation, 'price' value price, 'qty' value qty, " +
-                                         "'idStorePlace' value id_store_place, 'idLoEntity' value id_lo_entity, " +
-                                         "'loTrackTicket' value lo_track_ticket, 'loDeliveryCost' value lo_delivery_cost, " +
-                                         "'loDeliveryCompleted' value lo_delivery_completed, " +
-                                         "'loEstimatedDeliveryDate' value lo_estimated_delivery_date, " +
-                                         "'loDeliveryCompletedDate' value lo_delivery_completed_date, 'errorMessage' value error_message, " +
-                                         "'warningMessage' value warning_message, 'payPromoCode' value pay_promocode, " +
-                                         "'payPromoCodeDiscount' value pay_promocode_discount, 'payBonusCnt' value pay_bonus_cnt, " +
-                                         "'payPromoBonusCnt' value pay_promobonus_cnt, 'earnedBonusCnt' value earned_bonus_cnt, " +
-                                         "'warningRead' value warning_read, 'complect' value complect,'idAction' value id_action, " +
-                                         "'actionList' value action_list, 'actionTitle' value action_title) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
+                    .AddSqlCommandSelect("select t.*, Serialization.ORDER_SPEC_PRODUCT2Json(t.id) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
                     .AddSqlCommandWhere("where o.id = t.id_order")
                     .SetKeyField("id")
                     .SetValueField("value")
@@ -349,18 +349,7 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("client_order_product",
                 new EntityConfig(mainDataConnString)
                     .SetBaseTable("ORDER_SPEC_PRODUCTS")
-                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value t.id, 'idOrder' value id_order, " +
-                                         "'idQuotationProduct' value id_quotation, 'price' value price, 'qty' value qty, " +
-                                         "'idStorePlace' value id_store_place, 'idLoEntity' value id_lo_entity, " +
-                                         "'loTrackTicket' value lo_track_ticket, 'loDeliveryCost' value lo_delivery_cost, " +
-                                         "'loDeliveryCompleted' value lo_delivery_completed, " +
-                                         "'loEstimatedDeliveryDate' value lo_estimated_delivery_date, " +
-                                         "'loDeliveryCompletedDate' value lo_delivery_completed_date, 'errorMessage' value error_message, " +
-                                         "'warningMessage' value warning_message, 'payPromoCode' value pay_promocode, " +
-                                         "'payPromoCodeDiscount' value pay_promocode_discount, 'payBonusCnt' value pay_bonus_cnt, " +
-                                         "'payPromoBonusCnt' value pay_promobonus_cnt, 'earnedBonusCnt' value earned_bonus_cnt, " +
-                                         "'warningRead' value warning_read, 'complect' value complect,'idAction' value id_action, " +
-                                         "'actionList' value action_list, 'actionTitle' value action_title) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
+                    .AddSqlCommandSelect("select t.*, Serialization.ORDER_SPEC_PRODUCT2Json(t.id) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
                     .AddSqlCommandWhere("where o.id = t.id_order and o.id_status=0")
                     .SetKeyField("id")
                     .SetValueField("value")

@@ -48,7 +48,7 @@ namespace Wsds.DAL.Repository.Specific
                         item.idSupplier = idSupplier;
 
                         item.partsPmtCnt = Convert.IsDBNull(dr["parts_pmt_cnt"]) ? 0 : Convert.ToInt32(dr["parts_pmt_cnt"].ToString());
-                        item.creditSize = Convert.ToInt32(dr["credit_size"].ToString());
+                        item.creditSize = Convert.IsDBNull(dr["credit_size"]) ?  0 : Convert.ToInt32(dr["credit_size"].ToString());
                         res.Add(item);
                     };
                 }

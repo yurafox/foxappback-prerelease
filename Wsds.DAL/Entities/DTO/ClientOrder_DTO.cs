@@ -24,8 +24,6 @@ namespace Wsds.DAL.Entities
         public long? idPaymentStatus { get; set; }
         [FieldBinding(Field = "id_status")]
         public long? idStatus { get; set; }
-        [FieldBinding(Field = "lo_id_entity")]
-        public long? loIdEntity { get; set; }
         [FieldBinding(Field = "lo_id_client_address")]
         public long? loIdClientAddress { get; set; }
         [FieldBinding(Field = "items_total")]

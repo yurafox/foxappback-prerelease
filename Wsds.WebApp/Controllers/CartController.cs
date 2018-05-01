@@ -92,6 +92,7 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cartRepo.GetClientOrders(tModel.ClientId));
         }
 
+        /*
         [Authorize]
         [HttpGet("ClientOrder/{id}")]
         [PullToken]
@@ -100,6 +101,7 @@ namespace Wsds.WebApp.Controllers
             var tModel = HttpContext.GetTokenModel();
             return Ok(_cartRepo.GetClientOrder(id, tModel.ClientId));
         }
+        */
 
         [Authorize]
         [HttpGet("ClientHistOrder/{id}")]
@@ -145,6 +147,24 @@ namespace Wsds.WebApp.Controllers
         {
             var tModel = HttpContext.GetTokenModel();
             return Ok(_cartRepo.GetOrderProductsByDate(datesRange, 11049778713 /*tModel.ClientId*/)); //TODO uncomment param
+        }
+
+        [Authorize]
+        [HttpPost("GenerateShipments")]
+        [PullToken]
+        public IActionResult GetGenerateShipments()
+        {
+            var tModel = HttpContext.GetTokenModel();
+            return Ok(_cartRepo.GenerateShipments(100, tModel.CurrencyId /*tModel.ClientId*/)); //TODO uncomment param
+        }
+
+        [Authorize]
+        [HttpPut("shipment")]
+        [PullToken]
+        public IActionResult SaveShipment([FromBody] Shipment_DTO shipment)
+        {
+            var tModel = HttpContext.GetTokenModel();
+            return Ok(_cartRepo.SaveShipment(shipment, tModel.ClientId));
         }
     }
 }
