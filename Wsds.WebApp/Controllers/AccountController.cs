@@ -68,8 +68,8 @@ namespace Wsds.WebApp.Controllers
                 }
             }
 
-            Response.StatusCode = 400;
-            await Response.WriteAsync(resultMessage);
+            await Response.WriteAsync(JsonConvert.SerializeObject(new {message= resultMessage },
+                new JsonSerializerSettings { Formatting = Formatting.Indented }));
         }
 
         [Authorize]

@@ -138,8 +138,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("pages",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select id, Json_object('id' value id, 'name' value name,'content' value to_char(content)) as value " +
-                                         "from pages")
+                    .AddSqlCommandSelect("select p.id, Serialization.Page2Json(p.id) as value from pages p")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Page2Json")
