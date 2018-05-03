@@ -236,7 +236,7 @@ namespace Wsds.DAL.Providers
             List<T> res = new List<T>();
             string stmt = _config.SqlCommandSelect + " " + _config.SqlCommandWhere;
 
-            if (!(String.IsNullOrEmpty(filterExpr)))
+            if (!String.IsNullOrEmpty(filterExpr))
                 stmt = stmt + (String.IsNullOrEmpty(_config.SqlCommandWhere) ? " where " : " and ") 
                             + filterExpr + " " + _config.SqlCommandOrderBy;
 
@@ -245,7 +245,7 @@ namespace Wsds.DAL.Providers
             {
                 try
                 {
-                    if (!(args == null))
+                    if (args != null)
                         cmd.Parameters.AddRange(args);
                     con.Open();
                     OracleDataReader dr = cmd.ExecuteReader();
