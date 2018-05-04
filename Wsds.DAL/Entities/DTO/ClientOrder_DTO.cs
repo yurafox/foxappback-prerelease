@@ -44,5 +44,11 @@ namespace Wsds.DAL.Entities
         public string clientHistFIO { get; set; }
         [FieldBinding(IsTransient = true)]
         public string clientHistAddress { get; set; }
+        [FieldBinding(Field = "id_credit_product")]
+        public long? idCreditProduct { get; set; }
+        [FieldBinding(Field = "credit_period")]
+        public long? creditPeriod { get; set; }
+        [FieldBinding(Field = "credit_monthly_pmt")]
+        public decimal? creditMonthlyPmt { get; set; }
     }
 }

@@ -31,6 +31,8 @@ namespace Wsds.DAL.Entities
         public long? idStorePlace { get; set; }
         [FieldBinding(Field = "id_lo_entity_office")]
         public long? idLoEntityOffice { get; set; }
+        [FieldBinding(Field = "id_lo_delivery_type")]
+        public long? idLoDeliveryType { get; set; }
         [FieldBinding(IsTransient = true)]
         public IEnumerable<Shipment_Items_DTO> shipmentItems { get; set; }
     }

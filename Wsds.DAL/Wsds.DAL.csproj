@@ -419,6 +419,9 @@
     <Compile Include="Entities\DTO\DeviceData_DTO.cs" />
     <Compile Include="Entities\DTO\FavoriteStore_DTO.cs" />
     <Compile Include="Entities\DTO\Localization_DTO.cs" />
+    <Compile Include="Entities\DTO\LoDeliveryType_DTO.cs" />
+    <Compile Include="Entities\DTO\LoEntityDeliveryType_DTO.cs" />
+    <Compile Include="Entities\DTO\LoEntityOffice_DTO.cs" />
     <Compile Include="Entities\DTO\NoveltyDetails_DTO.cs" />
     <Compile Include="Entities\DTO\Novelty_DTO.cs" />
     <Compile Include="Entities\DTO\ProductReview_DTO.cs" />

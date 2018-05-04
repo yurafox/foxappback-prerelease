@@ -7,11 +7,19 @@ using System.Threading.Tasks;
 namespace Wsds.DAL.Entities.Communication
 {
 
+    public class LoEntityOfficesByLoEntityAndCityRequest {
+        public long idLoEntity { get; set; }
+
+        public long idCity { get; set; }
+
+    }
+
     public class DeliveryDateByShipmentRequest
     {
         public long loEntity { get; set; }
         public long loIdClientAddress { get; set; }
         public Shipment_DTO shpmt { get; set; }
+        public long delivTypeId { get; set; }
     }
 
     public class DeliveryDateRequest

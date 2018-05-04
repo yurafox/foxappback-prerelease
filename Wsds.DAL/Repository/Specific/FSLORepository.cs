@@ -23,6 +23,10 @@ namespace Wsds.DAL.Repository.Specific
         private ICacheService<LoSupplEntity_DTO> _csLoSupplEnt;
         private ICacheService<Quotation_Product_DTO> _csQProduct;
         private ICacheService<Quotation_DTO> _csQuot;
+        private ICacheService<LoDeliveryType_DTO> _csDelType;
+        private ICacheService<LoEntityOffice_DTO> _csEntOffice;
+        private ICacheService<LoEntityDeliveryType_DTO> _csEntDelType;
+
         private IClientRepository _clRepo;
         private readonly IConfiguration _config;
 
@@ -30,6 +34,9 @@ namespace Wsds.DAL.Repository.Specific
                               ICacheService<LoSupplEntity_DTO> csLoSupplEnt,
                               ICacheService<Quotation_Product_DTO> csQProduct,
                               ICacheService<Quotation_DTO> csQuot,
+                              ICacheService<LoDeliveryType_DTO> csDelType,
+                              ICacheService<LoEntityOffice_DTO> csEntOffice,
+                              ICacheService<LoEntityDeliveryType_DTO> csEntDelType,
                               IClientRepository clRepo,
                               IConfiguration config) {
             _csLoEnt = csLoEnt;
@@ -38,6 +45,9 @@ namespace Wsds.DAL.Repository.Specific
             _clRepo = clRepo;
             _csQuot = csQuot;
             _config = config;
+            _csDelType = csDelType;
+            _csEntOffice = csEntOffice;
+            _csEntDelType = csEntDelType;
         }
 
         public IEnumerable<LoEntity_DTO> LoEntities => _csLoEnt.Items.Values;
@@ -59,7 +69,7 @@ namespace Wsds.DAL.Repository.Specific
 
         public LoEntity_DTO LoEntity(long id) => _csLoEnt.Item(id);
 
-        public object GetDeliveryCostByShipment(Shipment_DTO shpmt, long loEntityId, long loIdClientAddress)
+        public object GetDeliveryCostByShipment(Shipment_DTO shpmt, long loEntityId, long loIdClientAddress, long delivTypeId)
         {
             var closCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(closCnfg);
@@ -83,6 +93,7 @@ namespace Wsds.DAL.Repository.Specific
             del22_Cost.seller_id = shpmt.idSupplier;  // getSellerIDFromQuotProduct
 
             del22_Cost.numfloor = 0;
+            del22_Cost.type_deliv = delivTypeId;
             del22_Cost.spec = sList;
 
             var requestJson = JsonConvert.SerializeObject(del22_Cost);
@@ -113,7 +124,7 @@ namespace Wsds.DAL.Repository.Specific
 
             return new { assessedCost = resp.deliv + resp.deliv_floor };
         }
-        public object GetDeliveryDateByShipment(Shipment_DTO shpmt, long loEntityId, long loIdClientAddress) {
+        public object GetDeliveryDateByShipment(Shipment_DTO shpmt, long loEntityId, long loIdClientAddress, long delivTypeId) {
 
             var closCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(closCnfg);
@@ -135,7 +146,7 @@ namespace Wsds.DAL.Repository.Specific
             del22_Date.fcity_id = 38044; //TODO
             del22_Date.tcity_id = _clRepo.ClientAddress(loIdClientAddress).idCity;
             del22_Date.seller_id = shpmt.idSupplier;
-            del22_Date.type_deliv = 1; //TODO
+            del22_Date.type_deliv = delivTypeId;
 
             del22_Date.spec = sList;
 
@@ -169,5 +180,22 @@ namespace Wsds.DAL.Repository.Specific
             return new { deliveryDate = DateTime.ParseExact(resp.deliv_date, "dd/MM/yyyy", CultureInfo.InvariantCulture) };
         }
 
+        public LoDeliveryType_DTO LoDeliveryType(long id) => _csDelType.Item(id);
+
+        public IEnumerable<LoDeliveryType_DTO> GetLoDeliveryTypesByLoEntity(long idLoEntity) {
+            var res = new List<LoDeliveryType_DTO>(); 
+            var lst = _csEntDelType.Items.Values.Where(x => x.idLoEntity == idLoEntity).ToList();
+            foreach (var item in lst) {
+                res.Add(_csDelType.Item(item.idLoDeliveryType));
+            }
+            return res;
+        }
+
+        public LoEntityOffice_DTO GetLoEntityOffice(long id) => _csEntOffice.Item(id);
+
+        public IEnumerable<LoEntityOffice_DTO> GetLoEntityOfficesByLoEntityAndCity(long idLoEntity, long idCity)
+        {
+            return _csEntOffice.Items.Values.Where(x => x.idLoEntity == idLoEntity && x.idCity == idCity);
+        }
     }
 }

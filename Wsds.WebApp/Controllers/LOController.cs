@@ -41,16 +41,27 @@ namespace Wsds.WebApp.Controllers
         [HttpPost("GetDeliveryCostByShipment")]
         public IActionResult GetDeliveryCostByShipment([FromBody] DeliveryCostByShipmentRequest model)
         {
-            return Ok(_loRepo.GetDeliveryCostByShipment(model.shpmt, model.loEntity, model.loIdClientAddress));
+            return Ok(_loRepo.GetDeliveryCostByShipment(model.shpmt, model.loEntity, model.loIdClientAddress, model.delivTypeId));
         }
 
         [HttpPost("GetDeliveryDateByShipment")]
         public IActionResult GetDeliveryDateByShipment([FromBody] DeliveryDateByShipmentRequest model)
         {
-            return Ok(_loRepo.GetDeliveryDateByShipment(model.shpmt, model.loEntity, model.loIdClientAddress));
+            return Ok(_loRepo.GetDeliveryDateByShipment(model.shpmt, model.loEntity, model.loIdClientAddress, model.delivTypeId));
         }
 
+        [HttpGet("LoDeliveryType/{id}")]
+        public IActionResult GetLoDeliveryType(long id) => Ok(_loRepo.LoDeliveryType(id));
 
+        [HttpGet("LoDeliveryTypesByLoEntity/{id}")]
+        public IActionResult GetLoDeliveryTypesByLoEntity(long id) => Ok(_loRepo.GetLoDeliveryTypesByLoEntity(id));
+
+        [HttpGet("LoEntityOffice/{id}")]
+        public IActionResult GetLoEntityOffice(long id) => Ok(_loRepo.GetLoEntityOffice(id));
+
+        [HttpPost("LoEntityOfficesByLoEntityAndCity")]
+        public IActionResult GetLoEntityOfficesByLoEntityAndCity([FromBody] LoEntityOfficesByLoEntityAndCityRequest model) 
+                => Ok(_loRepo.GetLoEntityOfficesByLoEntityAndCity(model.idLoEntity, model.idCity));
 
     }
 }

@@ -96,6 +96,37 @@ namespace Wsds.WebApp
             var redisCache = new Context(redisConfig);
             services.AddSingleton(redisCache);
 
+            EntityConfigDictionary.AddConfig("lo_entity_delivery_type",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, Serialization.LoEntityDeliveryType2Json(t.id) as value " +
+                                            "from lo_entity_delivery_type t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetBaseTable("lo_entity_delivery_type")
+                    .SetSerializerFunc("Serialization.LoEntityDeliveryType2Json")
+            );
+
+            EntityConfigDictionary.AddConfig("lo_entity_office",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, Serialization.LoEntityOffice2Json(t.id) as value " +
+                                            "from lo_entity_office t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetBaseTable("lo_entity_office")
+                    .SetSerializerFunc("Serialization.LoEntityOffice2Json")
+            );
+
+
+            EntityConfigDictionary.AddConfig("lo_delivery_types",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, Serialization.LoDeliveryType2Json(t.id) as value " +
+                                            "from LO_DELIVERY_TYPES t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetBaseTable("LO_DELIVERY_TYPES")
+                    .SetSerializerFunc("Serialization.LoDeliveryType2Json")
+            );
+
             EntityConfigDictionary.AddConfig("shipment",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.id, Serialization.Shipment2Json(t.id) as value " +
@@ -762,6 +793,18 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<CurrencyRate_DTO>),
                 p => new CacheService<CurrencyRate_DTO>
                     ("currency_rate", 100000000, redisCache), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<LoEntityOffice_DTO>),
+                p => new CacheService<LoEntityOffice_DTO>
+                    ("lo_entity_office", 12000000, redisCache), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<LoDeliveryType_DTO>),
+                p => new CacheService<LoDeliveryType_DTO>
+                    ("lo_delivery_types", 12000000, redisCache), ServiceLifetime.Singleton));
+
+            services.Add(new ServiceDescriptor(typeof(ICacheService<LoEntityDeliveryType_DTO>),
+                p => new CacheService<LoEntityDeliveryType_DTO>
+                    ("lo_entity_delivery_type", 12000000, redisCache), ServiceLifetime.Singleton));
 
             // add roles
             IdentityInit(services.BuildServiceProvider()).Wait();
