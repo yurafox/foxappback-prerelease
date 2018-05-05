@@ -50,5 +50,7 @@ namespace Wsds.DAL.Entities
         public long? creditPeriod { get; set; }
         [FieldBinding(Field = "credit_monthly_pmt")]
         public decimal? creditMonthlyPmt { get; set; }
+        [FieldBinding(Field = "id_app")]
+        public long? idApp { get; set; }
     }
 }
