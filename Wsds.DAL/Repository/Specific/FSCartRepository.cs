@@ -119,11 +119,11 @@ namespace Wsds.DAL.Repository.Specific
             else return null; //if order does not exists => do nothing and return null
         }
 
-        public ClientOrderProduct_DTO InsertCartProduct(ClientOrderProduct_DTO item, long clientId, long currency)
+        public ClientOrderProduct_DTO InsertCartProduct(ClientOrderProduct_DTO item, long clientId, long currency, long idApp)
         {
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
-            long _idOrder = (long)GetOrCreateClientDraftOrder(clientId, currency).id;
+            long _idOrder = (long)GetOrCreateClientDraftOrder(clientId, currency, idApp).id;
 
             var fndSpec = prov.GetItems("t.id_quotation = :qp and t.id_order = :id_order and t.complect = :complect",
                                         new OracleParameter("qp", item.idQuotationProduct),
@@ -193,7 +193,7 @@ namespace Wsds.DAL.Repository.Specific
 
         }
 
-        public ClientOrder_DTO GetOrCreateClientDraftOrder(long clientId, long currencyId) {
+        public ClientOrder_DTO GetOrCreateClientDraftOrder(long clientId, long currencyId, long idApp) {
             var confOrders = EntityConfigDictionary.GetConfig("client_order");
             var ordersProv = new EntityProvider<ClientOrder_DTO>(confOrders);
 
@@ -256,10 +256,10 @@ namespace Wsds.DAL.Repository.Specific
         }
         */
 
-        public IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj, long card, long clientId, long currency)
+        public IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj, long card, long clientId, long currency, long idApp)
         {
 
-            var ordId = GetOrCreateClientDraftOrder(clientId, currency).id;
+            var ordId = GetOrCreateClientDraftOrder(clientId, currency,idApp).id;
             var itemsList = new List<CalcCartRequestT22_Item>();
 
             var confOrdersSpec = EntityConfigDictionary.GetConfig("client_order_product");
@@ -562,9 +562,9 @@ namespace Wsds.DAL.Repository.Specific
             return prov.GetItems("t.id_order = :orderId", new OracleParameter("orderId", orderId));
         }
 
-        public IEnumerable<Shipment_DTO> GenerateShipments(long clientId, long currencyId)
+        public IEnumerable<Shipment_DTO> GenerateShipments(long clientId, long currencyId, long idApp)
         {
-            var idOrder = GetOrCreateClientDraftOrder(clientId, currencyId).id;
+            var idOrder = GetOrCreateClientDraftOrder(clientId, currencyId,idApp).id;
             var res = new List<Shipment_DTO>();
             var ConnString = _config.GetConnectionString("MainDataConnection");
             using (var con = new OracleConnection(ConnString))

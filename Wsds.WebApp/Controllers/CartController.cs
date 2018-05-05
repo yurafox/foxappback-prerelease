@@ -45,7 +45,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult CreateCartProduct([FromBody] ClientOrderProduct_DTO item)
         {
             var tModel = HttpContext.GetTokenModel();
-            ClientOrderProduct_DTO result = _cartRepo.InsertCartProduct(item,tModel.ClientId,tModel.CurrencyId);
+            ClientOrderProduct_DTO result = _cartRepo.InsertCartProduct(item,tModel.ClientId,tModel.CurrencyId,tModel.IdApp);
             return CreatedAtRoute("", new { id = result.id }, result);
         }
 
@@ -65,7 +65,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult getClientDraftOrder()
         {
             var tModel = HttpContext.GetTokenModel();
-            return Ok(_cartRepo.GetOrCreateClientDraftOrder(tModel.ClientId,tModel.CurrencyId));
+            return Ok(_cartRepo.GetOrCreateClientDraftOrder(tModel.ClientId,tModel.CurrencyId,tModel.IdApp));
         }
 
         [Authorize]
@@ -127,7 +127,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult CalculateCart([FromBody] CalculateCartRequest cart)
         {
             var tModel = HttpContext.GetTokenModel();
-            return Ok(_cartRepo.CalculateCart(cart, tModel.Card, tModel.ClientId, tModel.CurrencyId));
+            return Ok(_cartRepo.CalculateCart(cart, tModel.Card, tModel.ClientId, tModel.CurrencyId,tModel.IdApp));
         }
 
         [Authorize]
@@ -155,7 +155,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetGenerateShipments()
         {
             var tModel = HttpContext.GetTokenModel();
-            return Ok(_cartRepo.GenerateShipments(100, tModel.CurrencyId /*tModel.ClientId*/)); //TODO uncomment param
+            return Ok(_cartRepo.GenerateShipments(100, tModel.CurrencyId /*tModel.ClientId*/,tModel.IdApp)); //TODO uncomment param
         }
 
         [Authorize]
