@@ -45,7 +45,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult CreateCartProduct([FromBody] ClientOrderProduct_DTO item)
         {
             var tModel = HttpContext.GetTokenModel();
-            var idApp = 1; //TODO
+            var idApp = 6; //TODO
             ClientOrderProduct_DTO result = _cartRepo.InsertCartProduct(item,tModel.ClientId,tModel.CurrencyId,idApp);
             return CreatedAtRoute("", new { id = result.id }, result);
         }
@@ -66,7 +66,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult getClientDraftOrder()
         {
             var tModel = HttpContext.GetTokenModel();
-            var idApp = 1; //TODO
+            var idApp = 6; //TODO
             return Ok(_cartRepo.GetOrCreateClientDraftOrder(tModel.ClientId,tModel.CurrencyId,idApp));
         }
 
@@ -129,7 +129,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult CalculateCart([FromBody] CalculateCartRequest cart)
         {
             var tModel = HttpContext.GetTokenModel();
-            var idApp = 1; //TODO
+            var idApp = 6; //TODO
             return Ok(_cartRepo.CalculateCart(cart, tModel.Card, tModel.ClientId, tModel.CurrencyId, idApp));
         }
 
@@ -158,7 +158,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetGenerateShipments()
         {
             var tModel = HttpContext.GetTokenModel();
-            var idApp = 1; //TODO
+            var idApp = 6; //TODO
             return Ok(_cartRepo.GenerateShipments(100, tModel.CurrencyId /*tModel.ClientId*/, idApp)); //TODO uncomment param
         }
 
