@@ -26,7 +26,7 @@ namespace Wsds.DAL.Repository.Abstract
         IEnumerable<ClientOrderProductsByDate_DTO> GetOrderProductsByDate(string datesRange, long clientId);
         //ClientOrder_DTO GetClientOrder(long orderId, long idClient);
         ClientOrder_DTO GetClientHistOrder(long orderId, long idClient);
-        IEnumerable<Shipment_DTO> GenerateShipments(long idOrder, long currencyId,long idApp);
+        IEnumerable<Shipment_DTO> GenerateShipments(long clientId, long currencyId,long idApp);
         Shipment_DTO SaveShipment(Shipment_DTO shipment, long idClient);
     }
 }
