@@ -129,7 +129,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("shipment",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.id, Serialization.Shipment2Json(t.id) as value " +
+                    .AddSqlCommandSelect("select t.*, Serialization.Shipment2Json(t.id) as value " +
                                             "from shipment t")
                     .SetKeyField("id")
                     .SetValueField("value")

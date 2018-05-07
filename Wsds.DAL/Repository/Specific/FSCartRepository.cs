@@ -570,7 +570,6 @@ namespace Wsds.DAL.Repository.Specific
             var ConnString = _config.GetConnectionString("MainDataConnection");
             using (var con = new OracleConnection(ConnString))
             using (var cmdGenShpmt = new OracleCommand("begin foxstore.lo.Generate_Shipment(:idOrder); end;", con))
-            using (var cmdGetShpmts = new OracleCommand("select serialization.Shipment2Json(t.id) as value from SHIPMENT t where id_order = :idOrder", con))
             {
                 try
                 {
@@ -578,13 +577,9 @@ namespace Wsds.DAL.Repository.Specific
                     con.Open();
                     cmdGenShpmt.ExecuteNonQuery();
 
-                    cmdGetShpmts.Parameters.Add(new OracleParameter("idOrder", idOrder));
-                    var reader = cmdGetShpmts.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        var item = JsonConvert.DeserializeObject<Shipment_DTO>(reader["value"].ToString());
-                        res.Add(item);
-                    }
+                    var shCnfg = EntityConfigDictionary.GetConfig("shipment");
+                    var prov = new EntityProvider<Shipment_DTO>(shCnfg);
+                    res = prov.GetItems("t.id_order = :orderId", new OracleParameter("orderId", idOrder)).ToList();
                 }
                 finally
                 {
@@ -600,27 +595,6 @@ namespace Wsds.DAL.Repository.Specific
             var prov = new EntityProvider<Shipment_DTO>(shCnfg);
 
             return prov.UpdateItem(shipment);
-
-            /*
-                        var res = new Shipment_DTO();
-                        var ConnString = _config.GetConnectionString("MainDataConnection");
-                        using (var con = new OracleConnection(ConnString))
-                        using (var cmdGetShpmt = new OracleCommand("select serialization.Shipment2Json(t.id) as value from SHIPMENT t where t.id = :id", con))
-                        {
-                            try
-                            {
-                                cmdGetShpmt.Parameters.Add(new OracleParameter("id", shipment.id));
-                                var reader = cmdGetShpmt.ExecuteReader();
-                                reader.Read();
-                                res = JsonConvert.DeserializeObject<Shipment_DTO>(reader["value"].ToString());
-                            }
-                            finally
-                            {
-                                con.Close();
-                            }
-                        };
-                        return res;
-                        */
         }
 
     }
