@@ -13,6 +13,7 @@ namespace Wsds.WebApp.Filters
         {
             var headers = context.HttpContext.Request.Headers;
             var currency = headers["X-Currency"].FirstOrDefault();
+            var idApp = headers["X-App"].FirstOrDefault();
 
             // get lang from current instance
             var config = context.HttpContext.RequestServices.GetService(typeof(IConfiguration)) as IConfiguration;
@@ -22,7 +23,8 @@ namespace Wsds.WebApp.Filters
             var settingsModel = new SettingsModel()
             {
                 CurrencyId = (currency != null) ? Convert.ToInt64(currency) : 4, // default UAH
-                LangId = (lang != null) ? Convert.ToInt64(lang) : 1 // default RUS
+                LangId = (lang != null) ? Convert.ToInt64(lang) : 1, // default RUS
+                IdApp = (idApp != null) ? Convert.ToInt64(idApp) : 0
             };
 
             context.HttpContext.Items["settings"] = settingsModel;       

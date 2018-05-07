@@ -260,7 +260,7 @@ namespace Wsds.DAL.Repository.Specific
         public IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj, long card, long clientId, long currency, long idApp)
         {
 
-            var ordId = GetOrCreateClientDraftOrder(clientId, currency, idApp).id;
+            var ordId = GetOrCreateClientDraftOrder(clientId, currency,idApp).id;
             var itemsList = new List<CalcCartRequestT22_Item>();
 
             var confOrdersSpec = EntityConfigDictionary.GetConfig("client_order_product");
@@ -565,7 +565,7 @@ namespace Wsds.DAL.Repository.Specific
 
         public IEnumerable<Shipment_DTO> GenerateShipments(long clientId, long currencyId, long idApp)
         {
-            var idOrder = GetOrCreateClientDraftOrder(clientId, currencyId, idApp).id;
+            var idOrder = GetOrCreateClientDraftOrder(clientId, currencyId,idApp).id;
             var res = new List<Shipment_DTO>();
             var ConnString = _config.GetConnectionString("MainDataConnection");
             using (var con = new OracleConnection(ConnString))
