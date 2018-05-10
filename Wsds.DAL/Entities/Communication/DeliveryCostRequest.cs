@@ -38,6 +38,7 @@ namespace Wsds.DAL.Entities.Communication
         public long? seller_id { get; set; }
         public long? numfloor { get; set; }
         public long? type_deliv { get; set; }
+        public long? cwh_id { get; set; }
         public IEnumerable<DeliveryRequestT22_S_Cost> spec { get; set; } 
     }  
 }

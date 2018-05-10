@@ -83,6 +83,7 @@ namespace Wsds.DAL.Repository.Specific
                 var qp = prov.GetItem((long)sh.idOrderSpecProd).idQuotationProduct;
                 s.g_id = _csQProduct.Item((long)qp).idProduct;
                 s.price = (decimal)_csQProduct.Item((long)qp).price;
+                s.qty = sh.qty;
                 
                 sList.Add(s);
             }
@@ -94,6 +95,7 @@ namespace Wsds.DAL.Repository.Specific
 
             del22_Cost.numfloor = 0;
             del22_Cost.type_deliv = delivTypeId;
+            del22_Cost.cwh_id = shpmt.idLoEntityOffice;
             del22_Cost.spec = sList;
 
             var requestJson = JsonConvert.SerializeObject(del22_Cost);
@@ -119,8 +121,7 @@ namespace Wsds.DAL.Repository.Specific
                 }
             };
             //Debug.WriteLine(res);
-            var resp = JsonConvert.DeserializeObject<DeliveryResponseT22_Cost>(res)
-                        .spec.FirstOrDefault();
+            var resp = JsonConvert.DeserializeObject<DeliveryResponseT22_Cost>(res);
 
             return new { assessedCost = resp.deliv + resp.deliv_floor };
         }
@@ -147,6 +148,7 @@ namespace Wsds.DAL.Repository.Specific
             del22_Date.tcity_id = _clRepo.ClientAddress((long)loIdClientAddress).idCity;
             del22_Date.seller_id = shpmt.idSupplier;
             del22_Date.type_deliv = delivTypeId;
+            del22_Date.cwh_id = shpmt.idLoEntityOffice;
 
             del22_Date.spec = sList;
 
@@ -173,8 +175,7 @@ namespace Wsds.DAL.Repository.Specific
                 }
             };
 
-            var resp = JsonConvert.DeserializeObject<DeliveryResponseT22_Date>(res)
-                        .spec.FirstOrDefault();
+            var resp = JsonConvert.DeserializeObject<DeliveryResponseT22_Date>(res);
 
 
             return new { deliveryDate = DateTime.ParseExact(resp.deliv_date, "dd/MM/yyyy", CultureInfo.InvariantCulture) };
