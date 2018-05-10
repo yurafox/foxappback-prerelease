@@ -69,7 +69,7 @@ namespace Wsds.DAL.Repository.Specific
 
         public LoEntity_DTO LoEntity(long id) => _csLoEnt.Item(id);
 
-        public object GetDeliveryCostByShipment(Shipment_DTO shpmt, long loEntityId, long loIdClientAddress, long delivTypeId)
+        public object GetDeliveryCostByShipment(Shipment_DTO shpmt, long loEntityId, long? loIdClientAddress, long delivTypeId)
         {
             var closCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(closCnfg);
@@ -89,7 +89,7 @@ namespace Wsds.DAL.Repository.Specific
 
             var del22_Cost = new DeliveryRequestT22_Cost();
             del22_Cost.sht_id = loEntityId;
-            del22_Cost.tcity_id = (long)_clRepo.ClientAddress(loIdClientAddress).idCity; //getCityIDFromClientAddress
+            del22_Cost.tcity_id = (long)_clRepo.ClientAddress((long)loIdClientAddress).idCity; //getCityIDFromClientAddress
             del22_Cost.seller_id = shpmt.idSupplier;  // getSellerIDFromQuotProduct
 
             del22_Cost.numfloor = 0;
@@ -124,7 +124,7 @@ namespace Wsds.DAL.Repository.Specific
 
             return new { assessedCost = resp.deliv + resp.deliv_floor };
         }
-        public object GetDeliveryDateByShipment(Shipment_DTO shpmt, long loEntityId, long loIdClientAddress, long delivTypeId) {
+        public object GetDeliveryDateByShipment(Shipment_DTO shpmt, long loEntityId, long? loIdClientAddress, long delivTypeId) {
 
             var closCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(closCnfg);
@@ -144,7 +144,7 @@ namespace Wsds.DAL.Repository.Specific
 
             del22_Date.sht_id = loEntityId;
             del22_Date.fcity_id = 38044; //TODO
-            del22_Date.tcity_id = _clRepo.ClientAddress(loIdClientAddress).idCity;
+            del22_Date.tcity_id = _clRepo.ClientAddress((long)loIdClientAddress).idCity;
             del22_Date.seller_id = shpmt.idSupplier;
             del22_Date.type_deliv = delivTypeId;
 

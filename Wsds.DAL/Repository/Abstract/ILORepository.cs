@@ -15,8 +15,8 @@ namespace Wsds.DAL.Repository.Abstract
         IEnumerable<LoSupplEntity_DTO> LoSupplEntities { get; }
         IEnumerable<LoSupplEntity_DTO> GetLoEntitiesForSuppl(long supplId);
         IEnumerable<LoTrackLog> GetTrackLogForOrderSpecProd(long orderSpecProdId);
-        object GetDeliveryCostByShipment(Shipment_DTO shpmt, long loEntityId, long loIdClientAddress, long delivTypeId);
-        object GetDeliveryDateByShipment(Shipment_DTO shpmt, long loEntityId, long loIdClientAddress, long delivTypeId);
+        object GetDeliveryCostByShipment(Shipment_DTO shpmt, long loEntityId, long? loIdClientAddress, long delivTypeId);
+        object GetDeliveryDateByShipment(Shipment_DTO shpmt, long loEntityId, long? loIdClientAddress, long delivTypeId);
         LoDeliveryType_DTO LoDeliveryType(long id);
         IEnumerable<LoDeliveryType_DTO> GetLoDeliveryTypesByLoEntity(long idLoEntity);
         LoEntityOffice_DTO GetLoEntityOffice(long id);
