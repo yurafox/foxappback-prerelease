@@ -544,7 +544,7 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("product_reviews",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("SELECT t.id, Serialization.ProductReviews2Json(t.id) as value from product_reviews t")
-                    .AddSqlCommandOrderBy("order by t.review_date")
+                    .AddSqlCommandOrderBy("order by t.review_date desc")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.ProductReviews2Json")
@@ -555,7 +555,7 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("store_reviews",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("SELECT t.id, Serialization.StoreReviews2Json(t.id) as value from store_reviews t")
-                    .AddSqlCommandOrderBy("order by t.review_date")
+                    .AddSqlCommandOrderBy("order by t.review_date desc")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.StoreReviews2Json")
@@ -619,6 +619,51 @@ namespace Wsds.WebApp
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Rates2Json")
             );
+
+            EntityConfigDictionary.AddConfig("product_review_votes",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.ProductReviewVote2Json(t.id) as value from PRODUCT_REVIEW_VOTES t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.ProductReviewVote2Json")
+                    .SetSequence("SEQ_PRODUCT_REVIEW_VOTES")
+                    .SetBaseTable("PRODUCT_REVIEW_VOTES")
+            );
+
+            EntityConfigDictionary.AddConfig("store_review_votes",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("SELECT t.id, Serialization.StoreReviewVote2Json(t.id) as value from STORE_REVIEW_VOTES t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.StoreReviewVote2Json")
+                    .SetSequence("SEQ_STORE_REVIEW_VOTES")
+                    .SetBaseTable("STORE_REVIEW_VOTES")
+            );
+
+            EntityConfigDictionary.AddConfig("product_reviews_add_vote",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select pr.id,Serialization_Branch.ProductReviews2Json(pr.id,prv.vote) as value from product_reviews pr " +
+                                         "left join product_review_votes prv on pr.id = prv.id_review " +
+                                         "and prv.id_client = :idClient")
+
+                .AddSqlCommandWhere("where pr.is_moderated=1")
+                .AddSqlCommandOrderBy("order by pr.review_date desc")
+                .SetKeyField("id")
+                .SetValueField("value")
+                );
+
+            EntityConfigDictionary.AddConfig("store_reviews_add_vote",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select sr.id,Serialization_Branch.StoreReviews2Json(sr.id,srv.vote) as value from store_reviews sr " +
+                                         "left join store_review_votes srv on sr.id = srv.id_review " +
+                                         "and srv.id_client = :idClient")
+
+                .AddSqlCommandWhere("where sr.is_moderated=1")
+                .AddSqlCommandOrderBy("order by sr.review_date desc")
+                .SetKeyField("id")
+                .SetValueField("value")
+                );
+
 
 
             services.AddDbContext<AppIdentityDbContext>(options =>

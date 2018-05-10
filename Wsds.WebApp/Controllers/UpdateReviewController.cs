@@ -1,5 +1,9 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository.Abstract;
+using Microsoft.AspNetCore.Authorization;
+using Wsds.WebApp.Filters;
+using Wsds.WebApp.WebExtensions;
 using Wsds.DAL.Entities;
 
 namespace Wsds.WebApp.Controllers
@@ -17,33 +21,52 @@ namespace Wsds.WebApp.Controllers
             _rRepo = rRepo;
         }
 
+        [Authorize]
         [HttpPost("Product")]
+        [PullToken]
         public IActionResult UpdateProductReview([FromBody] ProductReview_DTO review)
         {
-            if (review != null)
+            var tokenModel = HttpContext.GetTokenModel();
+            if (tokenModel != null)
             {
-                ProductReview_DTO result = _rRepo.UpdateProductReview(review);
-                if (result != null)
+                var client = _cRepo.GetClientByPhone(tokenModel.Phone);
+                if (client?.id != null)
                 {
-                    return CreatedAtRoute("", result);
+                    if (review != null)
+                    {
+                        ProductReview_DTO result = _rRepo.UpdateProductReview(review, client.id.Value);
+                        if (result != null)
+                        {
+                            return CreatedAtRoute("", result);
+                        }
+                    }
                 }
             }
-            return BadRequest();
+            return Ok();
         }
             
-
+        [Authorize]
         [HttpPost("Store")]
+        [PullToken]
         public IActionResult UpdateStoreReview([FromBody] StoreReview_DTO review)
         {
-            if (review != null)
+            var tokenModel = HttpContext.GetTokenModel();
+            if (tokenModel != null)
             {
-                StoreReview_DTO result = _rRepo.UpdateStoreReview(review);
-                if (result != null)
+                var client = _cRepo.GetClientByPhone(tokenModel.Phone);
+                if (client?.id != null)
                 {
-                    return CreatedAtRoute("", result);
+                    if (review != null)
+                    {
+                        StoreReview_DTO result = _rRepo.UpdateStoreReview(review, client.id.Value);
+                        if (result != null)
+                        {
+                            return CreatedAtRoute("", result);
+                        }
+                    }
                 }
             }
-            return BadRequest();
+            return Ok();
         }
     }
 }

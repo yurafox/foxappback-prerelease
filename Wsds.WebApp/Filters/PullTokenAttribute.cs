@@ -10,6 +10,8 @@ namespace Wsds.WebApp.Filters
 {
     public class PullTokenAttribute:Attribute,IActionFilter
     {
+        public bool CanAnonymous = false;
+
         public void OnActionExecuting(ActionExecutingContext context)
         {
             var phone = context.HttpContext.User.FindFirst("phone")?.Value;
@@ -36,11 +38,16 @@ namespace Wsds.WebApp.Filters
                 IdApp = (idApp != null) ? Convert.ToInt64(idApp) : 0
             };
 
-            // add token model to request like temp object
-            if (tokenModel.ValidateDataFromToken())
+            if (CanAnonymous)
                 context.HttpContext.Items["token"] = tokenModel;
-            else 
-                context.Result = new UnauthorizedResult();
+    
+            else
+            {
+                if (tokenModel.ValidateDataFromToken())
+                    context.HttpContext.Items["token"] = tokenModel;
+                else
+                    context.Result = new UnauthorizedResult();
+            }
 
         }
 
