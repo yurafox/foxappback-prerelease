@@ -886,7 +886,8 @@ namespace Wsds.WebApp
         {
             ConfigurationOptions redisConfig = null;
 
-            #if !DEBUG
+            // working pre-processor
+            #if DEBUG
              redisConfig = new ConfigurationOptions() {EndPoints = {{"localhost", 6379}}};
 
             #else
@@ -900,7 +901,7 @@ namespace Wsds.WebApp
             
             redisConfig = new ConfigurationOptions
             {
-                EndPoints =
+                EndPoints = // EndPoint - don't have a setter method. Working with initialization block
                 {
                     endPointCollection[0],
                     endPointCollection[1],

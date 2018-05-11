@@ -69,12 +69,12 @@ namespace Wsds.DAL.Repository.Specific
             return prov.UpdateItem(item);
         }
 
-        public object GetClientBonusesInfo(long idClient)
+        public object GetClientBonusesInfo(long card)
         {
             using (var client = new HttpClient()) {
                 client.DefaultRequestHeaders.Accept.Add(
                                 new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = client.GetAsync(UrlConstants.GetBonusInfoUrl + "/" + idClient.ToString()).Result;
+                var response = client.GetAsync(UrlConstants.GetBonusInfoUrl + "/" + card).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = response.Content;
@@ -96,14 +96,14 @@ namespace Wsds.DAL.Repository.Specific
             }
         }
 
-        public IEnumerable<object> GetClientBonusesExpireInfo(long idClient)
+        public IEnumerable<object> GetClientBonusesExpireInfo(long card)
         {
             List<object> res = new List<object>();
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Accept.Add(
                                 new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = client.GetAsync(UrlConstants.GetBonusesExpireInfoUrl + "/" + idClient.ToString()).Result;
+                var response = client.GetAsync(UrlConstants.GetBonusesExpireInfoUrl + "/" + card).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = response.Content;

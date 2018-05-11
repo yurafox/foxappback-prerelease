@@ -67,16 +67,21 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cliRepo.UpdatePerson(person));
         }
 
-        [HttpGet("getBonusesInfo/{id}")]
-        public IActionResult GetClientBonusesInfo(long id) {
-            return Ok(_cliRepo.GetClientBonusesInfo(11049778713/*id*/));
+        [Authorize]
+        [HttpGet("getBonusesInfo")]
+        [PullToken]
+        public IActionResult GetClientBonusesInfo() {
+            var tModel = HttpContext.GetTokenModel();
+            return Ok(_cliRepo.GetClientBonusesInfo(tModel.Card));
         }
 
+        [Authorize]
         [HttpGet("getBonusesExpireInfo")]
-        [Link("clientId")]
-        public IActionResult GetClientBonusesExpireInfo([FromQuery]long clientId)
+        [PullToken]
+        public IActionResult GetClientBonusesExpireInfo()
         {
-            return Ok( _cliRepo.GetClientBonusesExpireInfo(11049778713/*4365162*/ /*clientId)*/));
+            var tModel = HttpContext.GetTokenModel();
+            return Ok( _cliRepo.GetClientBonusesExpireInfo(tModel.Card));
         }
 
         [Authorize]
