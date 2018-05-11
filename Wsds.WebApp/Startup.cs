@@ -81,18 +81,9 @@ namespace Wsds.WebApp
             var virtualCatalogId = Convert.ToInt64(Configuration["AppOptions:virtualId"]);
             var langId = Convert.ToInt64(Configuration["AppOptions:lang"]);
 
-            var redisConfig = new ConfigurationOptions
-            {
-                EndPoints =
-                            {
-                                { "localhost", 6379 }
-                            },
 
-                SyncTimeout = int.MaxValue //,
-                //Ssl = true,
-                //Password = "mypassword"
-            };
-
+            // get redis config by solution configuration
+            var redisConfig = GetRedisConfigBySolutionConfiguration();
             var redisCache = new Context(redisConfig);
             services.AddSingleton(redisCache);
 
@@ -890,5 +881,41 @@ namespace Wsds.WebApp
 
         }
 
+        // switch redis config by pre-processor directive
+        public ConfigurationOptions GetRedisConfigBySolutionConfiguration()
+        {
+            ConfigurationOptions redisConfig = null;
+
+            #if !DEBUG
+             redisConfig = new ConfigurationOptions() {EndPoints = {{"localhost", 6379}}};
+
+            #else
+            var endPointCollection = new EndPointCollection();
+
+            var configSection = Configuration.GetSection("RedisConfig").GetChildren();
+            foreach (var nodeSection in configSection)
+            {
+                endPointCollection.Add(nodeSection["host"], Convert.ToInt32(nodeSection["port"]));
+            }
+            
+            redisConfig = new ConfigurationOptions
+            {
+                EndPoints =
+                {
+                    endPointCollection[0],
+                    endPointCollection[1],
+                    endPointCollection[2],
+                    endPointCollection[3],
+                    endPointCollection[4],
+                    endPointCollection[5]
+
+                }
+            };
+            #endif
+
+            redisConfig.SyncTimeout = int.MaxValue;
+
+            return redisConfig;
+        }
     }
 }
