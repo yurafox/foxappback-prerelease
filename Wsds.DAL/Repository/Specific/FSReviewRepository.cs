@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
 using Oracle.ManagedDataAccess.Client;
 using Microsoft.Extensions.Configuration;
-using System.Data;
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -38,14 +38,6 @@ namespace Wsds.DAL.Repository.Specific
             var reviews = prov.GetItems(null,new OracleParameter("idClient", clientId));
             return reviews;
         }
-
-        //public IEnumerable<ProductReview_DTO> GetProductReviews(long id)
-        //{
-        //    var cnfg = EntityConfigDictionary.GetConfig("product_reviews");
-        //    var prov = new EntityProvider<ProductReview_DTO>(cnfg);
-        //    var reviews = prov.GetItems("id_product = :id and is_moderated = 1", new OracleParameter("id", id));
-        //    return reviews;
-        //}
 
         public IEnumerable<ProductReview_DTO> GetProductReviews(long idProduct, long idClient)
         {
@@ -83,20 +75,6 @@ namespace Wsds.DAL.Repository.Specific
             }
             else return null;
         }
-
-        //public ProductReview_DTO UpdateProductReview(ProductReview_DTO review, long idClient)
-        //{
-        //    var cnfg = EntityConfigDictionary.GetConfig("product_reviews");
-        //    var prov = new EntityProvider<ProductReview_DTO>(cnfg);
-        //    var _review = review;
-        //    if (review.upvotes != null) _review.upvotes = review.upvotes;
-        //    if (review.downvotes != null) _review.downvotes = review.downvotes;
-        //    if (_review != null)
-        //    {
-        //        return prov.UpdateItem(_review);
-        //    }
-        //    else return null;
-        //}
 
         public ProductReview_DTO UpdateProductReview(ProductReview_DTO review, long idClient)
         {
