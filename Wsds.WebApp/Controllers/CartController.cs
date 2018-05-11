@@ -109,7 +109,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetClientHistOrder(long id)
         {
             var tModel = HttpContext.GetTokenModel();
-            return Ok(_cartRepo.GetClientHistOrder(id, 11049778713 /*tModel.ClientId*/)); //TODO uncomment param
+            return Ok(_cartRepo.GetClientHistOrder(id, tModel.ClientId));
         }
         
 
@@ -146,7 +146,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetClientOrderProductsByDate([FromQuery] string datesRange)
         {
             var tModel = HttpContext.GetTokenModel();
-            return Ok(_cartRepo.GetOrderProductsByDate(datesRange, 11049778713 /*tModel.ClientId*/)); //TODO uncomment param
+            return Ok(_cartRepo.GetOrderProductsByDate(datesRange, tModel.ClientId));
         }
 
         [Authorize]
@@ -155,7 +155,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetGenerateShipments()
         {
             var tModel = HttpContext.GetTokenModel();
-            return Ok(_cartRepo.GenerateShipments(100, tModel.CurrencyId /*tModel.ClientId*/,tModel.IdApp)); //TODO uncomment param
+            return Ok(_cartRepo.GenerateShipments(tModel.ClientId, tModel.CurrencyId,tModel.IdApp));
         }
 
         [Authorize]
