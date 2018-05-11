@@ -69,14 +69,14 @@ namespace Wsds.WebApp.Controllers
 
         [HttpGet("getBonusesInfo/{id}")]
         public IActionResult GetClientBonusesInfo(long id) {
-            return Ok(_cliRepo.GetClientBonusesInfo(id));
+            return Ok(_cliRepo.GetClientBonusesInfo(11049778713/*id*/));
         }
 
         [HttpGet("getBonusesExpireInfo")]
         [Link("clientId")]
         public IActionResult GetClientBonusesExpireInfo([FromQuery]long clientId)
         {
-            return Ok( _cliRepo.GetClientBonusesExpireInfo(clientId));
+            return Ok( _cliRepo.GetClientBonusesExpireInfo(11049778713/*4365162*/ /*clientId)*/));
         }
 
         [Authorize]
