@@ -11,6 +11,7 @@ using Wsds.DAL.Repository.Abstract;
 using Oracle.ManagedDataAccess.Client;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Wsds.DAL.Entities.Communication;
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -196,5 +197,25 @@ namespace Wsds.DAL.Repository.Specific
             return res;
         }
 
-}
+        public void NotifyOnProductArrival(NotifyOnProductArrivalRequest request, long? idClient)
+        {
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin app_core.AddProductArrivalNotification(:p1, :p2, :p3); end;", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add(new OracleParameter("p1", request.productId));
+                    cmd.Parameters.Add(new OracleParameter("p2", idClient));
+                    cmd.Parameters.Add(new OracleParameter("p3", request.email));
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+        }
+    }
 }

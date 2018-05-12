@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository.Abstract;
 using Newtonsoft.Json;
 using Wsds.WebApp.Attributes;
+using Wsds.WebApp.WebExtensions;
+using Microsoft.AspNetCore.Authorization;
+using Wsds.DAL.Entities.Communication;
+using Wsds.WebApp.Filters;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -62,6 +66,16 @@ namespace Wsds.WebApp.Controllers
         {
             var data = _prodRepo.GetByAction(actionId);
             return (data != null) ? Ok(data) : (IActionResult)BadRequest();
+        }
+
+
+        [HttpPost("NotifyOnProductArrival")]
+        [PullToken(CanAnonymous = true)]
+        public IActionResult NotifyOnProductArrival([FromBody] NotifyOnProductArrivalRequest request)
+        {
+            var tModel = HttpContext.GetTokenModel();
+            _prodRepo.NotifyOnProductArrival(request, tModel.ClientId);
+            return Created("", null);
         }
     }
 }

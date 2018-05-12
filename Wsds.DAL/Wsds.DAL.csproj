@@ -400,6 +400,7 @@
     <Compile Include="Common\ISequencedEntity.cs" />
     <Compile Include="Entities\Communication\CalculateCartRequest.cs" />
     <Compile Include="Entities\Communication\CalculateCartResponse.cs" />
+    <Compile Include="Entities\Communication\NotifyOnProductArrivalRequest.cs" />
     <Compile Include="Entities\DTO\ActionsByProduct_DTO.cs" />
     <Compile Include="Entities\DTO\ClientOrderProductsByDate_DTO.cs" />
     <Compile Include="Entities\Communication\DeliveryCostResponse.cs" />
