@@ -813,11 +813,11 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Page_DTO>),
                 p => new CacheService<Page_DTO>
-                    ("pages", 100000000, redisCache, true), ServiceLifetime.Singleton));
+                    ("pages", 10000000, redisCache, true), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Action_DTO>),
                 p => new CacheService<Action_DTO>
-                    ("actions", 100000000, redisCache, true), ServiceLifetime.Singleton));
+                    ("actions", 10000000, redisCache, true), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<BannerSlide_DTO>),
                 p => new CacheService<BannerSlide_DTO>
@@ -829,7 +829,7 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<CurrencyRate_DTO>),
                 p => new CacheService<CurrencyRate_DTO>
-                    ("currency_rate", 100000000, redisCache), ServiceLifetime.Singleton));
+                    ("currency_rate", 10000000, redisCache), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoEntityOffice_DTO>),
                 p => new CacheService<LoEntityOffice_DTO>
