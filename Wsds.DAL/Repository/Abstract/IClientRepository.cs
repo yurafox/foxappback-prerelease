@@ -18,8 +18,8 @@ namespace Wsds.DAL.Repository.Abstract
         PersonInfo_DTO CreatePerson(PersonInfo_DTO item);
         PersonInfo_DTO UpdatePerson(PersonInfo_DTO item);
 
-        object GetClientBonusesInfo(long idClient);
-        IEnumerable<object> GetClientBonusesExpireInfo(long idClient);
+        object GetClientBonusesInfo(long card);
+        IEnumerable<object> GetClientBonusesExpireInfo(long card);
         void LogProductView(long idProduct, string viewParams,long clientId);
         ClientAddress_DTO ClientAddress(long id);
         IEnumerable<ClientAddress_DTO> GetClientAddressesByClientId(long id);
