@@ -121,6 +121,7 @@ namespace Wsds.DAL.Repository.Specific
 
         public ClientOrderProduct_DTO InsertCartProduct(ClientOrderProduct_DTO item, long clientId, long currency, long idApp)
         {
+
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
             long _idOrder = (long)GetOrCreateClientDraftOrder(clientId, currency, idApp).id;
@@ -281,24 +282,7 @@ namespace Wsds.DAL.Repository.Specific
                 itemsList.Add(s);
             }
 
-
-            /*
-            foreach (var orderLine in cartObj.cartContent) {
-                var s = new CalcCartRequestT22_Item
-                {
-                    pk_id = orderLine.id,
-                    g_id = _csQProduct.Item((long)orderLine.idQuotationProduct).idProduct,
-                    qty = orderLine.qty,
-                    price = orderLine.price,
-                    is_set = (orderLine.complect == null) ? 0 : 1,
-                    act = orderLine.idAction //TODO we don't support promos for a moment
-                };
-                itemsList.Add(s);
-            }
-            */
-
-
-            string barcode = "+11049778713"; //TODO //$"+{card}";//"+11049778713";
+            string barcode = $"+{card}"; //"+11049778713";
 
             var calcCartRequestT22 = new CalcCartRequestT22
             {
@@ -349,10 +333,7 @@ namespace Wsds.DAL.Repository.Specific
                     var _pk = item.pk_id;
                     var _qty = item.qty;
 
-                    
-
-                    //var _mItem = MapItem((long)item.g_id, item.action_id, item.is_set, cartObj);
-
+ 
                     lst.Add(
                                 new CalculateCartResponse {
                                     clOrderSpecProdId = _pk,
@@ -595,6 +576,31 @@ namespace Wsds.DAL.Repository.Specific
             var prov = new EntityProvider<Shipment_DTO>(shCnfg);
 
             return prov.UpdateItem(shipment);
+        }
+
+        private long GenerateSCN()
+        {
+            long res = 0;
+            string stmt = "select seq_scn.nextval as value from dual";
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand(stmt, con))
+            {
+                try
+                {
+                    con.Open();
+                    OracleDataReader dr = cmd.ExecuteReader();
+                    if (dr.Read())
+                    {
+                        res = Convert.ToInt64(dr["value"].ToString());
+                    };
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+            return res;
         }
 
     }

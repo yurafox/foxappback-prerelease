@@ -120,7 +120,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("shipment",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, Serialization.Shipment2Json(t.id) as value " +
+                    .AddSqlCommandSelect("select t.id, Serialization.Shipment2Json(t.id) as value " +
                                             "from shipment t")
                     .SetKeyField("id")
                     .SetValueField("value")
@@ -228,10 +228,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("person_info",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.id, select JSON_OBJECT ('id' value id, 'firstName' value first_name," +
-                                         "'lastName' value last_name, 'middleName' value middle_name, " +
-                                         "'passportSeries' value passport_Series, 'passportNum' value passport_Num, " +
-                                         "'issuedAuthority' value issued_Authority, 'taxNumber' value tax_number, 'birthDate' value birth_date) as value from person t")
+                    .AddSqlCommandSelect("select t.id, Serialization.Person2Json (t.id) as value from person t")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Person2Json")
@@ -259,10 +256,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("store_place",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id, 'idSupplier' value id_supplier," +
-                                         "'name' value name, 'idCity' value id_city, 'zip' value zip, " +
-                                         "'address_line' value address_line, 'lat' value lat,'lng' value lng," +
-                                         "'type' value type) as value from STORE_PLACES t ")
+                    .AddSqlCommandSelect("select t.id, Serialization.Store_place2Json(t.id) as value from STORE_PLACES t ")
                     .AddSqlCommandWhere("where t.id in (select sp.id_store_place from product_store_places sp where sp.qty>0) " +
                                         "and t.type=1")
                     .SetKeyField("id")
@@ -272,8 +266,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("stores",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id, 'idCity' value id_city, 'address' value address_line, 'lat' value lat,'lng' value lng," +
-                                         "'openTime' value open_time, 'closeTime' value close_time, 'rating' value rating, 'idFeedbacks' value id_feedbacks) as value from STORE_PLACES t ")
+                    .AddSqlCommandSelect("select t.id, Serialization.Store2Json(t.id) as value from STORE_PLACES t ")
                     .AddSqlCommandWhere("where t.type=1  and t.lat is not null  and t.lng is not null  and t.is_active=1")
                     .SetKeyField("id")
                     .SetValueField("value")
@@ -282,7 +275,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("favorite_stores",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.id, JSON_OBJECT('id' value id, 'idClient' value id_client, 'idStore' value id_store_places) as value from FAVORITE_STORES t")
+                    .AddSqlCommandSelect("select t.id, Serialization.FavoriteStore2Json(t.id) as value from FAVORITE_STORES t")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.FavoriteStore2Json")
@@ -292,9 +285,8 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("product_store_place",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, " +
-                                         "JSON_OBJECT ('id' value t.id, 'idStorePlace' value id_Store_Place, " +
-                                         "'idQuotationProduct' value id_Quotation_Product, 'qty' value qty) as value " +
+                    .AddSqlCommandSelect("select t.id, " +
+                                         "Serialization.Product_Store_Place2Json(t.id) as value " +
                                          "from PRODUCT_STORE_PLACES t, store_places sp, cities c")
                     .AddSqlCommandWhere("where t.id_store_place = sp.id and sp.id_city = c.id")
                     .AddSqlCommandOrderBy("order by c.name asc, sp.name asc, sp.address_line asc")
@@ -370,7 +362,7 @@ namespace Wsds.WebApp
             EntityConfigDictionary.AddConfig("client_order_product",
                 new EntityConfig(mainDataConnString)
                     .SetBaseTable("ORDER_SPEC_PRODUCTS")
-                    .AddSqlCommandSelect("select t.*, Serialization.ORDER_SPEC_PRODUCT2Json(t.id) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
+                    .AddSqlCommandSelect("select t.id, Serialization.ORDER_SPEC_PRODUCT2Json(t.id) as value from ORDER_SPEC_PRODUCTS t , client_orders o")
                     .AddSqlCommandWhere("where o.id = t.id_order and o.id_status=0")
                     .SetKeyField("id")
                     .SetValueField("value")
@@ -380,11 +372,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("client",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id,'userId' value user_id, " +
-                                         "'name' value name, 'phone' value phone, 'login' value login, 'email' value email, " +
-                                         "'fname' value fname, 'lname' value lname, 'barcode' value barcode,  'bonusBalance' " +
-                                         "value null, 'actionBonusBalance' value null, 'id_currency' value id_currency,'id_lang' value id_lang, " +
-                                         "'app_key' value app_key) as value from CLIENTS t")
+                    .AddSqlCommandSelect("select t.id, Serialization.Client2Json(t.id) as value from CLIENTS t")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Client2Json")
@@ -392,9 +380,8 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("quotation",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, " +
-                                         "JSON_OBJECT('id' value id, 'idSupplier' value id_Supplier, 'dateStart' value date_start, " +
-                                         "'dateEnd' value date_end, 'currencyId' value currency_id) as value from QUOTATIONS t")
+                    .AddSqlCommandSelect("select t.id, " +
+                                         "Serialization.Quot2Json(t.id) as value from QUOTATIONS t")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Quot2Json")
@@ -403,7 +390,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("loentity",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name) as value from LO_ENTITIES t")
+                    .AddSqlCommandSelect("select t.id, Serialization.loEntity2Json(t.id) as value from LO_ENTITIES t")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.loEntity2Json")
@@ -412,7 +399,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("pmtmethod",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name) as value from ENUM_PAYMENT_METHODS t")
+                    .AddSqlCommandSelect("select t.id, Serialization.pmtmethod2Json(t.id) as value from ENUM_PAYMENT_METHODS t")
                     .AddSqlCommandOrderBy("order by t.id")
                     .SetKeyField("id")
                     .SetValueField("value")
@@ -421,7 +408,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("region",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name ) as value from REGIONS t  ")
+                    .AddSqlCommandSelect("select t.id, Serialization.region2Json(id) as value from REGIONS t  ")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.region2Json")
@@ -429,10 +416,8 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("city",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name, " +
-                                         "'idRegion' value id_region) as value from CITIES t ")
-                    .AddSqlCommandWhere("where /*t.id in (select sp.id_city from product_store_places psp, " +
-                                        "store_places sp where psp.id_store_place = sp.id and psp.qty > 0)*/ t.id_region is not null")
+                    .AddSqlCommandSelect("select t.id, Serialization.city2Json(t.id) as value from CITIES t ")
+                    .AddSqlCommandWhere("where t.id_region is not null")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.city2Json")
@@ -440,8 +425,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("city_with_store",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name, " +
-                                         "'idRegion' value id_region) as value from CITIES t ")
+                    .AddSqlCommandSelect("select t.id, Serialization.city2Json(t.id) as value from CITIES t ")
                     .AddSqlCommandWhere("where t.id in (select sp.id_city from product_store_places psp, " +
                                         "store_places sp where psp.id_store_place = sp.id and psp.qty > 0 and sp.type=1)")
                     .SetKeyField("id")
@@ -451,7 +435,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("country",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name) as value from COUNTRIES t")
+                    .AddSqlCommandSelect("select t.id, Serialization.country2Json(t.id) as value from COUNTRIES t")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.country2Json")
@@ -460,7 +444,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("lang",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name) as value from LOCALES t")
+                    .AddSqlCommandSelect("select t.id, Serialization.Lang2Json(t.id) as value from LOCALES t")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Lang2Json")
@@ -469,7 +453,7 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("measure_unit",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("select t.*, JSON_OBJECT('id' value id, 'name' value name) as value from measure_unit t")
+                    .AddSqlCommandSelect("select t.id, Serialization.MeasureUnit2Json(t.id) as value from measure_unit t")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.MeasureUnit2Json")
@@ -477,12 +461,8 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("products", 
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("SELECT t.id, json_data as value from products t") 
-                    .AddSqlCommandWhere("where /* t.id in (6293680, 6280637, 6293680, 6294898, 6325585, 6324182, 6252121, 6202929, 6324216, " +
-                                        "6324213, 6161537, 6307814,6343804, 6337167, 6291460, 6316576, 6310491, " +
-                                        "6312913, 6363302, 6337781, 5857818, 6309865, 5936214 ) and */ t.price<>0 " +
-                                        " and t.id_manufacturer in (220, 107996, 196, 253, 114733, 47, 109483, 114183, 158, 199, 216) " +
-                                        " and json_data is not null") 
+                    .AddSqlCommandSelect("SELECT t.id, json_data as value from products t")
+                    .AddSqlCommandWhere("where nvl(t.price,0)<>0 and json_data is not null") 
 
                     .SetKeyField("id")
                     .SetValueField("value")
@@ -761,7 +741,7 @@ namespace Wsds.WebApp
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Product_DTO>),
                     p => new CacheService<Product_DTO>
-                    ("products", 3000000, redisCache, false), ServiceLifetime.Singleton));
+                    ("products", 3600000, redisCache, false), ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Currency_DTO>),
                     p => new CacheService<Currency_DTO>

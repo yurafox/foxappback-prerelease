@@ -52,5 +52,8 @@ namespace Wsds.DAL.Entities
         public decimal? creditMonthlyPmt { get; set; }
         [FieldBinding(Field = "id_app")]
         public long? idApp { get; set; }
+        [FieldBinding(IsTransient = true)]
+        public long? scn { get; set; }
+
     }
 }
