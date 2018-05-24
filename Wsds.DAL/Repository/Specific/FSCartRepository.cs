@@ -56,13 +56,14 @@ namespace Wsds.DAL.Repository.Specific
         }
 
 
-        private bool CanUpdateOrder(long id,long idClient) {
+        private bool CanUpdateOrder(long id, long idClient, long scn) {
             var cOrders = EntityConfigDictionary.GetConfig("client_order");
             var ordersProv = new EntityProvider<ClientOrder_DTO>(cOrders);
 
-            ClientOrder_DTO order = ordersProv.GetItems("id_client = :idclient and id = :idOrder",
+            ClientOrder_DTO order = ordersProv.GetItems("id_client = :idclient and id = :idOrder and scn = :scn",
                                                         new OracleParameter("idclient", idClient),
-                                                        new OracleParameter("idOrder", id)
+                                                        new OracleParameter("idOrder", id),
+                                                        new OracleParameter("scn", scn)
                                                         )
                                                 .FirstOrDefault();
 
@@ -89,9 +90,9 @@ namespace Wsds.DAL.Repository.Specific
             };
         }
 
-        public SCNMethodResult<ClientOrderProduct_DTO> UpdateCartProduct(ClientOrderProduct_DTO item,long clientId)
+        public SCNMethodResult<ClientOrderProduct_DTO> UpdateCartProduct(ClientOrderProduct_DTO item, long clientId, long scn)
         {
-            if (CanUpdateOrder((long)item.idOrder, clientId))
+            if (CanUpdateOrder((long)item.idOrder, clientId, scn))
             {
                 var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
                 var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
@@ -114,33 +115,46 @@ namespace Wsds.DAL.Repository.Specific
                     }
                 }
 
-                return new SCNMethodResult<ClientOrderProduct_DTO> (223, it);
+
+
+                return new SCNMethodResult<ClientOrderProduct_DTO> (UpdateSCN((long)item.idOrder), it);
             }
-            else return null; //if order does not exists => do nothing and return null
+            else return new SCNMethodResult<ClientOrderProduct_DTO>(scn, item); //if order does not exists => do nothing and return null
         }
 
-        public ClientOrderProduct_DTO InsertCartProduct(ClientOrderProduct_DTO item, long clientId, long currency, long idApp)
+        public SCNMethodResult<ClientOrderProduct_DTO> InsertCartProduct(ClientOrderProduct_DTO item, long clientId, long currency, long idApp, long scn)
         {
 
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
             long _idOrder = (long)GetOrCreateClientDraftOrder(clientId, currency, idApp).id;
 
-            var fndSpec = prov.GetItems("t.id_quotation = :qp and t.id_order = :id_order and t.complect = :complect",
-                                        new OracleParameter("qp", item.idQuotationProduct),
-                                        new OracleParameter("id_Order", _idOrder),
-                                        new OracleParameter("complect", item.complect))
-                                       .FirstOrDefault();
-            if (fndSpec != null)
+            if (CanUpdateOrder(_idOrder, clientId, scn))
             {
-                fndSpec.qty = fndSpec.qty + item.qty;
-                return prov.UpdateItem(fndSpec);
+                var fndSpec = prov.GetItems("t.id_quotation = :qp and t.id_order = :id_order and t.complect = :complect",
+                                            new OracleParameter("qp", item.idQuotationProduct),
+                                            new OracleParameter("id_Order", _idOrder),
+                                            new OracleParameter("complect", item.complect))
+                                           .FirstOrDefault();
+                if (fndSpec != null)
+                {
+                    fndSpec.qty = fndSpec.qty + item.qty;
+                    var itm = prov.UpdateItem(fndSpec);
+                    return new SCNMethodResult<ClientOrderProduct_DTO>(UpdateSCN(_idOrder), itm);
+                }
+                else
+                {
+                    item.idOrder = _idOrder;
+                    var itm = prov.InsertItem(item);
+                    return new SCNMethodResult<ClientOrderProduct_DTO>(UpdateSCN(_idOrder), itm);
+                }
+
             }
             else
             {
-                item.idOrder = _idOrder;
-                return prov.InsertItem(item);
+                return new SCNMethodResult<ClientOrderProduct_DTO>(scn, null);
             }
+
         }
 
         private void DeleteShipmentItem(long id) {
@@ -161,17 +175,25 @@ namespace Wsds.DAL.Repository.Specific
             };
         }
 
-        public void DeleteCartProduct(long id, long clientId)
+        private long UpdateSCN(long idOrder)
+        {
+            var coCnfg = EntityConfigDictionary.GetConfig("client_order");
+            var provCo = new EntityProvider<ClientOrder_DTO>(coCnfg);
+            var itemCo = provCo.GetItem(idOrder);
+            itemCo.scn = GenerateSCN();
+            provCo.UpdateItem(itemCo);
+            return (long)itemCo.scn;
+        }
+
+        public SCNMethodResult<string> DeleteCartProduct(long id, long clientId, long scn)
         {
             
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
             var item = prov.GetItem(id);
 
-            if (!CanUpdateOrder((long)item.idOrder, clientId))
-                return;
-
-
+            if (!CanUpdateOrder((long)item.idOrder, clientId, scn))
+                return new SCNMethodResult<string>(scn, null);
 
 
             // Удяляем составньіе комплекта
@@ -191,6 +213,8 @@ namespace Wsds.DAL.Repository.Specific
 
             DeleteShipmentItem(id);
             prov.DeleteItem(id);
+
+            return new SCNMethodResult<string>(UpdateSCN((long)item.idOrder), null);
 
         }
 
@@ -238,16 +262,18 @@ namespace Wsds.DAL.Repository.Specific
                     .OrderByDescending(x => x.orderDate);
         }
 
-        public ClientOrder_DTO SaveClientOrder(ClientOrder_DTO order, long clientId)
+        public SCNMethodResult<ClientOrder_DTO> SaveClientOrder(ClientOrder_DTO order, long clientId, long scn)
         {
             var confOrders = EntityConfigDictionary.GetConfig("client_order");
             var ordersProv = new EntityProvider<ClientOrder_DTO>(confOrders);
-            if (CanUpdateOrder((long)order.id,clientId))
+            if (CanUpdateOrder((long)order.id, clientId, scn))
             {
-                return ordersProv.UpdateItem(order);
+                order.scn = GenerateSCN();
+                var r = ordersProv.UpdateItem(order);
+                return new SCNMethodResult<ClientOrder_DTO>((long)order.scn, r);
             }
             else
-                return null;
+                return new SCNMethodResult<ClientOrder_DTO>(scn, order);
         }
 
         /*

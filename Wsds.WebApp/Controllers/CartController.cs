@@ -37,7 +37,7 @@ namespace Wsds.WebApp.Controllers
         public IActionResult UpdateCartProduct([FromBody] ClientOrderProduct_DTO item)
         {
             var tModel = HttpContext.GetTokenModel();
-            var res = _cartRepo.UpdateCartProduct(item, tModel.ClientId);
+            var res = _cartRepo.UpdateCartProduct(item, tModel.ClientId, (long)tModel.SCN);
             Request.HttpContext.Response.Headers.Add("X-SCN", res.SCN.ToString());
             return Ok(res.Result);
         }
@@ -48,8 +48,9 @@ namespace Wsds.WebApp.Controllers
         public IActionResult CreateCartProduct([FromBody] ClientOrderProduct_DTO item)
         {
             var tModel = HttpContext.GetTokenModel();
-            ClientOrderProduct_DTO result = _cartRepo.InsertCartProduct(item,tModel.ClientId,tModel.CurrencyId,tModel.IdApp);
-            return CreatedAtRoute("", new { id = result.id }, result);
+            var res = _cartRepo.InsertCartProduct(item,tModel.ClientId,tModel.CurrencyId,tModel.IdApp,(long)tModel.SCN);
+            Request.HttpContext.Response.Headers.Add("X-SCN", res.SCN.ToString());
+            return CreatedAtRoute("", new { id = res.Result.id }, res.Result);
         }
 
         [Authorize]
@@ -58,7 +59,8 @@ namespace Wsds.WebApp.Controllers
         public IActionResult DeleteCartProduct(long id)
         {
             var tModel = HttpContext.GetTokenModel();
-            _cartRepo.DeleteCartProduct(id,tModel.ClientId);
+            var res = _cartRepo.DeleteCartProduct(id,tModel.ClientId, (long)tModel.SCN);
+            Request.HttpContext.Response.Headers.Add("X-SCN", res.SCN.ToString());
             return NoContent();
         }
 
@@ -121,7 +123,9 @@ namespace Wsds.WebApp.Controllers
         public IActionResult SaveClientOrder([FromBody] ClientOrder_DTO order)
         {
             var tModel = HttpContext.GetTokenModel();
-            return Ok(_cartRepo.SaveClientOrder(order,tModel.ClientId));
+            var res = _cartRepo.SaveClientOrder(order, tModel.ClientId, (long)tModel.SCN);
+            Request.HttpContext.Response.Headers.Add("X-SCN", res.SCN.ToString());
+            return Ok(res.Result);
         }
 
         [Authorize]

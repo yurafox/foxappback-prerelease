@@ -13,11 +13,11 @@ namespace Wsds.DAL.Repository.Abstract
     {
         IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByUserId(long userId);
         IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByClietId(long clientId);
-        SCNMethodResult<ClientOrderProduct_DTO> UpdateCartProduct(ClientOrderProduct_DTO item,long clientId);
-        ClientOrderProduct_DTO InsertCartProduct(ClientOrderProduct_DTO item,long clientId,long currency, long idApp);
+        SCNMethodResult<ClientOrderProduct_DTO> UpdateCartProduct(ClientOrderProduct_DTO item, long clientId, long scn);
+        SCNMethodResult<ClientOrderProduct_DTO> InsertCartProduct(ClientOrderProduct_DTO item,long clientId,long currency, long idApp, long scn);
         ClientOrder_DTO GetOrCreateClientDraftOrder(long clientId,long currencyId,long idApp);
-        ClientOrder_DTO SaveClientOrder(ClientOrder_DTO order,long clientId);
-        void DeleteCartProduct(long id,long clientId);
+        SCNMethodResult<ClientOrder_DTO> SaveClientOrder(ClientOrder_DTO order, long clientId, long scn);
+        SCNMethodResult<string> DeleteCartProduct(long id,long clientId, long scn);
         IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByOrderId(long orderId);
         IEnumerable<ClientOrderProduct_DTO> GetClientHistOrderProductsByOrderId(long orderId);
 
