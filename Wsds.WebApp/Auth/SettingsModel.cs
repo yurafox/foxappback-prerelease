@@ -10,6 +10,7 @@ namespace Wsds.WebApp.Auth
         public long CurrencyId { get; set; }
         public long LangId { get; set; }
         public long IdApp { get; set; }
+        public long? SCN { get; set; }
 
     }
 }

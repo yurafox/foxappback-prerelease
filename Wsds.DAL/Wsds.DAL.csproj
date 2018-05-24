@@ -476,6 +476,7 @@
     <Compile Include="Infrastructure\Extensions\OrmExtension.cs" />
     <Compile Include="Infrastructure\Facade\AccountUserFacade.cs" />
     <Compile Include="Infrastructure\OracleHelper.cs" />
+    <Compile Include="Infrastructure\SCNMethodResult.cs" />
     <Compile Include="Migrations\20180223165426_InitialCreate.cs" />
     <Compile Include="Migrations\20180223165426_InitialCreate.designer.cs">
       <DependentUpon>20180223165426_InitialCreate.cs</DependentUpon>

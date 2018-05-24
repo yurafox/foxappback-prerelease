@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Entities.Communication;
+using Wsds.DAL.Infrastructure;
 
 namespace Wsds.DAL.Repository.Abstract
 {
@@ -12,7 +13,7 @@ namespace Wsds.DAL.Repository.Abstract
     {
         IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByUserId(long userId);
         IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByClietId(long clientId);
-        ClientOrderProduct_DTO UpdateCartProduct(ClientOrderProduct_DTO item,long clientId);
+        SCNMethodResult<ClientOrderProduct_DTO> UpdateCartProduct(ClientOrderProduct_DTO item,long clientId);
         ClientOrderProduct_DTO InsertCartProduct(ClientOrderProduct_DTO item,long clientId,long currency, long idApp);
         ClientOrder_DTO GetOrCreateClientDraftOrder(long clientId,long currencyId,long idApp);
         ClientOrder_DTO SaveClientOrder(ClientOrder_DTO order,long clientId);

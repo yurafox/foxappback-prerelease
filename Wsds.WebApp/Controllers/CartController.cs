@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Entities;
@@ -35,8 +36,10 @@ namespace Wsds.WebApp.Controllers
         [PullToken]
         public IActionResult UpdateCartProduct([FromBody] ClientOrderProduct_DTO item)
         {
-            var tModel = HttpContext.GetTokenModel(); 
-            return Ok(_cartRepo.UpdateCartProduct(item,tModel.ClientId));
+            var tModel = HttpContext.GetTokenModel();
+            var res = _cartRepo.UpdateCartProduct(item, tModel.ClientId);
+            Request.HttpContext.Response.Headers.Add("X-SCN", res.SCN.ToString());
+            return Ok(res.Result);
         }
 
         [Authorize]

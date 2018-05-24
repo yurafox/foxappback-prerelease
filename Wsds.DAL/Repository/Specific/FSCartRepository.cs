@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Entities.Communication;
+using Wsds.DAL.Infrastructure;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
 
@@ -88,8 +89,7 @@ namespace Wsds.DAL.Repository.Specific
             };
         }
 
-
-        public ClientOrderProduct_DTO UpdateCartProduct(ClientOrderProduct_DTO item,long clientId)
+        public SCNMethodResult<ClientOrderProduct_DTO> UpdateCartProduct(ClientOrderProduct_DTO item,long clientId)
         {
             if (CanUpdateOrder((long)item.idOrder, clientId))
             {
@@ -114,7 +114,7 @@ namespace Wsds.DAL.Repository.Specific
                     }
                 }
 
-                return it;
+                return new SCNMethodResult<ClientOrderProduct_DTO> (223, it);
             }
             else return null; //if order does not exists => do nothing and return null
         }
@@ -215,6 +215,7 @@ namespace Wsds.DAL.Repository.Specific
                 newDraftOrder.idPaymentStatus = 1; //не оплачен
                 newDraftOrder.idStatus = 0; //draft
                 newDraftOrder.idApp = idApp;
+                newDraftOrder.scn = GenerateSCN();
 
                 return ordersProv.InsertItem(newDraftOrder);
             };

@@ -23,6 +23,7 @@ using StackExchange.Redis;
 using Wsds.DAL.Services.Abstract;
 using Wsds.DAL.Services.Specific;
 using Wsds.WebApp.Auth.Protection;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 
 namespace Wsds.WebApp
 {
@@ -69,7 +70,8 @@ namespace Wsds.WebApp
                         .AllowAnyOrigin()
                         .AllowAnyHeader()
                         .AllowAnyMethod()
-                        .AllowCredentials();
+                        .AllowCredentials()
+                        .WithExposedHeaders("X-SCN");
                 });
             });
 
