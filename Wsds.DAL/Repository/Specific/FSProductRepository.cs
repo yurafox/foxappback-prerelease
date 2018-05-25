@@ -32,8 +32,9 @@ namespace Wsds.DAL.Repository.Specific
         public string GetProductDescription(long id) {
             string res = null;
             var ConnString = _config.GetConnectionString("MainDataConnection");
+            var replacePattern = "replace(t.description, '\"//','\"https://')";
             using (var con = new OracleConnection(ConnString))
-            using (var cmd = new OracleCommand("select description from products t where t.id = :id", con))
+            using (var cmd = new OracleCommand($"select {replacePattern} as description from products t where t.id = :id", con)) 
             {
                 try
                 {
