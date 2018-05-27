@@ -39,6 +39,9 @@ PUT product
             "barcode":{  
                "type":"text"
             },
+			"status":{
+			   "type":"long"
+			}, 
             "popularity":{  
                "type":"long"
             },
