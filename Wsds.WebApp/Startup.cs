@@ -23,6 +23,7 @@ using StackExchange.Redis;
 using Wsds.DAL.Services.Abstract;
 using Wsds.DAL.Services.Specific;
 using Wsds.WebApp.Auth.Protection;
+using RabbitMQ.Client;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 
 namespace Wsds.WebApp
@@ -84,10 +85,22 @@ namespace Wsds.WebApp
             var langId = Convert.ToInt64(Configuration["AppOptions:lang"]);
 
 
-            // get redis config by solution configuration
+            // Redis singleton instantiation
             var redisConfig = GetRedisConfigBySolutionConfiguration();
             var redisCache = new Context(redisConfig);
             services.AddSingleton(redisCache);
+
+            // RabbitMQ singleton instantiation
+            IConfigurationSection mqOpts = Configuration.GetSection("rabbit");
+            var rabbitConnFactory = new ConnectionFactory() {
+                UserName = mqOpts.GetValue<string>("username"),
+                Password = mqOpts.GetValue<string>("password"),
+                HostName = mqOpts.GetValue<string>("hostname"),
+                Port = mqOpts.GetValue<int>("port")
+            };
+            IConnection rabbitConnection = rabbitConnFactory.CreateConnection();
+            services.AddSingleton<IConnection>(rabbitConnection);
+
 
             EntityConfigDictionary.AddConfig("lo_entity_delivery_type",
                 new EntityConfig(mainDataConnString)

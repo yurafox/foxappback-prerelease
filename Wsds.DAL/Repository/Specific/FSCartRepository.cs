@@ -15,6 +15,7 @@ using Wsds.DAL.Entities.Communication;
 using Wsds.DAL.Infrastructure;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
+using RabbitMQ.Client;
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -24,12 +25,14 @@ namespace Wsds.DAL.Repository.Specific
         private readonly IConfiguration _config;
         private ICacheService<Quotation_Product_DTO> _csQProduct;
         private IProductRepository _prodRepo;
-        private IQuotationProductRepository _qpRepo; 
+        private IQuotationProductRepository _qpRepo;
+        private IConnection _mqConn;
 
         public FSCartRepository(IClientRepository clRepo, 
                                 IConfiguration config,
                                 IProductRepository prodRepo,
                                 IQuotationProductRepository qpRepo,
+                                IConnection mqConn,
                                 ICacheService<Quotation_Product_DTO> csQProduct)
         {
             _clRepo = clRepo;
@@ -37,6 +40,7 @@ namespace Wsds.DAL.Repository.Specific
             _prodRepo = prodRepo;
             _qpRepo = qpRepo;
             _csQProduct = csQProduct;
+            _mqConn = mqConn;
         }
 
         public IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByUserId(long userId)
@@ -376,12 +380,58 @@ namespace Wsds.DAL.Repository.Specific
             return lst;
         }
 
-
         private decimal GetShiippingTotal(long idOrder) {
             var ship = EntityConfigDictionary.GetConfig("shipment");
             var shipProv = new EntityProvider<Shipment_DTO>(ship);
             return (decimal)shipProv.GetItems("id_order = :idOrder", new OracleParameter("idOrder", idOrder))
                 .Sum(s => s.loDeliveryCost);
+        }
+
+        private void EnqueueOrder(ClientOrder_DTO order)
+        {
+            //var serializedOrder = "";
+            ClientOrderMQ mqOrder = null;
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin :result := serialization.CLIENT_ORDER2JSON_Full(:id); end;", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
+                    cmd.Parameters["result"].Size = 32767;
+                    cmd.Parameters.Add(new OracleParameter("id", order.id));
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                    mqOrder = JsonConvert.DeserializeObject<ClientOrderMQ>(cmd.Parameters["result"].Value.ToString());
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+
+            if (mqOrder != null) {
+                using (var channel = _mqConn.CreateModel())
+                {
+                    channel.QueueDeclare(queue: "orders_queue",
+                                         durable: true,
+                                         exclusive: false,
+                                         autoDelete: false,
+                                         arguments: null);
+
+                    byte[] body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(mqOrder));
+
+                    var properties = channel.CreateBasicProperties();
+                    properties.Persistent = true;
+                    properties.ContentType = "application/json";
+                    properties.Type = mqOrder.GetType().AssemblyQualifiedName;
+
+                    channel.BasicPublish(exchange: "",
+                                         routingKey: "orders_queue",
+                                         basicProperties: properties,
+                                         body: body);
+                }
+            }
         }
 
         public PostOrderResponse PostOrder(ClientOrder_DTO order)
@@ -437,7 +487,8 @@ namespace Wsds.DAL.Repository.Specific
                         (dbOrder.bonusTotal == order.bonusTotal)
                        )
                     {
-                        ordersProv.UpdateItem(dbOrder);
+                        var resOrder = ordersProv.UpdateItem(dbOrder);
+                        EnqueueOrder(resOrder);
                         return new PostOrderResponse { isSuccess = true, errorMessage = "" };
                     }
                     else
