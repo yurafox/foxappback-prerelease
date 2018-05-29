@@ -156,7 +156,7 @@ namespace Wsds.DAL.Repository.Specific
             }
             else
             {
-                return new SCNMethodResult<ClientOrderProduct_DTO>(scn, item);
+                return new SCNMethodResult<ClientOrderProduct_DTO>(scn, null);
             }
 
         }

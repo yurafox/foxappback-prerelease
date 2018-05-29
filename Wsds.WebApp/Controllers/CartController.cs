@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -50,7 +51,10 @@ namespace Wsds.WebApp.Controllers
             var tModel = HttpContext.GetTokenModel();
             var res = _cartRepo.InsertCartProduct(item,tModel.ClientId,tModel.CurrencyId,tModel.IdApp,(long)tModel.SCN);
             Request.HttpContext.Response.Headers.Add("X-SCN", res.SCN.ToString());
-            return CreatedAtRoute("", new { id = res.Result.id }, res.Result);
+            if (res.Result != null)
+                return CreatedAtRoute("", new { id = res.Result.id }, res.Result);
+            else
+                return  StatusCode(409);
         }
 
         [Authorize]

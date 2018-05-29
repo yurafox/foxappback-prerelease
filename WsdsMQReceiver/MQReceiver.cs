@@ -44,16 +44,23 @@ namespace WsdsMQReceiver
                 var consumer = new EventingBasicConsumer(channel);
                 consumer.Received += (model, ea) =>
                 {
-                    string message = Encoding.UTF8.GetString(ea.Body);
-                    Type t = Type.GetType(ea.BasicProperties.Type);
-                    object rawObject = JsonConvert.DeserializeObject(message, t);
-                    if (rawObject.GetType() == typeof(ClientOrderMQ))
+                    try
                     {
-                        ClientOrderMQ order = rawObject as ClientOrderMQ;
-                        Console.WriteLine("order ID: {0}", order.id);
-                        Console.WriteLine("order: {0}", message);
+                        string message = Encoding.UTF8.GetString(ea.Body);
+                        Type t = Type.GetType(ea.BasicProperties.Type);
+                        object rawObject = JsonConvert.DeserializeObject(message, t);
+                        if (rawObject.GetType() == typeof(ClientOrderMQ))
+                        {
+                            ClientOrderMQ order = rawObject as ClientOrderMQ;
+                            Console.WriteLine("order ID: {0}", order.id);
+                            Console.WriteLine("order: {0}", message);
+                        }
+                        channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                     }
-                    channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                    catch (Exception e) {
+                        Console.WriteLine("Exception. Error Message: {0}", e.Message);
+                        Console.WriteLine("Exception. Stack Trace: {0}", e.StackTrace);
+                    }
                 };
 
                 channel.BasicConsume(queue: "orders_queue",
