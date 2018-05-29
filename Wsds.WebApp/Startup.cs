@@ -63,7 +63,7 @@ namespace Wsds.WebApp
             services.AddMvc(options =>
             {
                 //options.Filters.Add(new RequireHttpsAttribute());
-                options.Filters.Add(typeof(SeqLogFilter));
+                options.Filters.Add(typeof(CustomErrorFilter));
             });
 
             // fox add code for close many http redirects

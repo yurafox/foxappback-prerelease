@@ -16,21 +16,22 @@ namespace Wsds.WebApp.Controllers
     {
         #region init cash on instance app
         private AccountUserFacade _accountFacade;
-        //static ILogger _logger;
+        ILogger _serilog;
         #endregion
 
         #region ghost DI instance in .ctor
-        public HomeController(AccountUserFacade accountFacade)//, ILogger logger
+        public HomeController(AccountUserFacade accountFacade, ILogger logger)
         {
             _accountFacade = accountFacade;
-            //_logger = logger;
+            _serilog = logger;
         }
         #endregion
 
         public IActionResult Index()
         {
-            //_logger.Information("Invoked Index method of HomeController");
-        
+            string dateTime = System.DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+            _serilog.Information($"===== The Index method of HomeController was invoked at {dateTime} =====");
+
             return View();
         }
     }
