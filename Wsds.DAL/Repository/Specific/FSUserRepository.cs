@@ -18,11 +18,16 @@ namespace Wsds.DAL.Repository.Specific
 {
     public class FSUserRepository : IUserRepository
     {
+        private const string CompName = "UserRepository";
         private ISmsService _smsService;
-        public FSUserRepository(UserManager<AppUser> manager, ISmsService smsService)
+        private IAppLocalizationRepository _appLocalization;
+        public FSUserRepository(UserManager<AppUser> manager,
+                                ISmsService smsService,
+                                IAppLocalizationRepository appLocalization)
         {
             UserEngine = manager;
             _smsService = smsService;
+            _appLocalization = appLocalization;
         }
 
         public UserManager<AppUser> UserEngine { get; }
@@ -237,31 +242,12 @@ namespace Wsds.DAL.Repository.Specific
         #endregion
 
         // service localize str for message
-        private string GetSmsWaitLocalizationString
-        {
-            get
-            {
-                // TODO:change after localization logic will be Ok 
-                return "Ожидайте временного пароля в SMS сообщении. Обязательно измените пароль " +
-                       "в настройках после авторизации";
-            }
-        }
-        private string GetUserInSystemLocalizationString
-        {
-            get
-            {
-                // TODO:change after localization logic will be Ok 
-                return "Вы уже зарегистрированы в системе";
-            }
-        }
-        private string GetSendSmsErrorLocalizationString
-        {
-            get
-            {
-                // TODO:change after localization logic will be Ok 
-                return "Сервис sms занят. Ожидайте смс";
-            }
-        }
+        private string GetSmsWaitLocalizationString => $"{_appLocalization.GetBackLocaleString(CompName, "WaitTempPass")}";
+
+        private string GetUserInSystemLocalizationString => $"{_appLocalization.GetBackLocaleString(CompName, "AlreadyRegistered")}";
+
+        private string GetSendSmsErrorLocalizationString => $"{_appLocalization.GetBackLocaleString(CompName, "SmsServiceBusy")}";
+
         #endregion
     }
 }

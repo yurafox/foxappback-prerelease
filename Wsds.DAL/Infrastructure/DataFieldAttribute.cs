@@ -9,5 +9,6 @@ namespace Wsds.DAL.Infrastructure
     public class FieldBindingAttribute : Attribute
     {
         public string Field { get; set; }
+        public bool IsTransient { get; set; } = false;
     }
 }

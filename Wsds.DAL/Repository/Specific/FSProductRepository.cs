@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dapper;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
 using Oracle.ManagedDataAccess.Client;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Wsds.DAL.Entities.Communication;
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -28,8 +32,9 @@ namespace Wsds.DAL.Repository.Specific
         public string GetProductDescription(long id) {
             string res = null;
             var ConnString = _config.GetConnectionString("MainDataConnection");
+            var replacePattern = "replace(t.description, '\"//','\"https://')";
             using (var con = new OracleConnection(ConnString))
-            using (var cmd = new OracleCommand("select description from products t where t.id = :id", con))
+            using (var cmd = new OracleCommand($"select {replacePattern} as description from products t where t.id = :id", con)) 
             {
                 try
                 {
@@ -158,6 +163,60 @@ namespace Wsds.DAL.Repository.Specific
         public IEnumerable<Product_DTO> SearchProductsInCache(string srchString)
         {
             return _csp.Items.Values.Where(x => IsFound(x.name, srchString));
+        }
+
+        // search by action
+        public IEnumerable<Product_DTO> GetByAction(long actionId)
+        {
+            var conStr = _config.GetConnectionString("MainDataConnection");
+            var queryBuilder = new StringBuilder();
+            queryBuilder.Append("select p.id ");
+            queryBuilder.Append("from actions a,action_offers ad, quotations_products qp, products p ");
+            queryBuilder.Append("where a.id = ad.id_action and ad.id_quotation_product=qp.id ");
+            queryBuilder.Append("and p.id = qp.id_product and ad.id_action = :actionId and a.is_active=1 ");
+
+            List<Product_DTO> res = new List<Product_DTO>();
+            using (var con = new OracleConnection(conStr))
+            using (var cmd = new OracleCommand(queryBuilder.ToString(), con))
+            {
+                try
+                {
+                    con.Open();
+                    cmd.Parameters.Add(new OracleParameter("actionId", actionId));
+                    OracleDataReader dr = cmd.ExecuteReader();
+                    while (dr.Read())
+                    {
+                        var prodId = (long)dr["id"];
+                        res.Add(Product(prodId));
+                    }
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+            return res;
+        }
+
+        public void NotifyOnProductArrival(NotifyOnProductArrivalRequest request, long? idClient)
+        {
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin app_core.AddProductArrivalNotification(:p1, :p2, :p3); end;", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add(new OracleParameter("p1", request.productId));
+                    cmd.Parameters.Add(new OracleParameter("p2", idClient));
+                    cmd.Parameters.Add(new OracleParameter("p3", request.email));
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
         }
     }
 }

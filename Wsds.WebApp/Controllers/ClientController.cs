@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository.Abstract;
@@ -9,6 +10,8 @@ using Wsds.WebApp.Attributes;
 using Newtonsoft.Json;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Entities.Communication;
+using Wsds.WebApp.Filters;
+using Wsds.WebApp.WebExtensions;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -43,7 +46,7 @@ namespace Wsds.WebApp.Controllers
         [Link("phone")]
         public IActionResult GetClientByPhone([FromQuery]string phone)
         {
-            return Ok(_cliRepo.GetClientByPhone(phone));
+            return Ok(_cliRepo.GetClientsByPhone(phone));
         }
 
         [HttpGet("person/{id}")]
@@ -64,23 +67,30 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cliRepo.UpdatePerson(person));
         }
 
-        [HttpGet("getBonusesInfo/{id}")]
-        public IActionResult GetClientBonusesInfo(long id) {
-            return Ok(_cliRepo.GetClientBonusesInfo(id));
+        [Authorize]
+        [HttpGet("getBonusesInfo")]
+        [PullToken]
+        public IActionResult GetClientBonusesInfo() {
+            var tModel = HttpContext.GetTokenModel();
+            return Ok(_cliRepo.GetClientBonusesInfo(tModel.Card));
         }
 
+        [Authorize]
         [HttpGet("getBonusesExpireInfo")]
-        [Link("clientId")]
-        public IActionResult GetClientBonusesExpireInfo([FromQuery]long clientId)
+        [PullToken]
+        public IActionResult GetClientBonusesExpireInfo()
         {
-            return Ok( _cliRepo.GetClientBonusesExpireInfo(clientId));
+            var tModel = HttpContext.GetTokenModel();
+            return Ok( _cliRepo.GetClientBonusesExpireInfo(tModel.Card));
         }
 
-
+        [Authorize]
         [HttpPost("LogProductView")]
+        [PullToken]
         public IActionResult CreateCartProduct([FromBody] LogProductViewRequest model)
         {
-            _cliRepo.LogProductView(model.idProduct, model.viewParams);
+            var tModel = HttpContext.GetTokenModel();
+            _cliRepo.LogProductView(model.idProduct, model.viewParams,tModel.ClientId);
             return Created("", null);
         }
 
@@ -95,16 +105,26 @@ namespace Wsds.WebApp.Controllers
             return Ok(_cliRepo.GetClientAddressesByClientId(idClient));
         }
 
+        [Authorize]
         [HttpPost("ClientAddress")]
+        [PullToken]
         public IActionResult CreateClientAddress([FromBody] ClientAddress_DTO item)
         {
+            var tModel = HttpContext.GetTokenModel();
+            item.idClient = item.idClient ?? tModel.ClientId;
+
             ClientAddress_DTO result = _cliRepo.CreateClientAddress(item);
             return CreatedAtRoute("", new { id = result.id }, result);
         }
 
+        [Authorize]
         [HttpPut("ClientAddress")]
+        [PullToken]
         public IActionResult UpdateClientAddress([FromBody] ClientAddress_DTO item)
         {
+            var tModel = HttpContext.GetTokenModel();
+            item.idClient = item.idClient ?? tModel.ClientId;
+
             ClientAddress_DTO result = _cliRepo.UpdateClientAddress(item);
             return Ok(result);
         }
@@ -114,5 +134,27 @@ namespace Wsds.WebApp.Controllers
             _cliRepo.DeleteClientAddress(id);
             return NoContent();
         }
+
+        [Authorize]
+        [HttpGet("OrderDatesRanges")]
+        [PullToken]
+        public IActionResult GetClientOrderDatesRanges()
+        {
+            var tModel = HttpContext.GetTokenModel();
+            var date = _cliRepo.GetClientByPhone("380999851043"/*tModel.Phone*/).createdDate; //TODO uncomment this line
+            return Ok(_cliRepo.GetClientOrderDatesRanges((DateTime)date));
+        }
+
+        [Authorize]
+        [HttpGet("OrderDatesRanges")]
+        [Link("isDefault")]
+        [PullToken]
+        public IActionResult GetDefaultClientOrderDatesRange([FromQuery] bool isDefault)
+        {
+            var tModel = HttpContext.GetTokenModel();
+            var date = _cliRepo.GetClientByPhone("380999851043"/*tModel.Phone*/).createdDate; //TODO uncomment this line
+            return Ok(_cliRepo.GetClientOrderDatesRanges((DateTime)date).Where(x => x.isDefault == isDefault).FirstOrDefault());
+        }
+
     }
 }

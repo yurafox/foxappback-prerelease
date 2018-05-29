@@ -12,12 +12,13 @@ namespace Wsds.DAL.Entities.Communication
         public decimal? maxBonusCnt { get; set; }
         public bool? usePromoBonus { get; set; }
         public long? creditProductId { get; set; }
-        public IEnumerable<ClientOrderProduct_DTO> cartContent { get; set; }
+        //public IEnumerable<ClientOrderProduct_DTO> cartContent { get; set; }
     }
 
     [Serializable]
     public class CalcCartRequestT22_Item
     {
+        public long? pk_id { get; set; }
         public long? g_id { get; set; }
         public decimal? qty { get; set; }
         public decimal? price { get; set; }

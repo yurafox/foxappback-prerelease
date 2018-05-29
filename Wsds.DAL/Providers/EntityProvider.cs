@@ -92,20 +92,24 @@ namespace Wsds.DAL.Providers
             foreach (var prop in item.GetType().GetProperties())
             {
                 string pname = prop.Name;
+                bool isTransient = false;
                 object[] attrib = prop.GetCustomAttributes(typeof(FieldBindingAttribute), true);
                 if (attrib.Length > 0)
                 {
                     FieldBindingAttribute bindAttrib = (FieldBindingAttribute)attrib[0];
                     pname = bindAttrib.Field;
+                    isTransient = bindAttrib.IsTransient;
                 }
 
-                var _pName = ":param" + i.ToString();
-                OracleParameter _param =
-                    ((pname).ToLower() == (_config.KeyField).ToLower())
-                            ? new OracleParameter(_pName, KeyVal)
-                            : new OracleParameter(_pName, Convert2OraType(prop.GetValue(item)));
-               _dict.Add(new FieldMap (pname, _pName), _param);
-                i++;
+                if (!isTransient) {
+                    var _pName = ":param" + i.ToString();
+                    OracleParameter _param =
+                        ((pname).ToLower() == (_config.KeyField).ToLower())
+                                ? new OracleParameter(_pName, KeyVal)
+                                : new OracleParameter(_pName, Convert2OraType(prop.GetValue(item)));
+                    _dict.Add(new FieldMap(pname, _pName), _param);
+                    i++;
+                }
             }
 
             var flds = "( " + string.Join(", ", _dict.Keys.Select(x => x.fldName)) + " )";
@@ -142,14 +146,16 @@ namespace Wsds.DAL.Providers
             long KeyVal = Convert.ToInt64(item.GetType().GetProperty(_config.KeyField).GetValue(item).ToString());
             foreach (var prop in item.GetType().GetProperties()) {
                 string pname = prop.Name;
+                bool isTransient = false;
                 object[] attrib = prop.GetCustomAttributes(typeof(FieldBindingAttribute), true);
                 if (attrib.Length > 0)
                 {
                     FieldBindingAttribute bindAttrib = (FieldBindingAttribute)attrib[0];
                     pname = bindAttrib.Field;
+                    isTransient = bindAttrib.IsTransient;
                 }
 
-                if (!((pname).ToLower() == (_config.KeyField).ToLower())) {
+                if (!isTransient && (!((pname).ToLower() == (_config.KeyField).ToLower()))) {
                     var _pName = ":param" + i.ToString();
                     _dict.Add(pname + " = " + _pName, new OracleParameter(_pName, Convert2OraType(prop.GetValue(item))));
                     i++;
@@ -230,7 +236,7 @@ namespace Wsds.DAL.Providers
             List<T> res = new List<T>();
             string stmt = _config.SqlCommandSelect + " " + _config.SqlCommandWhere;
 
-            if (!(String.IsNullOrEmpty(filterExpr)))
+            if (!String.IsNullOrEmpty(filterExpr))
                 stmt = stmt + (String.IsNullOrEmpty(_config.SqlCommandWhere) ? " where " : " and ") 
                             + filterExpr + " " + _config.SqlCommandOrderBy;
 
@@ -239,7 +245,7 @@ namespace Wsds.DAL.Providers
             {
                 try
                 {
-                    if (!(args == null))
+                    if (args != null)
                         cmd.Parameters.AddRange(args);
                     con.Open();
                     OracleDataReader dr = cmd.ExecuteReader();

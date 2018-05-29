@@ -18,5 +18,10 @@ namespace Wsds.DAL.Entities.DTO
         public int? isActive { get; set; }
         public string sketch_content { get; set; }
         public string action_content { get; set; }
+        public long? id_type { get; set; }
+        public string badge_url { get; set;}
+        public long? id_supplier { get; set; }
+        public string title { get; set; }
+        public byte? is_landing { get; set; }
     }
 }

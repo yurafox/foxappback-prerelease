@@ -1,35 +1,53 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
 using Oracle.ManagedDataAccess.Client;
+using Microsoft.Extensions.Configuration;
 
 namespace Wsds.DAL.Repository.Specific
 {
     public class FSReviewRepository : IReviewRepository
     {
-
-        public IEnumerable<StoreReview_DTO> GetStoreReviewsByStoreId(long id)
+        private readonly IConfiguration _config;
+        public FSReviewRepository(IConfiguration config)
         {
-            var cnfg = EntityConfigDictionary.GetConfig("store_reviews");
+            _config = config;
+        }
+
+        public IEnumerable<StoreReview_DTO> GetStoreReviewsByStoreId(long idStore, long idClient)
+        {
+            var cnfg = EntityConfigDictionary.GetConfig("store_reviews_add_vote");
             var prov = new EntityProvider<StoreReview_DTO>(cnfg);
-            var reviews = prov.GetItems("id_store = :id", new OracleParameter("id", id));
+            object clientId = (idClient == 0) ? (object)DBNull.Value : idClient;
+
+            var reviews = prov.GetItems("id_store = :id", new OracleParameter("idClient", clientId),
+                                                            new OracleParameter("id", idStore)
+                                       );
             return reviews;
         }
 
-        public IEnumerable<StoreReview_DTO> GetStoreReviews()
+        public IEnumerable<StoreReview_DTO> GetStoreReviews(long idClient)
         {
-            var cnfg = EntityConfigDictionary.GetConfig("store_reviews");
+            var cnfg = EntityConfigDictionary.GetConfig("store_reviews_add_vote");
             var prov = new EntityProvider<StoreReview_DTO>(cnfg);
-            var reviews = prov.GetItems();
+            object clientId = (idClient == 0) ? (object)DBNull.Value : idClient;
+
+            var reviews = prov.GetItems(null,new OracleParameter("idClient", clientId));
             return reviews;
         }
 
-        public IEnumerable<ProductReview_DTO> GetProductReviews(long id)
+        public IEnumerable<ProductReview_DTO> GetProductReviews(long idProduct, long idClient)
         {
-            var cnfg = EntityConfigDictionary.GetConfig("product_reviews");
+            var cnfg = EntityConfigDictionary.GetConfig("product_reviews_add_vote");
             var prov = new EntityProvider<ProductReview_DTO>(cnfg);
-            var reviews = prov.GetItems("id_product = :id", new OracleParameter("id", id));
+            object clientId = (idClient == 0) ? (object)DBNull.Value : idClient;
+
+            var reviews = prov.GetItems("id_product = :id", new OracleParameter("idClient", clientId),
+                                                            new OracleParameter("id", idProduct)
+                                       );
             return reviews;
         }
 
@@ -58,19 +76,44 @@ namespace Wsds.DAL.Repository.Specific
             else return null;
         }
 
-        public ProductReview_DTO UpdateProductReview(ProductReview_DTO review)
+        public ProductReview_DTO UpdateProductReview(ProductReview_DTO review, long idClient)
         {
             var cnfg = EntityConfigDictionary.GetConfig("product_reviews");
             var prov = new EntityProvider<ProductReview_DTO>(cnfg);
-            var _review = review;
-            if (review.upvotes != null) _review.upvotes = review.upvotes;
-            if (review.downvotes != null) _review.downvotes = review.downvotes;
-            if (_review != null)
+
+            string res = "";
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin :result := foxstore.pkg_review.updatereviewvote(:previewid,:pclientid,:pvote,:ptype);end;", con))
             {
-                return prov.UpdateItem(_review);
+                try
+                {
+                    cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
+                    cmd.Parameters["result"].Size = 32767;
+                    cmd.Parameters.Add(new OracleParameter("previewid", review.id));
+                    cmd.Parameters.Add(new OracleParameter("pclientid", idClient));
+                    cmd.Parameters.Add(new OracleParameter("pvote", review.vote));
+                    cmd.Parameters.Add(new OracleParameter("ptype", OracleDbType.Int32)).Value = 0;
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                    res = cmd.Parameters["result"].Value.ToString();
+
+                    if (String.IsNullOrEmpty(res))
+                        return null;
+
+                    var prevId = Convert.ToInt64(res);
+                    var prevObj = prov.GetItem(prevId);
+                    prevObj.vote = review.vote;
+
+                    return prevObj;
+                }
+                finally
+                {
+                    con.Close();
+                }
             }
-            else return null;
         }
+
 
         public StoreReview_DTO SaveStoreReview(StoreReview_DTO review, Client_DTO client)
         {
@@ -97,18 +140,42 @@ namespace Wsds.DAL.Repository.Specific
             else return null;
         }
 
-        public StoreReview_DTO UpdateStoreReview(StoreReview_DTO review)
+        public StoreReview_DTO UpdateStoreReview(StoreReview_DTO review, long idClient)
         {
             var cnfg = EntityConfigDictionary.GetConfig("store_reviews");
             var prov = new EntityProvider<StoreReview_DTO>(cnfg);
-            var _review = review;
-            if (review.upvotes != null) _review.upvotes = review.upvotes;
-            if (review.downvotes != null) _review.downvotes = review.downvotes;
-            if (_review != null)
+
+            string res = "";
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin :result := foxstore.pkg_review.updatereviewvote(:sreviewid,:sclientid,:svote,:stype);end;", con))
             {
-                return prov.UpdateItem(_review);
+                try
+                {
+                    cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
+                    cmd.Parameters["result"].Size = 32767;
+                    cmd.Parameters.Add(new OracleParameter("sreviewid", review.id));
+                    cmd.Parameters.Add(new OracleParameter("sclientid", idClient));
+                    cmd.Parameters.Add(new OracleParameter("svote", review.vote));
+                    cmd.Parameters.Add(new OracleParameter("stype", OracleDbType.Int32)).Value = 1;
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                    res = cmd.Parameters["result"].Value.ToString();
+
+                    if (String.IsNullOrEmpty(res))
+                        return null;
+
+                    var srevId = Convert.ToInt64(res);
+                    var srevObj = prov.GetItem(srevId);
+                    srevObj.vote = review.vote;
+
+                    return srevObj;
+                }
+                finally
+                {
+                    con.Close();
+                }
             }
-            else return null;
         }
     }
 }

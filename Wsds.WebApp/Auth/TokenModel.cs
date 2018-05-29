@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Wsds.WebApp.Auth
 {
-    public class TokenModel
+    public class TokenModel: SettingsModel
     {
         public string Phone { get; set; }
         public long Card { get; set; }

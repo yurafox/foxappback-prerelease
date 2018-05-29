@@ -24,5 +24,7 @@ namespace Wsds.DAL.Entities
         public long? downvotes { get; set; }
         [FieldBinding(Field = "parent_id")]
         public long? idReview { get; set; }
+        [FieldBinding(IsTransient = true)]
+        public byte? vote { get; set; }
     }
 }

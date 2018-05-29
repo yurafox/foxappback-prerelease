@@ -8,111 +8,7 @@ namespace ESIndexer
     //index=product esconnstring="http://localhost:9200" oraconnstring="DATA SOURCE=//oratest10g64.mc.gcf:1521/FOXTROTUA; USER ID = FOXSTORE; PASSWORD=fox,store;" curl="c:\Program Files\Curl\bin\curl.exe" batchsize=2000
     //curl -s -H "Content-Type: application/json"  -XPOST "http://localhost:9200/_bulk" --data-binary @bulk.json -o output.txt
     //"c:\Program Files\Curl\bin\curl.exe" 
-    /*
-PUT product
-{  
-   "mappings":{  
-      "_doc":{  
-         "properties":{  
-            "id":{  
-               "type":"long"
-            },
-            "name":{  
-               "type":"text"
-            },
-            "price":{  
-               "type":"float"
-            },
-            "oldPrice":{  
-               "type":"float"
-            },
-            "bonuses":{  
-               "type":"float"
-            },
-            "manufacturerId":{  
-               "type":"long"
-            },
-            "imageUrl":{  
-               "type":"text"
-            },
-            "rating":{  
-               "type":"short"
-            },
-            "recall":{  
-               "type":"short"
-            },
-            "supplOffers":{  
-               "type":"short"
-            },
-            "barcode":{  
-               "type":"text"
-            },
-            "popularity":{  
-               "type":"long"
-            },
-            "description":{  
-               "type":"text"
-            },
-            "groups":{  
-               "type":"nested",
-               "properties":{  
-                  "id":{  
-                     "type":"long"
-                  },
-                  "name":{  
-                     "type":"text"
-                  }
-               }
-            },
-            "manufacturer":{  
-               "type":"object",
-               "properties":{  
-                  "id":{  
-                     "type":"long"
-                  },
-                  "name":{  
-                     "type":"text"
-                  }
-               }
-            },
-            "Props":{  
-               "type":"nested",
-               "properties":{  
-                  "id":{  
-                     "type":"long"
-                  },
-                  "id_Product":{  
-                     "type":"long"
-                  },
-                  "id_Prop":{  
-                     "type":"object"
-                  },
-                  "prop_Value_Number":{  
-                     "type":"float"
-                  },
-                  "prop_Value_Bool":{  
-                     "type":"byte"
-                  },
-                  "prop_Value_Enum":{  
-                     "type":"object"
-                  },
-                  "id_Measure_Unit":{  
-                     "type":"long"
-                  },
-                  "idx":{  
-                     "type":"integer"
-                  },
-                  "out_bmask":{  
-                     "type":"integer"
-                  }
-               }
-            }
-         }
-      }
-   }
-}
-     */
-
+ 
     /*
     Звпрос параметра cmdtext должен возвращать поля id и json_data 
     */
@@ -160,14 +56,16 @@ PUT product
                             if (tw != null) {
                                 tw.Close();
                             };
-                            var path = paramsDict["index"] + j.ToString() + ".json";
+                            string path = paramsDict["index"] + j.ToString() + ".json";
                             File.Create(path).Dispose();
                             tw = new StreamWriter(path, true);
                             fList.Add(path);
                             j++;
                         }
+                        string idStr = (Convert.IsDBNull(dr["id"])) ? "" : ", \"_id\" : "
+                                     + dr["id"].ToString();
                         tw.WriteLine("{ \"index\" : { \"_index\" : \"" + paramsDict["index"] + 
-                                     "\", \"_type\" : \"_doc\", \"_id\" : " + dr["id"].ToString() + " } }");
+                                     "\", \"_type\" : \"" + paramsDict["type"] + "\"" + idStr + " } }");
                         tw.WriteLine(dr["json_data"].ToString());
                         i++;
                     };
@@ -179,10 +77,10 @@ PUT product
                 }
             };
 
-            foreach (var file in fList) {
-                var cmdText = " -s -H \"Content-Type: application/json\" -XPOST  \"" 
+            foreach (string file in fList) {
+                string cmdParams = " -s -H \"Content-Type: application/json\" -XPOST  \"" 
                     + paramsDict["esconnstring"] + "/_bulk\" --data-binary @" + file + " -o output_" + file + ".log";
-                System.Diagnostics.Process.Start(paramsDict["curl"], cmdText);
+                System.Diagnostics.Process.Start(paramsDict["curl"], cmdParams);
             };
 
 

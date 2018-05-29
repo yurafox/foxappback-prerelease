@@ -15,9 +15,9 @@ using System.Net.Http.Headers;
 using Dapper;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Configuration;
-using System.Data;
 using System.Diagnostics;
 using Wsds.DAL.Entities.DTO;
+using System.Globalization;
 
 namespace Wsds.DAL.Repository.Specific
 {
@@ -69,12 +69,12 @@ namespace Wsds.DAL.Repository.Specific
             return prov.UpdateItem(item);
         }
 
-        public object GetClientBonusesInfo(long idClient)
+        public object GetClientBonusesInfo(long card)
         {
             using (var client = new HttpClient()) {
                 client.DefaultRequestHeaders.Accept.Add(
                                 new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = client.GetAsync(UrlConstants.GetBonusInfoUrl + "/" + idClient.ToString()).Result;
+                var response = client.GetAsync(UrlConstants.GetBonusInfoUrl + "/" + card).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = response.Content;
@@ -96,14 +96,14 @@ namespace Wsds.DAL.Repository.Specific
             }
         }
 
-        public IEnumerable<object> GetClientBonusesExpireInfo(long idClient)
+        public IEnumerable<object> GetClientBonusesExpireInfo(long card)
         {
             List<object> res = new List<object>();
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Accept.Add(
                                 new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = client.GetAsync(UrlConstants.GetBonusesExpireInfoUrl + "/" + idClient.ToString()).Result;
+                var response = client.GetAsync(UrlConstants.GetBonusesExpireInfoUrl + "/" + card).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = response.Content;
@@ -123,7 +123,7 @@ namespace Wsds.DAL.Repository.Specific
             return res;
         }
 
-        public void LogProductView(long idProduct, string viewParams)
+        public void LogProductView(long idProduct, string viewParams, long clientId)
         {
             var ConnString = _config.GetConnectionString("MainDataConnection");
             using (var con = new OracleConnection(ConnString))
@@ -137,7 +137,7 @@ namespace Wsds.DAL.Repository.Specific
                 try
                 {
                     con.Open();
-                    cmd.Parameters.Add(new OracleParameter("idClient", 100)); //TODO я
+                    cmd.Parameters.Add(new OracleParameter("idClient", clientId));
                     cmd.Parameters.Add(new OracleParameter("idProduct", idProduct));
                     cmd.Parameters.Add(new OracleParameter("viewParams", viewParams));
                     cmd.ExecuteNonQuery();
@@ -167,7 +167,6 @@ namespace Wsds.DAL.Repository.Specific
         {
             var caCnfg = EntityConfigDictionary.GetConfig("client_address");
             var prov = new EntityProvider<ClientAddress_DTO>(caCnfg);
-            item.idClient = 100; //TODO я
 
             var ConnString = _config.GetConnectionString("MainDataConnection");
             using (var con = new OracleConnection(ConnString))
@@ -195,7 +194,7 @@ namespace Wsds.DAL.Repository.Specific
 
         public ClientAddress_DTO UpdateClientAddress(ClientAddress_DTO item)
         {
-            var idClient = 100; //TODO я
+            var idClient = item.idClient.Value;
             var caCnfg = EntityConfigDictionary.GetConfig("client_address");
             var prov = new EntityProvider<ClientAddress_DTO>(caCnfg);
 
@@ -343,6 +342,24 @@ namespace Wsds.DAL.Repository.Specific
         public Client_DTO GetClientByPhone(string phone)
         {
             return GetClientsByPhone(phone).FirstOrDefault();
+        }
+
+
+        public IEnumerable<ClientOrderDatesRange_DTO> GetClientOrderDatesRanges(DateTime clientCreatedDate)
+        {
+            List<ClientOrderDatesRange_DTO> res = new List<ClientOrderDatesRange_DTO> {
+                new ClientOrderDatesRange_DTO { key = "30d", displayName = "Last 30 days" }, //TODO localization
+                new ClientOrderDatesRange_DTO { key = "6m", displayName = "Last 6 months" , isDefault = true}  //TODO localization
+            };
+
+            int yearReg = clientCreatedDate.Year;
+            int yearNow = DateTime.Now.Year;
+
+            for (var i = yearNow; i >= yearReg; i--) {
+                res.Add(new ClientOrderDatesRange_DTO { key = i.ToString(), displayName = i.ToString() });
+            }
+
+            return res;
         }
     }
 }

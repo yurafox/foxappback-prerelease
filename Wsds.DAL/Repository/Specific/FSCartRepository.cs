@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Oracle.ManagedDataAccess.Client;
+using Oracle.ManagedDataAccess.Types;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Entities.Communication;
+using Wsds.DAL.Infrastructure;
 using Wsds.DAL.Providers;
 using Wsds.DAL.Repository.Abstract;
 
@@ -21,12 +23,19 @@ namespace Wsds.DAL.Repository.Specific
         private readonly IClientRepository _clRepo;
         private readonly IConfiguration _config;
         private ICacheService<Quotation_Product_DTO> _csQProduct;
+        private IProductRepository _prodRepo;
+        private IQuotationProductRepository _qpRepo; 
+
         public FSCartRepository(IClientRepository clRepo, 
                                 IConfiguration config,
+                                IProductRepository prodRepo,
+                                IQuotationProductRepository qpRepo,
                                 ICacheService<Quotation_Product_DTO> csQProduct)
         {
             _clRepo = clRepo;
             _config = config;
+            _prodRepo = prodRepo;
+            _qpRepo = qpRepo;
             _csQProduct = csQProduct;
         }
 
@@ -47,57 +56,173 @@ namespace Wsds.DAL.Repository.Specific
         }
 
 
-        private bool CanUpdateOrder(long id) {
-            var idClient = 100; // TODO я
+        private bool CanUpdateOrder(long id, long idClient, long scn) {
             var cOrders = EntityConfigDictionary.GetConfig("client_order");
             var ordersProv = new EntityProvider<ClientOrder_DTO>(cOrders);
 
-            ClientOrder_DTO order = ordersProv.GetItems("id_client = :idclient and id = :idOrder",
+            ClientOrder_DTO order = ordersProv.GetItems("id_client = :idclient and id = :idOrder and scn = :scn",
                                                         new OracleParameter("idclient", idClient),
-                                                        new OracleParameter("idOrder", id)
+                                                        new OracleParameter("idOrder", id),
+                                                        new OracleParameter("scn", scn)
                                                         )
                                                 .FirstOrDefault();
 
             return ((order != null) && (order.idStatus == 0)); 
         }
-        public ClientOrderProduct_DTO UpdateCartProduct(ClientOrderProduct_DTO item)
+
+        private void UpdateShipmentItem(long id, decimal qty)
         {
-            if (CanUpdateOrder((long)item.idOrder))
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin update shipment_items a set qty = :a where a.id_order_spec_prod = :b ; commit; end;", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add(new OracleParameter("a", qty));
+                    cmd.Parameters.Add(new OracleParameter("b", id));
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+        }
+
+        public SCNMethodResult<ClientOrderProduct_DTO> UpdateCartProduct(ClientOrderProduct_DTO item, long clientId, long scn)
+        {
+            if (CanUpdateOrder((long)item.idOrder, clientId, scn))
             {
                 var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
                 var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
-                return prov.UpdateItem(item);
+                var it = prov.UpdateItem(item);
+                UpdateShipmentItem((long)it.id, (decimal)it.qty);
+
+                // in case of complect update second item qty = qty of main item in complect
+                var cmpl = it.complect;
+                if (cmpl != null) {
+                    var complectItems = prov.GetItems("t.complect = :complect and t.id_order = :idorder and t.id <> :id",
+                                    new OracleParameter("complect", cmpl),
+                                    new OracleParameter("idOrder", item.idOrder),
+                                    new OracleParameter("id", item.id)
+                                    );
+
+                    foreach (var ci in complectItems) {
+                        ci.qty = it.qty;
+                        prov.UpdateItem(ci);
+                        UpdateShipmentItem((long)ci.id, (decimal)ci.qty);
+                    }
+                }
+
+
+
+                return new SCNMethodResult<ClientOrderProduct_DTO> (UpdateSCN((long)item.idOrder), it);
             }
-            else return null; //if order does not exists => do nothing and return null
+            else return new SCNMethodResult<ClientOrderProduct_DTO>(scn, item); //if order does not exists => do nothing and return null
         }
 
-        public ClientOrderProduct_DTO InsertCartProduct(ClientOrderProduct_DTO item)
+        public SCNMethodResult<ClientOrderProduct_DTO> InsertCartProduct(ClientOrderProduct_DTO item, long clientId, long currency, long idApp, long scn)
         {
+
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
-            item.idOrder = GetOrCreateClientDraftOrder().id;
-            return prov.InsertItem(item);
+            long _idOrder = (long)GetOrCreateClientDraftOrder(clientId, currency, idApp).id;
+
+            if (CanUpdateOrder(_idOrder, clientId, scn))
+            {
+                var fndSpec = prov.GetItems("t.id_quotation = :qp and t.id_order = :id_order and t.complect = :complect",
+                                            new OracleParameter("qp", item.idQuotationProduct),
+                                            new OracleParameter("id_Order", _idOrder),
+                                            new OracleParameter("complect", item.complect))
+                                           .FirstOrDefault();
+                if (fndSpec != null)
+                {
+                    fndSpec.qty = fndSpec.qty + item.qty;
+                    var itm = prov.UpdateItem(fndSpec);
+                    return new SCNMethodResult<ClientOrderProduct_DTO>(UpdateSCN(_idOrder), itm);
+                }
+                else
+                {
+                    item.idOrder = _idOrder;
+                    var itm = prov.InsertItem(item);
+                    return new SCNMethodResult<ClientOrderProduct_DTO>(UpdateSCN(_idOrder), itm);
+                }
+
+            }
+            else
+            {
+                return new SCNMethodResult<ClientOrderProduct_DTO>(scn, item);
+            }
+
         }
 
-        public void DeleteCartProduct(long id)
+        private void DeleteShipmentItem(long id) {
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin delete from shipment_items a where a.id_order_spec_prod = :b ; commit; end;", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add(new OracleParameter("b", id));
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+        }
+
+        private long UpdateSCN(long idOrder)
+        {
+            var coCnfg = EntityConfigDictionary.GetConfig("client_order");
+            var provCo = new EntityProvider<ClientOrder_DTO>(coCnfg);
+            var itemCo = provCo.GetItem(idOrder);
+            itemCo.scn = GenerateSCN();
+            provCo.UpdateItem(itemCo);
+            return (long)itemCo.scn;
+        }
+
+        public SCNMethodResult<string> DeleteCartProduct(long id, long clientId, long scn)
         {
             
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
             var item = prov.GetItem(id);
 
-            if (CanUpdateOrder((long)item.idOrder)) { 
-                prov.DeleteItem(id);
+            if (!CanUpdateOrder((long)item.idOrder, clientId, scn))
+                return new SCNMethodResult<string>(scn, null);
+
+
+            // Удяляем составньіе комплекта
+            var cmpl = item.complect;
+            if (cmpl != null)
+            {
+                var secondItems = prov.GetItems("t.complect = :complect and t.id_order = :idorder and t.id <> :id",
+                                new OracleParameter("complect", cmpl),
+                                new OracleParameter("idOrder", item.idOrder),
+                                new OracleParameter("id", item.id)
+                                );
+                foreach (var sitem in secondItems) {
+                    DeleteShipmentItem((long)sitem.id);
+                    prov.DeleteItem((long)sitem.id);
+                }
             }
+
+            DeleteShipmentItem(id);
+            prov.DeleteItem(id);
+
+            return new SCNMethodResult<string>(UpdateSCN((long)item.idOrder), null);
+
         }
 
-        public ClientOrder_DTO GetOrCreateClientDraftOrder() {
-            var idClient = 100; // TODO я
-            var idCur = 0; //TODO грн
+        public ClientOrder_DTO GetOrCreateClientDraftOrder(long clientId, long currencyId, long idApp) {
             var confOrders = EntityConfigDictionary.GetConfig("client_order");
             var ordersProv = new EntityProvider<ClientOrder_DTO>(confOrders);
 
-            ClientOrder_DTO order = ordersProv.GetItems("id_client = :idclient", new OracleParameter("idclient", idClient))
+            ClientOrder_DTO order = ordersProv.GetItems("id_client = :idclient", new OracleParameter("idclient", clientId))
                                                 .FirstOrDefault();
             if (!(order == null))
             {
@@ -106,13 +231,15 @@ namespace Wsds.DAL.Repository.Specific
             else
             {
                 ClientOrder_DTO newDraftOrder = new ClientOrder_DTO();
-                newDraftOrder.idClient = idClient;
+                newDraftOrder.idClient = clientId;
                 newDraftOrder.orderDate = DateTime.Now;
-                newDraftOrder.idCur = idCur;
+                newDraftOrder.idCur = currencyId;
                 newDraftOrder.total = 0; 
                 newDraftOrder.idPaymentMethod = 1; //наличньіе
                 newDraftOrder.idPaymentStatus = 1; //не оплачен
                 newDraftOrder.idStatus = 0; //draft
+                newDraftOrder.idApp = idApp;
+                newDraftOrder.scn = GenerateSCN();
 
                 return ordersProv.InsertItem(newDraftOrder);
             };
@@ -126,54 +253,67 @@ namespace Wsds.DAL.Repository.Specific
             return prov.GetItems("t.id_order = :orderId", new OracleParameter("orderId", orderId));
         }
 
-        public IEnumerable<ClientOrder_DTO> GetClientOrders() //TODO обьєдинить с данньіми из Т22
+        public IEnumerable<ClientOrder_DTO> GetClientOrders(long clientId) //TODO обьєдинить с данньіми из Т22
         {
             var coaCnfg = EntityConfigDictionary.GetConfig("client_order_all");
             var prov = new EntityProvider<ClientOrder_DTO>(coaCnfg);
 
-            return prov.GetItems("t.id_client = :idClient", new OracleParameter("idClient", 100))
-                    .OrderByDescending(x => x.orderDate); //TODO я
+            return prov.GetItems("t.id_client = :idClient", new OracleParameter("idClient", clientId))
+                    .OrderByDescending(x => x.orderDate);
         }
 
-        public ClientOrder_DTO SaveClientOrder(ClientOrder_DTO order)
+        public SCNMethodResult<ClientOrder_DTO> SaveClientOrder(ClientOrder_DTO order, long clientId, long scn)
         {
             var confOrders = EntityConfigDictionary.GetConfig("client_order");
             var ordersProv = new EntityProvider<ClientOrder_DTO>(confOrders);
-            if (CanUpdateOrder((long)order.id))
+            if (CanUpdateOrder((long)order.id, clientId, scn))
             {
-                return ordersProv.UpdateItem(order);
+                order.scn = GenerateSCN();
+                var r = ordersProv.UpdateItem(order);
+                return new SCNMethodResult<ClientOrder_DTO>((long)order.scn, r);
             }
             else
-                return null;
+                return new SCNMethodResult<ClientOrder_DTO>(scn, order);
         }
 
-        private long MapItem(long g_id, CalculateCartRequest cartObj) {
-            return (long)cartObj.cartContent.FirstOrDefault(
-                            x => _csQProduct.Item((long)x.idQuotationProduct).idProduct == g_id)
-                            .id;
-        }
+        /*
+        private ClientOrderProduct_DTO MapItem(long g_id, long? action_id, long? is_set, CalculateCartRequest cartObj) {
 
-        public IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj)
+            return cartObj.cartContent.FirstOrDefault(
+                            x => (_csQProduct.Item((long)x.idQuotationProduct).idProduct == g_id) 
+                               );
+        }
+        */
+
+        public IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj, long card, long clientId, long currency, long idApp)
         {
 
+            var ordId = GetOrCreateClientDraftOrder(clientId, currency,idApp).id;
             var itemsList = new List<CalcCartRequestT22_Item>();
-            foreach (var orderLine in cartObj.cartContent) {
+
+            var confOrdersSpec = EntityConfigDictionary.GetConfig("client_order_product");
+            var ordersSpecProv = new EntityProvider<ClientOrderProduct_DTO>(confOrdersSpec);
+            var orderSpec = ordersSpecProv.GetItems("t.id_order = :idOrder", new OracleParameter("idOrder", ordId));
+
+            foreach (var orderLine in orderSpec)
+            {
                 var s = new CalcCartRequestT22_Item
                 {
+                    pk_id = orderLine.id,
                     g_id = _csQProduct.Item((long)orderLine.idQuotationProduct).idProduct,
                     qty = orderLine.qty,
                     price = orderLine.price,
-                    is_set = 0, //TODO we don't support sets for a moment
-                    act = 0 //TODO we don't support promos for a moment
+                    is_set = (orderLine.complect == null) ? 0 : 1,
+                    act = orderLine.idAction
                 };
                 itemsList.Add(s);
             }
 
-            string clientId = "+11049778713"; //TODO 
+            string barcode = $"+{card}"; //"+11049778713";
 
             var calcCartRequestT22 = new CalcCartRequestT22
             {
-                cnum = clientId, 
+                cnum = barcode, 
                 lptype = 2, //TODO ?
                 promocode = cartObj.promoCode,
                 bonpayamm = cartObj.maxBonusCnt,
@@ -194,9 +334,9 @@ namespace Wsds.DAL.Repository.Specific
                 try
                 {
                     cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
-                    cmd.Parameters["result"].Size = 2000;
+                    cmd.Parameters["result"].Size = 32767;
                     cmd.Parameters.Add(new OracleParameter("json", requestJson));
-                    cmd.Parameters.Add(new OracleParameter("key", clientId));
+                    cmd.Parameters.Add(new OracleParameter("key", barcode));
                     con.Open();
                     cmd.ExecuteNonQuery();
                     res = cmd.Parameters["result"].Value.ToString();
@@ -217,14 +357,18 @@ namespace Wsds.DAL.Repository.Specific
                     var _bonusDisc = item.bonus_pay;
                     var _promoBonusDisc = item.bonus_sp_pay;
                     var _earnedBonus =item.bonus;
+                    var _pk = item.pk_id;
+                    var _qty = item.qty;
 
+ 
                     lst.Add(
                                 new CalculateCartResponse {
-                                    clOrderSpecProdId = MapItem((long)item.g_id, cartObj),
+                                    clOrderSpecProdId = _pk,
                                     promoCodeDisc = _promoCodeDisc,
                                     bonusDisc= _bonusDisc,
                                     promoBonusDisc = _promoBonusDisc,
-                                    earnedBonus = _earnedBonus
+                                    earnedBonus = _earnedBonus,
+                                    qty = _qty
                                 }
                               );
                 }
@@ -233,10 +377,17 @@ namespace Wsds.DAL.Repository.Specific
         }
 
 
+        private decimal GetShiippingTotal(long idOrder) {
+            var ship = EntityConfigDictionary.GetConfig("shipment");
+            var shipProv = new EntityProvider<Shipment_DTO>(ship);
+            return (decimal)shipProv.GetItems("id_order = :idOrder", new OracleParameter("idOrder", idOrder))
+                .Sum(s => s.loDeliveryCost);
+        }
+
         public PostOrderResponse PostOrder(ClientOrder_DTO order)
         {
 
-            long clientId = 100; //TODO я
+            long clientId = order.idClient.Value;
             var res = new PostOrderResponse { isSuccess = false, errorMessage = "Your cart is empty" };
 
             var confOrders = EntityConfigDictionary.GetConfig("client_order");
@@ -257,19 +408,20 @@ namespace Wsds.DAL.Repository.Specific
                 {
                     dbOrder.idStatus = 1;
 
+
                     var sums = 
                         ordersSpecProv.GetItems("t.id_order = :idOrder", new OracleParameter("idOrder", dbOrder.id))
                         .GroupBy(x => x.idOrder)
                         .Select(x => new {
                                             _itemsTotal = x.Sum(s => s.qty * s.price),
-                                            _shippingTotal = x.Sum(s => s.loDeliveryCost),
+                                            /*_shippingTotal = x.Sum(s => s.loDeliveryCost),*/
                                             _promoBonusTotal = x.Sum(s => s.payPromoBonusCnt * s.qty),
                                             _bonusTotal = x.Sum(s => s.payBonusCnt * s.qty),
                                             _bonusEarned = x.Sum(s => s.earnedBonusCnt * s.qty)
                                          }
                                );
                     dbOrder.itemsTotal = sums.FirstOrDefault()._itemsTotal;
-                    dbOrder.shippingTotal = sums.FirstOrDefault()._shippingTotal;
+                    dbOrder.shippingTotal = GetShiippingTotal((long)dbOrder.id); //sums.FirstOrDefault()._shippingTotal;
                     dbOrder.promoBonusTotal = sums.FirstOrDefault()._promoBonusTotal;
                     dbOrder.bonusTotal = sums.FirstOrDefault()._bonusTotal;
                     dbOrder.bonusEarned = sums.FirstOrDefault()._bonusEarned;
@@ -297,5 +449,186 @@ namespace Wsds.DAL.Repository.Specific
             };
             return res;
         }
+
+        public IEnumerable<ClientOrderProductsByDate_DTO> GetOrderProductsByDate(string datesRange, long clientId)
+        {
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            DateTime d1 = new DateTime();
+            DateTime d2 = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 00, 00, 00);
+
+            if (datesRange.ToLower() == "30d")
+            {
+                d1 = d2.AddDays(-31);
+            }
+            else if (datesRange.ToLower() == "6m")
+            {
+                d1 = d2.AddDays(-183);
+            }
+            else {
+                int year = Int32.Parse(datesRange);
+                d1 = new DateTime(year, 01, 01);
+                d2 = new DateTime(year, 12, 31);
+            };
+            List<ClientOrderProductsByDate_DTO> res = new List<ClientOrderProductsByDate_DTO>();
+            using (var con = new OracleConnection(ConnString))
+            using (var histCreationCmd = new OracleCommand("begin Pkg_Synch_Data.FillClientOrderHistory(pclientid => :clientId, pdatestart => :pdatestart, pdateend => :pdateend); end;", con))
+            using (var cmd = new OracleCommand("select o.id as orderId, o.order_date, s.id as orderSpecId, s.id_product, s.id_quotation_product, s.lo_track_ticket " +
+                                               "from CLIENT_ORDER_HISTORY o, ORDER_HISTORY_SPEC_PRODUCTS s " +
+                                               "where o.id = s.id_order and o.id_client = :idClient " +
+                                               "and trunc(o.order_date) between :d1 and :d2 order by o.order_date desc", con))
+            /*using (var cmd = new OracleCommand("select o.id as orderId, o.order_date, s.id as orderSpecId, qp.id_product, s.lo_track_ticket, s.id_quotation " +
+                                                "from CLIENT_ORDERS o, ORDER_SPEC_PRODUCTS s, QUOTATIONS_PRODUCTS qp " +
+                                                "where o.id = s.id_order and o.id_client = :idClient and s.id_quotation = qp.id " +
+                                                "and trunc(o.order_date) between :d1 and :d2 and o.id_status>0 and o.id_status<=200 " +
+                                                "order by o.order_date desc", con))
+            */
+            {
+                try
+                {
+                    con.Open();
+
+                    histCreationCmd.Parameters.Add("clientId", clientId);
+                    histCreationCmd.Parameters.Add("pdatestart", (OracleDate)d1);
+                    histCreationCmd.Parameters.Add("pdateend", (OracleDate)d2);
+                    histCreationCmd.ExecuteNonQuery();
+
+                    cmd.Parameters.Add(new OracleParameter("idClient", clientId));
+                    OracleParameter fromDate = new OracleParameter("d1", OracleDbType.Date)
+                    {
+                        Value = (OracleDate)d1
+                    };
+                    cmd.Parameters.Add(fromDate);
+
+                    OracleParameter toDate = new OracleParameter("d2", OracleDbType.Date)
+                    {
+                        Value = (OracleDate)d2
+                    };
+                    cmd.Parameters.Add(toDate);
+
+                    
+
+                    var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+
+                        var qpId = (long)reader["id_quotation_product"];
+                        //_qpRepo
+                        Quotation_Product_DTO qp = _qpRepo.QuotationProduct(qpId);
+
+                        var prodId = qp.idProduct; //(long)reader["id_product"];
+                        Product_DTO product = _prodRepo.Product(prodId);
+
+                        ClientOrderProductsByDate_DTO item = new ClientOrderProductsByDate_DTO
+                        {
+                            orderId = (long)reader["orderid"],
+                            orderDate = (DateTime)reader["order_date"],
+                            orderSpecId = (long)reader["orderspecid"],
+                            idProduct = Convert.IsDBNull(reader["id_product"]) ? null : (long?)reader["id_product"],
+                            productName = product.name,
+                            productImageUrl = product.imageUrl,
+                            loTrackTicket = reader["lo_track_ticket"].ToString(),
+                            idQuotation = Convert.IsDBNull(reader["id_quotation_product"]) ? null : (long?)reader["id_quotation_product"]
+                        };
+                        res.Add(item);
+                    };
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+            return res;
+        }
+
+        /*
+        public ClientOrder_DTO GetClientOrder(long orderId, long idClient)
+        {
+            var coaCnfg = EntityConfigDictionary.GetConfig("client_order_all");
+            var prov = new EntityProvider<ClientOrder_DTO>(coaCnfg);
+
+            return prov.GetItems("t.id_client = :idClient and t.id = :id", 
+                                 new OracleParameter("idClient", idClient),
+                                 new OracleParameter("id", orderId)
+                                 ).FirstOrDefault();
+        }
+        */
+
+        public ClientOrder_DTO GetClientHistOrder(long orderId, long idClient)
+        {
+            var coaCnfg = EntityConfigDictionary.GetConfig("client_order_hist");
+            var prov = new EntityProvider<ClientOrder_DTO>(coaCnfg);
+
+            return prov.GetItems("t.id_client = :idClient and t.id = :id",
+                                 new OracleParameter("idClient", idClient),
+                                 new OracleParameter("id", orderId)
+                                 ).FirstOrDefault();
+        }
+
+        public IEnumerable<ClientOrderProduct_DTO> GetClientHistOrderProductsByOrderId(long orderId)
+        {
+            var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product_hist");
+            var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
+            return prov.GetItems("t.id_order = :orderId", new OracleParameter("orderId", orderId));
+        }
+
+        public IEnumerable<Shipment_DTO> GenerateShipments(long clientId, long currencyId, long idApp)
+        {
+            var idOrder = GetOrCreateClientDraftOrder(clientId, currencyId,idApp).id;
+            var res = new List<Shipment_DTO>();
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmdGenShpmt = new OracleCommand("begin foxstore.lo.Generate_Shipment(:idOrder); end;", con))
+            {
+                try
+                {
+                    cmdGenShpmt.Parameters.Add(new OracleParameter("idOrder", idOrder));
+                    con.Open();
+                    cmdGenShpmt.ExecuteNonQuery();
+
+                    var shCnfg = EntityConfigDictionary.GetConfig("shipment");
+                    var prov = new EntityProvider<Shipment_DTO>(shCnfg);
+                    res = prov.GetItems("t.id_order = :orderId", new OracleParameter("orderId", idOrder)).ToList();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+            return res;
+        }
+
+        public Shipment_DTO SaveShipment(Shipment_DTO shipment, long idClient)
+        {
+            var shCnfg = EntityConfigDictionary.GetConfig("shipment");
+            var prov = new EntityProvider<Shipment_DTO>(shCnfg);
+
+            return prov.UpdateItem(shipment);
+        }
+
+        private long GenerateSCN()
+        {
+            long res = 0;
+            string stmt = "select seq_scn.nextval as value from dual";
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand(stmt, con))
+            {
+                try
+                {
+                    con.Open();
+                    OracleDataReader dr = cmd.ExecuteReader();
+                    if (dr.Read())
+                    {
+                        res = Convert.ToInt64(dr["value"].ToString());
+                    };
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+            return res;
+        }
+
     }
 }

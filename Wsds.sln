@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wsds.WebApp", "Wsds.WebApp\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wsds.DAL", "Wsds.DAL\Wsds.DAL.csproj", "{2D7A0CE5-175E-4255-9227-60AAD238B725}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ESIndexer", "ESIndexer\ESIndexer.csproj", "{0742CFBD-B401-4858-86F7-94EAD2FE1A69}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESIndexer", "ESIndexer\ESIndexer.csproj", "{0742CFBD-B401-4858-86F7-94EAD2FE1A69}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

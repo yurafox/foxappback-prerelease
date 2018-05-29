@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Wsds.DAL.Entities.DTO
 {
@@ -18,5 +14,6 @@ namespace Wsds.DAL.Entities.DTO
         public bool? is_show { get; set; }
         public long? priority_index { get; set; }
         public long? priority_show { get; set; }
+        public int? is_active { get; set; }
     }
 }

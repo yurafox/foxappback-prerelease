@@ -6,6 +6,22 @@ using System.Threading.Tasks;
 
 namespace Wsds.DAL.Entities.Communication
 {
+
+    public class LoEntityOfficesByLoEntityAndCityRequest {
+        public long idLoEntity { get; set; }
+
+        public long idCity { get; set; }
+
+    }
+
+    public class DeliveryDateByShipmentRequest
+    {
+        public long loEntity { get; set; }
+        public long loIdClientAddress { get; set; }
+        public Shipment_DTO shpmt { get; set; }
+        public long delivTypeId { get; set; }
+    }
+
     public class DeliveryDateRequest
     {
         public long loEntity { get; set; }
@@ -34,6 +50,7 @@ namespace Wsds.DAL.Entities.Communication
         public long? tcity_id { get; set; }
         public long? seller_id { get; set; }
         public long? type_deliv { get; set; }
+        public long? cwh_id { get; set; }
         public IEnumerable<DeliveryRequestT22_S_Date> spec { get; set; }
     }
 

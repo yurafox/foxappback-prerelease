@@ -27,7 +27,7 @@ namespace Wsds.WebApp.Controllers
         [PullToken]
         public IActionResult SaveClientMessage([FromBody] ClientMessage_DTO message)
         {
-            var tokenModel = HttpContext.GeTokenModel();
+            var tokenModel = HttpContext.GetTokenModel();
             if (tokenModel != null)
             {
                 var client = _cRepo.GetClientByPhone(tokenModel.Phone);

@@ -2,13 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Entities.Communication;
 using Wsds.DAL.Repository.Abstract;
 using Wsds.WebApp.Attributes;
+using Wsds.WebApp.Filters;
 using Wsds.WebApp.Models;
+using Wsds.WebApp.WebExtensions;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -35,15 +38,30 @@ namespace Wsds.WebApp.Controllers
         public IActionResult GetTrackLogForOrderSpecProd(long idOrderSpecProd)
                                 => Ok(_loRepo.GetTrackLogForOrderSpecProd(idOrderSpecProd));
 
-        [HttpPost("GetDeliveryCost")]
-        public IActionResult GetDeliveryCost([FromBody] DeliveryCostRequest model) {
-            return Ok( _loRepo.GetDeliveryCost(model.order, model.loEntity, model.loIdClientAddress));
+        [HttpPost("GetDeliveryCostByShipment")]
+        public IActionResult GetDeliveryCostByShipment([FromBody] DeliveryCostByShipmentRequest model)
+        {
+            return Ok(_loRepo.GetDeliveryCostByShipment(model.shpmt, model.loEntity, model.loIdClientAddress, model.delivTypeId));
         }
 
-        [HttpPost("GetDeliveryDate")]
-        public IActionResult GetDeliveryDate([FromBody] DeliveryDateRequest model) {
-            return Ok(_loRepo.GetDeliveryDate(model.order, model.loEntity, model.loIdClientAddress));
+        [HttpPost("GetDeliveryDateByShipment")]
+        public IActionResult GetDeliveryDateByShipment([FromBody] DeliveryDateByShipmentRequest model)
+        {
+            return Ok(_loRepo.GetDeliveryDateByShipment(model.shpmt, model.loEntity, model.loIdClientAddress, model.delivTypeId));
         }
+
+        [HttpGet("LoDeliveryType/{id}")]
+        public IActionResult GetLoDeliveryType(long id) => Ok(_loRepo.LoDeliveryType(id));
+
+        [HttpGet("LoDeliveryTypesByLoEntity/{id}")]
+        public IActionResult GetLoDeliveryTypesByLoEntity(long id) => Ok(_loRepo.GetLoDeliveryTypesByLoEntity(id));
+
+        [HttpGet("LoEntityOffice/{id}")]
+        public IActionResult GetLoEntityOffice(long id) => Ok(_loRepo.GetLoEntityOffice(id));
+
+        [HttpPost("LoEntityOfficesByLoEntityAndCity")]
+        public IActionResult GetLoEntityOfficesByLoEntityAndCity([FromBody] LoEntityOfficesByLoEntityAndCityRequest model) 
+                => Ok(_loRepo.GetLoEntityOfficesByLoEntityAndCity(model.idLoEntity, model.idCity));
 
     }
 }

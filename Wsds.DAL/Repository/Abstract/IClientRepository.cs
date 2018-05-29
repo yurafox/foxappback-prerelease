@@ -18,9 +18,9 @@ namespace Wsds.DAL.Repository.Abstract
         PersonInfo_DTO CreatePerson(PersonInfo_DTO item);
         PersonInfo_DTO UpdatePerson(PersonInfo_DTO item);
 
-        object GetClientBonusesInfo(long idClient);
-        IEnumerable<object> GetClientBonusesExpireInfo(long idClient);
-        void LogProductView(long idProduct, string viewParams);
+        object GetClientBonusesInfo(long card);
+        IEnumerable<object> GetClientBonusesExpireInfo(long card);
+        void LogProductView(long idProduct, string viewParams,long clientId);
         ClientAddress_DTO ClientAddress(long id);
         IEnumerable<ClientAddress_DTO> GetClientAddressesByClientId(long id);
         ClientAddress_DTO CreateClientAddress(ClientAddress_DTO item);
@@ -32,5 +32,6 @@ namespace Wsds.DAL.Repository.Abstract
         Client_DTO CreateOrUpdateClient(Client_DTO client);
         AppKeys_DTO GetApplicationKeyByClientId(long idClient);
         AppKeys_DTO CreateApplicationKey(AppKeys_DTO key);
+        IEnumerable<ClientOrderDatesRange_DTO> GetClientOrderDatesRanges(DateTime clientCreatedDate);
     }
 }
