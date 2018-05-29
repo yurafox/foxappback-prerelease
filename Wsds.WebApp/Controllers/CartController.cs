@@ -40,7 +40,10 @@ namespace Wsds.WebApp.Controllers
             var tModel = HttpContext.GetTokenModel();
             var res = _cartRepo.UpdateCartProduct(item, tModel.ClientId, (long)tModel.SCN);
             Request.HttpContext.Response.Headers.Add("X-SCN", res.SCN.ToString());
-            return Ok(res.Result);
+            if (res.Result != null)
+                return Ok(res.Result);
+            else
+                return StatusCode(404);
         }
 
         [Authorize]
@@ -54,7 +57,7 @@ namespace Wsds.WebApp.Controllers
             if (res.Result != null)
                 return CreatedAtRoute("", new { id = res.Result.id }, res.Result);
             else
-                return  StatusCode(409);
+                return StatusCode(404);
         }
 
         [Authorize]
@@ -129,7 +132,10 @@ namespace Wsds.WebApp.Controllers
             var tModel = HttpContext.GetTokenModel();
             var res = _cartRepo.SaveClientOrder(order, tModel.ClientId, (long)tModel.SCN);
             Request.HttpContext.Response.Headers.Add("X-SCN", res.SCN.ToString());
-            return Ok(res.Result);
+            if (res.Result != null)
+                return Ok(res.Result);
+            else
+                return StatusCode(404);
         }
 
         [Authorize]
@@ -145,10 +151,14 @@ namespace Wsds.WebApp.Controllers
         [HttpPut("PostOrder")]
         [PullToken]
         public IActionResult PostOrder([FromBody] ClientOrder_DTO order)
-        {   var tModel=HttpContext.GetTokenModel();
+        {
+            var tModel=HttpContext.GetTokenModel();
             order.idClient = order.idClient ?? tModel.ClientId;
-
-            return Ok(_cartRepo.PostOrder(order));
+            var res = _cartRepo.PostOrder(order);
+            if (res.isSuccess)
+                return Ok(res);
+            else
+                return StatusCode(404);
         }
 
         [Authorize]

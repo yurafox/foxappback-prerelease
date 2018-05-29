@@ -24,5 +24,6 @@ namespace Wsds.DAL.Entities
         public ICollection<string> slideImageUrls { get; set; }
         public string barcode { get; set; }
         public long? valueQP { get; set; }
+        public long? status { get; set; }
     }
 }

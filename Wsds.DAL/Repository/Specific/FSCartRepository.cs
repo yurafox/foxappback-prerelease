@@ -123,7 +123,7 @@ namespace Wsds.DAL.Repository.Specific
 
                 return new SCNMethodResult<ClientOrderProduct_DTO> (UpdateSCN((long)item.idOrder), it);
             }
-            else return new SCNMethodResult<ClientOrderProduct_DTO>(scn, item); //if order does not exists => do nothing and return null
+            else return new SCNMethodResult<ClientOrderProduct_DTO>(scn, null); //if order does not exists => do nothing and return null
         }
 
         public SCNMethodResult<ClientOrderProduct_DTO> InsertCartProduct(ClientOrderProduct_DTO item, long clientId, long currency, long idApp, long scn)
@@ -277,7 +277,7 @@ namespace Wsds.DAL.Repository.Specific
                 return new SCNMethodResult<ClientOrder_DTO>((long)order.scn, r);
             }
             else
-                return new SCNMethodResult<ClientOrder_DTO>(scn, order);
+                return new SCNMethodResult<ClientOrder_DTO>(scn, null);
         }
 
         /*
