@@ -27,6 +27,7 @@ using Wsds.WebApp.Auth.Protection;
 using Serilog;
 using Serilog.Sinks;
 using System.IO;
+using Wsds.WebApp.Filters;
 
 namespace Wsds.WebApp
 {
@@ -52,7 +53,7 @@ namespace Wsds.WebApp
                 .MinimumLevel.Information()
                 .WriteTo.RollingFile(Path.Combine(env.ContentRootPath, "Logs\\log-{Date}.log"))
                 .WriteTo.Console()
-                .WriteTo.Seq("http://localhost:5341")
+                .WriteTo.Seq("http://dit-seq-10-80:5341/#/events") //http://dit-seq-10-80:5341/#/events or http://localhost:5341
                 .CreateLogger();
         }
 
@@ -62,6 +63,7 @@ namespace Wsds.WebApp
             services.AddMvc(options =>
             {
                 //options.Filters.Add(new RequireHttpsAttribute());
+                options.Filters.Add(typeof(SeqLogFilter));
             });
 
             // fox add code for close many http redirects
@@ -734,7 +736,10 @@ namespace Wsds.WebApp
         {
             //add Serilog configuration
             loggerFactory.AddSerilog();
-            
+
+            app.UseExceptionHandler();
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+
             loggerFactory.AddConsole();
             app.UseStatusCodePages();
 
