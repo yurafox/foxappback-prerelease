@@ -5,6 +5,10 @@ using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Wsds.DAL.Entities.Communication;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.FileExtensions;
+using Microsoft.Extensions.Configuration.Json;
+using System.IO;
 
 namespace WsdsMQReceiver
 {
@@ -12,7 +16,18 @@ namespace WsdsMQReceiver
     {
         static void Main(string[] args)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost", UserName = "guest", Password = "guest", Port = 5672 };
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            IConfigurationRoot configuration = builder.Build();
+
+            var factory = new ConnectionFactory() {
+                HostName = configuration["Rabbit:hostname"],
+                UserName = configuration["Rabbit:username"],
+                Password = configuration["Rabbit:password"],
+                Port = Int32.Parse(configuration["Rabbit:port"])
+            };
+
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
@@ -29,11 +44,8 @@ namespace WsdsMQReceiver
                 var consumer = new EventingBasicConsumer(channel);
                 consumer.Received += (model, ea) =>
                 {
-                    var body = ea.Body;
-                    var message = Encoding.UTF8.GetString(body);
-                    string objectType = ea.BasicProperties.Type;
-                    Type t = Type.GetType(objectType);
-
+                    string message = Encoding.UTF8.GetString(ea.Body);
+                    Type t = Type.GetType(ea.BasicProperties.Type);
                     object rawObject = JsonConvert.DeserializeObject(message, t);
                     if (rawObject.GetType() == typeof(ClientOrderMQ))
                     {
@@ -41,7 +53,6 @@ namespace WsdsMQReceiver
                         Console.WriteLine("order ID: {0}", order.id);
                         Console.WriteLine("order: {0}", message);
                     }
-
                     channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                 };
 
