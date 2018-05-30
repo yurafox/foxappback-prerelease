@@ -43,7 +43,7 @@ namespace Wsds.WebApp.Controllers
             if (res.Result != null)
                 return Ok(res.Result);
             else
-                return StatusCode(404);
+                return StatusCode(409);
         }
 
         [Authorize]
@@ -57,7 +57,7 @@ namespace Wsds.WebApp.Controllers
             if (res.Result != null)
                 return CreatedAtRoute("", new { id = res.Result.id }, res.Result);
             else
-                return StatusCode(404);
+                return StatusCode(409);
         }
 
         [Authorize]
@@ -135,7 +135,7 @@ namespace Wsds.WebApp.Controllers
             if (res.Result != null)
                 return Ok(res.Result);
             else
-                return StatusCode(404);
+                return StatusCode(409);
         }
 
         [Authorize]
