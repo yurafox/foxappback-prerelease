@@ -54,7 +54,7 @@ namespace WsdsMQReceiver
                 var consumer = new EventingBasicConsumer(channel);
                 consumer.Received += (model, ea) =>
                 {
-                    ReceiveHandler(channel, ea);
+                    ReceiveHandler(channel, ea); 
                 };
 
                 channel.BasicConsume(queue: QUEUE_NAME,
