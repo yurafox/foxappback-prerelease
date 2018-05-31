@@ -6,6 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Wsds.DAL.Infrastructure.Facade;
 using Wsds.WebApp.Infrastructure;
+using Serilog;
+using Wsds.WebApp.Filters;
+using System;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -13,17 +16,22 @@ namespace Wsds.WebApp.Controllers
     {
         #region init cash on instance app
         private AccountUserFacade _accountFacade;
+        ILogger _serilog;
         #endregion
 
         #region ghost DI instance in .ctor
-        public HomeController(AccountUserFacade accountFacade)
+        public HomeController(AccountUserFacade accountFacade, ILogger logger)
         {
             _accountFacade = accountFacade;
+            _serilog = logger;
         }
         #endregion
 
         public IActionResult Index()
         {
+            string dateTime = System.DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+            _serilog.Information($"===== The Index method of HomeController was invoked at {dateTime} =====");
+
             return View();
         }
     }

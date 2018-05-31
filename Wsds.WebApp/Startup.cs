@@ -25,6 +25,10 @@ using Wsds.DAL.Services.Specific;
 using Wsds.WebApp.Auth.Protection;
 using RabbitMQ.Client;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Serilog;
+using Serilog.Sinks;
+using System.IO;
+using Wsds.WebApp.Filters;
 
 namespace Wsds.WebApp
 {
@@ -43,9 +47,16 @@ namespace Wsds.WebApp
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
-        }
 
-        
+            //configuring Serilog
+            //https://serilog.net/
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.RollingFile(Path.Combine(env.ContentRootPath, "Logs\\log-{Date}.log"))
+                .WriteTo.Console()
+                .WriteTo.Seq("http://dit-seq-10-80:5341/#/events") //http://dit-seq-10-80:5341/#/events or http://localhost:5341
+                .CreateLogger();
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -53,6 +64,7 @@ namespace Wsds.WebApp
             services.AddMvc(options =>
             {
                 //options.Filters.Add(new RequireHttpsAttribute());
+                options.Filters.Add(typeof(CustomErrorFilter));
             });
 
             // fox add code for close many http redirects
@@ -80,6 +92,9 @@ namespace Wsds.WebApp
 
             var mainDataConnString = Configuration.GetConnectionString("MainDataConnection");
             services.AddSingleton<IConfiguration>(Configuration);
+            
+            //creating Serilog Singleton
+            services.AddSingleton<Serilog.ILogger>(Log.Logger);
 
             var virtualCatalogId = Convert.ToInt64(Configuration["AppOptions:virtualId"]);
             var langId = Convert.ToInt64(Configuration["AppOptions:lang"]);
@@ -846,6 +861,12 @@ namespace Wsds.WebApp
                               IHostingEnvironment env,
                               ILoggerFactory loggerFactory)
         {
+            //add Serilog configuration
+            loggerFactory.AddSerilog();
+
+            app.UseExceptionHandler();
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+
             loggerFactory.AddConsole();
             app.UseStatusCodePages();
 
