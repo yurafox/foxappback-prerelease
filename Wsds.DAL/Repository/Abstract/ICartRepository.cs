@@ -19,7 +19,7 @@ namespace Wsds.DAL.Repository.Abstract
         SCNMethodResult<ClientOrder_DTO> SaveClientOrder(ClientOrder_DTO order, long clientId, long scn);
         SCNMethodResult<string> DeleteCartProduct(long id,long clientId, long scn);
         IEnumerable<ClientOrderProduct_DTO> GetClientOrderProductsByOrderId(long orderId);
-        IEnumerable<ClientOrderProduct_DTO> GetClientHistOrderProductsByOrderId(long orderId);
+        IEnumerable<ClientOrderProductHist_DTO> GetClientHistOrderProductsByOrderId(long orderId);
 
         IEnumerable<ClientOrder_DTO> GetClientOrders(long clientId);
         IEnumerable<CalculateCartResponse> CalculateCart(CalculateCartRequest cartObj, long card, long clientId, long currency,long idApp);

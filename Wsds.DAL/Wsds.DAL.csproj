@@ -409,6 +409,7 @@
     <Compile Include="Entities\Communication\CalculateCartResponse.cs" />
     <Compile Include="Entities\Communication\NotifyOnProductArrivalRequest.cs" />
     <Compile Include="Entities\DTO\ActionsByProduct_DTO.cs" />
+    <Compile Include="Entities\DTO\ClientOrderProductHist_DTO.cs" />
     <Compile Include="Entities\DTO\ClientOrderProductsByDate_DTO.cs" />
     <Compile Include="Entities\Communication\DeliveryCostResponse.cs" />
     <Compile Include="Entities\Communication\DeliveryDateRequest.cs" />
@@ -432,6 +433,7 @@
     <Compile Include="Entities\DTO\LoEntityOffice_DTO.cs" />
     <Compile Include="Entities\DTO\NoveltyDetails_DTO.cs" />
     <Compile Include="Entities\DTO\Novelty_DTO.cs" />
+    <Compile Include="Entities\DTO\OrderSpecProductBase.cs" />
     <Compile Include="Entities\DTO\ProductReviewVote_DTO.cs" />
     <Compile Include="Entities\DTO\ProductReview_DTO.cs" />
     <Compile Include="Entities\DTO\ClientAddress_DTO.cs" />

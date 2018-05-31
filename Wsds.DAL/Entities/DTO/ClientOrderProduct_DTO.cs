@@ -9,29 +9,8 @@ using Wsds.DAL.Infrastructure;
 namespace Wsds.DAL.Entities
 {
     [Serializable]
-    public class ClientOrderProduct_DTO
+    public class ClientOrderProduct_DTO: OrderSpecProductBase
     {
-        public long? id { get; set; }
-        [FieldBinding(Field= "id_order")]
-        public long? idOrder { get; set; }
-        [FieldBinding(Field = "id_quotation")]
-        public long? idQuotationProduct { get; set; }
-        public decimal? price { get; set; }
-        public decimal? qty { get; set; }
-        [FieldBinding(Field = "id_store_place")]
-        public long? idStorePlace { get; set; }
-        [FieldBinding(Field = "id_lo_entity", IsTransient = true)]
-        public long? idLoEntity { get; set; }
-        [FieldBinding(Field = "lo_track_ticket", IsTransient = true)]
-        public string loTrackTicket { get; set; }
-        [FieldBinding(Field = "lo_delivery_cost", IsTransient = true)]
-        public decimal? loDeliveryCost { get; set; }
-        [FieldBinding(Field = "lo_delivery_completed", IsTransient = true)]
-        public bool? loDeliveryCompleted { get; set; }
-        [FieldBinding(Field = "lo_estimated_delivery_date", IsTransient = true)]
-        public DateTime? loEstimatedDeliveryDate { get; set; }
-        [FieldBinding(Field = "lo_delivery_completed_date", IsTransient = true)]
-        public DateTime? loDeliveryCompletedDate { get; set; }
         [FieldBinding(Field = "error_message")]
         public string errorMessage { get; set; }
         [FieldBinding(Field = "warning_message")]
@@ -46,8 +25,6 @@ namespace Wsds.DAL.Entities
         public decimal? payBonusCnt { get; set; }
         [FieldBinding(Field = "pay_promobonus_cnt")]
         public decimal? payPromoBonusCnt { get; set; }
-        [FieldBinding(Field = "earned_bonus_cnt")]
-        public decimal? earnedBonusCnt { get; set; }
         public string complect { get; set; }
         [FieldBinding(Field = "id_action")]
         public long? idAction { get; set; }

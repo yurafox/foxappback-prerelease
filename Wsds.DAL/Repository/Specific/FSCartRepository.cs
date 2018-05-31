@@ -615,10 +615,10 @@ namespace Wsds.DAL.Repository.Specific
                                  ).FirstOrDefault();
         }
 
-        public IEnumerable<ClientOrderProduct_DTO> GetClientHistOrderProductsByOrderId(long orderId)
+        public IEnumerable<ClientOrderProductHist_DTO> GetClientHistOrderProductsByOrderId(long orderId)
         {
             var qpCnfg = EntityConfigDictionary.GetConfig("client_order_product_hist");
-            var prov = new EntityProvider<ClientOrderProduct_DTO>(qpCnfg);
+            var prov = new EntityProvider<ClientOrderProductHist_DTO>(qpCnfg);
             return prov.GetItems("t.id_order = :orderId", new OracleParameter("orderId", orderId));
         }
 
