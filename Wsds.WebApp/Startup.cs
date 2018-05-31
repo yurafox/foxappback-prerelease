@@ -458,6 +458,7 @@ namespace Wsds.WebApp
                     .AddSqlCommandSelect("select t.id, Serialization.city2Json(t.id) as value from CITIES t ")
                     .AddSqlCommandWhere("where t.id in (select sp.id_city from product_store_places psp, " +
                                         "store_places sp where psp.id_store_place = sp.id and psp.qty > 0 and sp.type=1)")
+                    .AddSqlCommandOrderBy("order by t.name")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.city2Json")
