@@ -29,7 +29,7 @@ namespace Wsds.WebApp.Controllers
 
         public IActionResult Index()
         {
-            string dateTime = System.DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+            string dateTime = System.DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");  
             _serilog.Information($"===== The Index method of HomeController was invoked at {dateTime} =====");
 
             return View();
