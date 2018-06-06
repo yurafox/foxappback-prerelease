@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Core;
+using System.Data;
 using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Wsds.DAL.Repository.Abstract;
 
 namespace Wsds.DAL.Repository.Specific
@@ -67,7 +67,7 @@ namespace Wsds.DAL.Repository.Specific
                 : RoleEngine.FindByNameAsync(pointer));
 
             if(findedRole==null)
-                throw new ObjectNotFoundException("not found role");
+                throw new DataException("not found role");
 
             var result = await actionFunc(findedRole);
 

@@ -22,11 +22,10 @@
     "Wsds.WebApp": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/values",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:58471/"
+      "applicationUrl": "http://localhost:44374/"
     },
     "newProfile1": {
       "commandName": "IISExpress"

@@ -18,17 +18,18 @@ using Microsoft.AspNetCore.HttpOverrides;
 using CachingFramework.Redis;
 using Wsds.DAL.Entities.DTO;
 using Wsds.DAL.Infrastructure.Facade;
-using Wsds.DAL.Repository;
 using StackExchange.Redis;
 using Wsds.DAL.Services.Abstract;
 using Wsds.DAL.Services.Specific;
 using Wsds.WebApp.Auth.Protection;
 using RabbitMQ.Client;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Serilog;
-using Serilog.Sinks;
 using System.IO;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Wsds.WebApp.Filters;
+using Wsds.WebApp.Infrastructure;
+using Wsds.WebApp.WebExtensions;
 
 namespace Wsds.WebApp
 {
@@ -37,7 +38,7 @@ namespace Wsds.WebApp
         private IHostingEnvironment _environment;
         public IConfigurationRoot Configuration { get; }
 
-        public Startup(IHostingEnvironment env)
+        public Startup(IHostingEnvironment env, IServiceProvider serviceProvider)
         {
             _environment = env;
 
@@ -46,6 +47,8 @@ namespace Wsds.WebApp
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
+
+
             Configuration = builder.Build();
 
             //configuring Serilog
@@ -60,7 +63,6 @@ namespace Wsds.WebApp
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // fox ssl enable
             services.AddMvc(options =>
             {
                 //options.Filters.Add(new RequireHttpsAttribute());
@@ -873,6 +875,7 @@ namespace Wsds.WebApp
 
             app.UseCors("AnyOrigin");
             app.UseJwtBearerAuthentication(AuthOpt.InitToken(Configuration.GetSection("AuthToken")));
+            //app.UseBufferedResponseBody();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

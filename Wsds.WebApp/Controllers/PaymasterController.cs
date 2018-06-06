@@ -9,23 +9,25 @@ namespace Wsds.WebApp.Controllers
         [HttpGet]
         public IActionResult Payment(PaymentModel payment)
         {
-            if (payment == null || !TryValidateModel(payment))
+            return BadRequest();
+            /*if (payment == null || !TryValidateModel(payment))
                 return BadRequest("Ошибка состояния данных в запросе к платежной системе");
 
 
-            return View("Payment", payment);
+            return View("Payment", payment);*/
         }
 
         [HttpPost]
         public IActionResult Result(PaymentResultModel paymentReceiver)
         {
-            if (!TryValidateModel(paymentReceiver))
+            return BadRequest();
+            /*if (!TryValidateModel(paymentReceiver))
             {
                 return BadRequest("ошибка ответа от платежной системы");
             }
 
             ViewBag.Result = paymentReceiver.GetResultVerification();
-            return View("Result");
+            return View("Result");*/
 
         }
     }

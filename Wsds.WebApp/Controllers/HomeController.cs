@@ -1,14 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Wsds.DAL.Entities;
-using Wsds.DAL.Providers;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
 using Wsds.DAL.Infrastructure.Facade;
-using Wsds.WebApp.Infrastructure;
 using Serilog;
-using Wsds.WebApp.Filters;
-using System;
+using Wsds.WebApp.TempTemplate;
+using Wsds.WebApp.WebExtensions;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -31,8 +25,7 @@ namespace Wsds.WebApp.Controllers
         {
             string dateTime = System.DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");  
             _serilog.Information($"===== The Index method of HomeController was invoked at {dateTime} =====");
-
-            return View();
+            return View().GetRawContent(TemplateEnum.Home);
         }
     }
 }
