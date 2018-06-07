@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Wsds.WebApp.Models;
+using Wsds.WebApp.TempTemplate;
+using Wsds.WebApp.WebExtensions;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -9,25 +11,23 @@ namespace Wsds.WebApp.Controllers
         [HttpGet]
         public IActionResult Payment(PaymentModel payment)
         {
-            return BadRequest();
-            /*if (payment == null || !TryValidateModel(payment))
+            if (payment == null || !TryValidateModel(payment))
                 return BadRequest("Ошибка состояния данных в запросе к платежной системе");
 
 
-            return View("Payment", payment);*/
+            return View("Payment", payment).GetRawContent(TemplateEnum.PayMasterPayment); ;
         }
 
         [HttpPost]
         public IActionResult Result(PaymentResultModel paymentReceiver)
         {
-            return BadRequest();
-            /*if (!TryValidateModel(paymentReceiver))
+            if (!TryValidateModel(paymentReceiver))
             {
                 return BadRequest("ошибка ответа от платежной системы");
             }
 
             ViewBag.Result = paymentReceiver.GetResultVerification();
-            return View("Result");*/
+            return View("Result").GetRawContent(TemplateEnum.PayMasterResult);
 
         }
     }

@@ -24,11 +24,13 @@ namespace Wsds.WebApp.TempTemplate
 
                 case TemplateEnum.PayMasterPayment:
                 {
+                    tmpl = MakePayMasterPayment();
                     break;
                 }
 
                 case TemplateEnum.PayMasterResult:
                 {
+                    tmpl = PayMasterResult();
                     break; ;
                 }
             }
@@ -39,5 +41,11 @@ namespace Wsds.WebApp.TempTemplate
 
         private string MakeHomeResult()
             => "<div style = \"width: 300px; margin: 300px auto\"><h1> Foxtrot Web API</h1></div>";
+
+        private string MakePayMasterPayment()
+            => "<div style = \"width: 250px; margin: 250px auto\"><h1>Сервис временно недоступен</h1></div>";
+
+        private string PayMasterResult()
+            => "<div style = \"width: 250px; margin: 250px auto\"><h1>Сервис временно недоступен</h1></div>";
     }
 }
