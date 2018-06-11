@@ -44,7 +44,6 @@ namespace Wsds.WebApp.Controllers
                 {
                     var user = await _account.Users.UserEngine.FindByNameAsync(auth.Phone.ToLower());
                     var roles = await _account.Users.UserEngine.GetRolesAsync(user);
-         
                     //var roles = await _userRepository.UserEngine.GetRolesAsync(user);
 
                     // get clients
@@ -113,7 +112,7 @@ namespace Wsds.WebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAccount([FromBody] User_DTO user)
         {
-            Response.StatusCode = 200; // init status code like always error
+            Response.StatusCode = 200;
   
             if (!ModelState.IsValid)
                 return Json(new {message = $"{_account.Locale.GetBackLocaleString(CompName, "CreateAccountNotValid")}", status = 0});

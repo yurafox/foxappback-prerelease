@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
+using System.Data.Entity.Core;
 using System.Linq;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
@@ -79,9 +79,7 @@ namespace Wsds.DAL.Repository.Specific
             if (user == null)
                 return (client?.id == null) ? AbsentUserStrategy() : await OnlyUserAbsentStrategy(client);
 
-            return (!String.IsNullOrEmpty(user.PasswordHash))
-                ? UserInSystemStrategy()
-                : await UserInSystemWithOldRegistration(user);
+            return await UserInSystemWithOldRegistration(user);
         }
 
         public bool VerifyUserPhoneInputData(string phone)
@@ -124,12 +122,13 @@ namespace Wsds.DAL.Repository.Specific
 
             return user;
         }
-        public async Task<bool> CheckUser(string userName, string pswd)
+        public async Task<bool> CheckUser(string userName, string code)
         {
             var findedUser = await UserEngine.FindByNameAsync(userName.ToLower());
             if (findedUser == null) return false;
 
-            return await UserEngine.CheckPasswordAsync(findedUser, pswd);
+           var codeResult = await UserEngine.ChangePhoneNumberAsync(findedUser,findedUser.PhoneNumber,code);
+            return codeResult.Succeeded;
         }
         public Client_DTO ToClient(User_DTO user)
         {
@@ -164,7 +163,7 @@ namespace Wsds.DAL.Repository.Specific
         {
             var finded = await UserEngine.FindByIdAsync(id);
             if (finded == null)
-                throw new DataException("not found user");
+                throw new ObjectNotFoundException("not found user");
 
             var result = await actionFunc(finded);
 
@@ -197,23 +196,21 @@ namespace Wsds.DAL.Repository.Specific
                 PhoneNumber = client.phone,
                 Email = client.email
             };
-            // generate random temp password for sms
-            var tempPswd = _smsService.GetAuthTempPswd(8);
 
             //send sms logic
             try
             {
-                await _smsService.SendAuthSmsAsync(appUser.UserName, tempPswd);
+                // create user in identity
+                await UserEngine.CreateAsync(appUser);
+                var code = await UserEngine.GenerateChangePhoneNumberTokenAsync(appUser,appUser.UserName);
+                await _smsService.SendAuthSmsAsync(appUser.UserName, code);
             }
             catch (OracleException ex)
             {
-                //TODO: maybe will create logging logic 
                 return (GetSendSmsErrorLocalizationString,0);
             }
 
-            // create user in identity
-            await UserEngine.CreateAsync(appUser, tempPswd);
-            return (GetSmsWaitLocalizationString, 2);
+            return (GetSmsWaitLocalizationString(appUser.UserName), 2);
         }
         private (string, byte) UserInSystemStrategy()
         {
@@ -221,28 +218,24 @@ namespace Wsds.DAL.Repository.Specific
         }
         private async Task<(string, byte)> UserInSystemWithOldRegistration(AppUser user)
         {
-            // generate random temp password for sms
-            var tempPswd = _smsService.GetAuthTempPswd(8);
+            var code = await UserEngine.GenerateChangePhoneNumberTokenAsync(user, user.UserName);
 
             //send sms logic
             try
             {
-                await _smsService.SendAuthSmsAsync(user.UserName, tempPswd);
+                await _smsService.SendAuthSmsAsync(user.UserName, code);
             }
             catch (OracleException ex)
             {
-                //TODO: maybe will create logging logic 
                 return (GetSendSmsErrorLocalizationString, 0);
             }
-       
-            // update passwd by temp password
-            await UserEngine.AddPasswordAsync(user, tempPswd);
-            return (GetSmsWaitLocalizationString, 2);
+
+            return (GetSmsWaitLocalizationString(user.UserName), 2);
         }
         #endregion
 
         // service localize str for message
-        private string GetSmsWaitLocalizationString => $"{_appLocalization.GetBackLocaleString(CompName, "WaitTempPass")}";
+        private string GetSmsWaitLocalizationString(string phone) => $"{_appLocalization.GetBackLocaleString(CompName, "WaitTempCode")} {phone}";
 
         private string GetUserInSystemLocalizationString => $"{_appLocalization.GetBackLocaleString(CompName, "AlreadyRegistered")}";
 

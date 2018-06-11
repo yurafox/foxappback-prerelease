@@ -19,7 +19,7 @@ namespace Wsds.DAL.Repository.Abstract
         Task<AppUser> GetUserByEmail(string email);
 
         UserManager<AppUser> UserEngine { get; }
-        Task<bool> CheckUser(string userName, string pswd);
+        Task<bool> CheckUser(string userName, string code);
 
         Task<AppUser> CreateUser(AppUser user, string pswd);
         Task<AppUser> DeleteUser(string id);

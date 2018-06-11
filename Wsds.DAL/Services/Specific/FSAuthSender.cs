@@ -33,7 +33,7 @@ namespace Wsds.DAL.Services.Specific
 
         public string GenerateRandomPassword(int length)
         {
-            const string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+            const string valid = "1234567890";
             StringBuilder res = new StringBuilder();
             Random rnd = new Random();
             while (0 < length--)
