@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity.Core;
+using System.Data;
 using System.Linq;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
@@ -163,7 +163,7 @@ namespace Wsds.DAL.Repository.Specific
         {
             var finded = await UserEngine.FindByIdAsync(id);
             if (finded == null)
-                throw new ObjectNotFoundException("not found user");
+                throw new DataException("not found user");
 
             var result = await actionFunc(finded);
 
