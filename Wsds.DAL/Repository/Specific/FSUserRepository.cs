@@ -21,6 +21,7 @@ namespace Wsds.DAL.Repository.Specific
         private const string CompName = "UserRepository";
         private ISmsService _smsService;
         private IAppLocalizationRepository _appLocalization;
+
         public FSUserRepository(UserManager<AppUser> manager,
                                 ISmsService smsService,
                                 IAppLocalizationRepository appLocalization)
