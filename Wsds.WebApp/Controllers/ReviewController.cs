@@ -38,6 +38,42 @@ namespace Wsds.WebApp.Controllers
             return Ok();
         }
 
+        [HttpGet("HasClientProductReviewByProductId/{id}")]
+        [PullToken(CanAnonymous = true)]
+        public IActionResult HasClientProductReviewByProductId(long id)
+        {
+            var tokenModel = HttpContext.GetTokenModel();
+            if (tokenModel != null)
+            {
+                var data = new
+                {
+                    hasReview = _revRepo.HasClientProductReviewByProductId(id, tokenModel.ClientId),
+                    currentUser = tokenModel.ClientId
+                };
+                return Ok(data);
+
+            }
+            return Ok();
+        }
+
+        [HttpGet("HasClientStoreReviewByStoreId/{id}")]
+        [PullToken(CanAnonymous = true)]
+        public IActionResult HasClientStoreReviewByStoreId(long id)
+        {
+            var tokenModel = HttpContext.GetTokenModel();
+            if (tokenModel != null)
+            {
+                var data = new
+                {
+                    hasReview = _revRepo.HasClientStoreReviewByStoreId(id, tokenModel.ClientId),
+                    currentUser = tokenModel.ClientId
+                };
+                return Ok(data);
+
+            }
+            return Ok();
+        }
+
         [HttpGet("GetStoreReviewsByStoreId/{id}")]
         [PullToken(CanAnonymous = true)]
         public IActionResult GetStoreReviewsByStoreId(long id)

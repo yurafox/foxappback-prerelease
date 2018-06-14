@@ -13,10 +13,12 @@ namespace Wsds.DAL.Repository.Specific
     {
         private readonly ICacheService<Action_DTO> _csAction;
         private readonly IConfiguration _config;
+        private ICacheService<Product_DTO> _csProduct;
 
-        public FSActionRepository(ICacheService<Action_DTO> csAction, IConfiguration config)
+        public FSActionRepository(ICacheService<Action_DTO> csAction, ICacheService<Product_DTO> csProduct, IConfiguration config)
         {
             _csAction = csAction;
+            _csProduct = csProduct;
             _config = config;
         }
 
@@ -102,13 +104,13 @@ namespace Wsds.DAL.Repository.Specific
             return res;
         }
 
-        public IEnumerable<long> GetProductsOfDay()
+        public IEnumerable<Product_DTO> GetProductsOfDay()
         {
             var stmt = "select qp.id_product from ACTION_OFFERS t, actions a, quotations_products qp " +
                        "where t.id_action = a.id and a.id_type = 6 and t.id_quotation_product = qp.id";
             var ConnString = _config.GetConnectionString("MainDataConnection");
 
-            List<long> res = new List<long>();
+            List<Product_DTO> res = new List<Product_DTO>();
 
             using (var con = new OracleConnection(ConnString))
             using (var cmd = new OracleCommand(stmt, con))
@@ -120,7 +122,9 @@ namespace Wsds.DAL.Repository.Specific
                     dr.FetchSize = cmd.RowSize * 10;
                     while (dr.Read())
                     {
-                        res.Add((long)dr["id_product"]);
+                        var prod = _csProduct.Item((long)dr["id_product"]);
+                        if (prod != null)
+                            res.Add(prod);
                     };
                 }
                 finally
@@ -132,13 +136,13 @@ namespace Wsds.DAL.Repository.Specific
             return res;
         }
 
-        public IEnumerable<long> GetProductsSalesHits()
+        public IEnumerable<Product_DTO> GetProductsSalesHits()
         {
             var stmt = "select qp.id_product from ACTION_OFFERS t, actions a, quotations_products qp " +
                        "where t.id_action = a.id and a.id_type = 7 and t.id_quotation_product = qp.id";
             var ConnString = _config.GetConnectionString("MainDataConnection");
 
-            List<long> res = new List<long>();
+            List<Product_DTO> res = new List<Product_DTO>();
 
             using (var con = new OracleConnection(ConnString))
             using (var cmd = new OracleCommand(stmt, con))
@@ -150,7 +154,9 @@ namespace Wsds.DAL.Repository.Specific
                     dr.FetchSize = cmd.RowSize * 10;
                     while (dr.Read())
                     {
-                        res.Add((long)dr["id_product"]);
+                        var prod = _csProduct.Item((long)dr["id_product"]);
+                        if (prod != null)
+                            res.Add(prod);
                     };
                 }
                 finally

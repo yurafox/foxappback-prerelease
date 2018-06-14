@@ -16,6 +16,7 @@ using Wsds.DAL.Repository.Specific;
 using Wsds.WebApp.Auth;
 using Microsoft.AspNetCore.HttpOverrides;
 using CachingFramework.Redis;
+using Wsds.DAL.Repository;
 using Wsds.DAL.Entities.DTO;
 using Wsds.DAL.Infrastructure.Facade;
 using StackExchange.Redis;
@@ -23,13 +24,13 @@ using Wsds.DAL.Services.Abstract;
 using Wsds.DAL.Services.Specific;
 using Wsds.WebApp.Auth.Protection;
 using RabbitMQ.Client;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Serilog;
+using Serilog.Sinks;
 using System.IO;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Wsds.WebApp.Filters;
-using Wsds.WebApp.Infrastructure;
-using Wsds.WebApp.WebExtensions;
+using System.Diagnostics;
+using System.Text;
 
 namespace Wsds.WebApp
 {
@@ -38,7 +39,7 @@ namespace Wsds.WebApp
         private IHostingEnvironment _environment;
         public IConfigurationRoot Configuration { get; }
 
-        public Startup(IHostingEnvironment env, IServiceProvider serviceProvider)
+        public Startup(IHostingEnvironment env)
         {
             _environment = env;
 
@@ -50,15 +51,26 @@ namespace Wsds.WebApp
 
 
             Configuration = builder.Build();
+            
+             #region Serilog Configuration https://serilog.net/
 
-            //configuring Serilog
-            //https://serilog.net/
+            string environment = "dev";
+
+            #if !DEBUG
+                   environment = "prod";
+            #endif
+
+            var seqConfig = Configuration.GetSection("SeqConfig").GetSection(environment);
+            var seqServer = seqConfig["host"];
+                         
+
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.RollingFile(Path.Combine(env.ContentRootPath, "Logs\\log-{Date}.log"))
                 .WriteTo.Console()
-                .WriteTo.Seq("http://dit-seq-10-80:5341/#/events") //http://dit-seq-10-80:5341/#/events or http://localhost:5341
+                .WriteTo.Seq(seqServer) //it can be either http://dit-seq-10-80:5341/#/events or http://localhost:5341
                 .CreateLogger();
+            #endregion
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -118,7 +130,7 @@ namespace Wsds.WebApp
             IConnection rabbitConnection = rabbitConnFactory.CreateConnection();
             services.AddSingleton<IConnection>(rabbitConnection);
 
-
+            #region EntityProvider section
             EntityConfigDictionary.AddConfig("lo_entity_delivery_type",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.id, Serialization.LoEntityDeliveryType2Json(t.id) as value " +
@@ -300,6 +312,7 @@ namespace Wsds.WebApp
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.id, Serialization.Store2Json(t.id) as value from STORE_PLACES t ")
                     .AddSqlCommandWhere("where t.type=1  and t.lat is not null  and t.lng is not null  and t.is_active=1")
+                    .AddSqlCommandOrderBy("order by t.address_line")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.Store2Json")
@@ -450,6 +463,7 @@ namespace Wsds.WebApp
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.id, Serialization.city2Json(t.id) as value from CITIES t ")
                     .AddSqlCommandWhere("where t.id_region is not null")
+                    .AddSqlCommandOrderBy("order by t.name")
                     .SetKeyField("id")
                     .SetValueField("value")
                     .SetSerializerFunc("Serialization.city2Json")
@@ -669,7 +683,24 @@ namespace Wsds.WebApp
                 .SetValueField("value")
                 );
 
+             EntityConfigDictionary.AddConfig("news",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, Serialization.News2Json(id) as value from news t")
+                    .AddSqlCommandWhere("where t.is_active=1")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.News2Json")
+            );
 
+            EntityConfigDictionary.AddConfig("news_category",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, Serialization.NewsCategory2Json(id) as value from news_category t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.News2Json")
+            );
+
+            #endregion
 
             services.AddDbContext<AppIdentityDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
@@ -726,6 +757,9 @@ namespace Wsds.WebApp
             services.AddScoped<IBannerSlideRepository, FSBannerSlideRepository>();
             services.AddScoped<IClientMessageRepository, FSClientMessageRepository>();
             services.AddScoped<IAppLocalizationRepository, FSAppLocalizationRepository>();
+            services.AddScoped<ILegalPolicyRepository, FSLegalPolicyRepository>();
+            services.AddScoped<INewsRepository, FSNewsRepository>();
+            services.AddScoped<INewsCategoryRepository, FSNewsCategoryRepository>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
@@ -855,7 +889,15 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoEntityDeliveryType_DTO>),
                 p => new CacheService<LoEntityDeliveryType_DTO>
                     ("lo_entity_delivery_type", 12000000, redisCache), ServiceLifetime.Singleton));
+            
+            services.Add(new ServiceDescriptor(typeof(ICacheService<News_DTO>),
+                p => new CacheService<News_DTO>
+                   ("news", 12000000, redisCache, true), ServiceLifetime.Singleton));
 
+            services.Add(new ServiceDescriptor(typeof(ICacheService<NewsCategory_DTO>),
+                p => new CacheService<NewsCategory_DTO>
+                   ("news_category", 12000000, redisCache, true), ServiceLifetime.Singleton));
+            
             // add roles
             IdentityInit(services.BuildServiceProvider()).Wait();
         }

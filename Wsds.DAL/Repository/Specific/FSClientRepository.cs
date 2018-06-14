@@ -361,5 +361,16 @@ namespace Wsds.DAL.Repository.Specific
 
             return res;
         }
+
+        public void CallMe(string phone) {
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Add(
+                                new MediaTypeWithQualityHeaderValue("application/json"));
+                var response = client.GetAsync(String.Format(UrlConstants.CallMeServiceUrl, phone.Substring(2,10))).Result;
+
+            }
+        }
+
     }
 }

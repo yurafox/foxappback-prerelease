@@ -33,5 +33,6 @@ namespace Wsds.DAL.Repository.Abstract
         AppKeys_DTO GetApplicationKeyByClientId(long idClient);
         AppKeys_DTO CreateApplicationKey(AppKeys_DTO key);
         IEnumerable<ClientOrderDatesRange_DTO> GetClientOrderDatesRanges(DateTime clientCreatedDate);
+        void CallMe(string phone);
     }
 }

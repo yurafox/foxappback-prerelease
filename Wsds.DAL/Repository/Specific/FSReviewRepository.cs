@@ -29,6 +29,20 @@ namespace Wsds.DAL.Repository.Specific
             return reviews;
         }
 
+        public bool HasClientStoreReviewByStoreId(long idStore, long idClient)
+        {
+            var cnfg = EntityConfigDictionary.GetConfig("store_reviews");
+            var prov = new EntityProvider<StoreReview_DTO>(cnfg);
+            object clientId = (idClient == 0) ? (object)DBNull.Value : idClient;
+
+            ICollection<StoreReview_DTO> reviews = (ICollection < StoreReview_DTO > )prov.GetItems("id_store = :id and id_client = :clientId",
+                                                            new OracleParameter("id", idStore),
+                                                            new OracleParameter("clientId", clientId)
+                                       );
+            bool hasReview = (reviews.Count > 0) ? true : false;
+            return hasReview;
+        }
+
         public IEnumerable<StoreReview_DTO> GetStoreReviews(long idClient)
         {
             var cnfg = EntityConfigDictionary.GetConfig("store_reviews_add_vote");
@@ -49,6 +63,20 @@ namespace Wsds.DAL.Repository.Specific
                                                             new OracleParameter("id", idProduct)
                                        );
             return reviews;
+        }
+
+        public bool HasClientProductReviewByProductId(long idProduct, long idClient)
+        {
+            var cnfg = EntityConfigDictionary.GetConfig("product_reviews");
+            var prov = new EntityProvider<ProductReview_DTO>(cnfg);
+            object clientId = (idClient == 0) ? (object)DBNull.Value : idClient;
+
+            ICollection<ProductReview_DTO> reviews = (ICollection<ProductReview_DTO>)prov.GetItems("id_product = :id and id_client = :clientId",
+                                                            new OracleParameter("id", idProduct),
+                                                            new OracleParameter("clientId", clientId)
+                                       );
+            bool hasReview = (reviews.Count > 0) ? true : false;
+            return hasReview;
         }
 
         public ProductReview_DTO SaveProductReview(ProductReview_DTO review, Client_DTO client)

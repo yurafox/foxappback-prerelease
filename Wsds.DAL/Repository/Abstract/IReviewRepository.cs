@@ -6,9 +6,11 @@ namespace Wsds.DAL.Repository.Abstract
     public interface IReviewRepository
     {
         IEnumerable<ProductReview_DTO> GetProductReviews(long idProduct, long idClient);
+        bool HasClientProductReviewByProductId(long idProduct, long idClient);
 
         IEnumerable<StoreReview_DTO> GetStoreReviews(long idClient);
         IEnumerable<StoreReview_DTO> GetStoreReviewsByStoreId(long idStore, long idClient);
+        bool HasClientStoreReviewByStoreId(long idStore, long idClient);
 
         ProductReview_DTO SaveProductReview(ProductReview_DTO review, Client_DTO client);
         StoreReview_DTO SaveStoreReview(StoreReview_DTO review, Client_DTO client);

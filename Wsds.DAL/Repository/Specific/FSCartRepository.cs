@@ -135,10 +135,11 @@ namespace Wsds.DAL.Repository.Specific
 
             if (CanUpdateOrder(_idOrder, clientId, scn))
             {
-                var fndSpec = prov.GetItems("t.id_quotation = :qp and t.id_order = :id_order and t.complect = :complect",
+                
+                var fndSpec = prov.GetItems("t.id_quotation = :qp and t.id_order = :id_order and nvl(t.complect,'0') = :complect",
                                             new OracleParameter("qp", item.idQuotationProduct),
                                             new OracleParameter("id_Order", _idOrder),
-                                            new OracleParameter("complect", item.complect))
+                                            new OracleParameter("complect", (item.complect != null) ? item.complect: "0" ))
                                            .FirstOrDefault();
                 if (fndSpec != null)
                 {
