@@ -21,6 +21,6 @@ namespace Wsds.DAL.Repository.Abstract
         IEnumerable<LoDeliveryType_DTO> GetLoDeliveryTypesByLoEntity(long idLoEntity);
         LoEntityOffice_DTO GetLoEntityOffice(long id);
         IEnumerable<LoEntityOffice_DTO> GetLoEntityOfficesByLoEntityAndCity(long idLoEntity, long idCity);
-
+        IEnumerable<LoDeliveryTypeAttr_DTO> GetLoDeliveryTypesAttrByLoEntity(Shipment_DTO shpmt, long? loIdClientAddress);
     }
 }

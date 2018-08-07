@@ -9,7 +9,7 @@ using Wsds.DAL.Repository.Abstract;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Localization")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class LocalizationController : Controller
     {
         private readonly ILocalizationRepository _locRepo;

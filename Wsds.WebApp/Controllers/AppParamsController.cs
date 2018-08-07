@@ -9,7 +9,7 @@ using Wsds.DAL.Repository.Abstract;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/AppParams")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class AppParamsController : Controller
     {
 

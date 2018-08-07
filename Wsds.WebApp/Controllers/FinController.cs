@@ -9,7 +9,7 @@ using Wsds.DAL.Repository.Abstract;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Fin")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class FinController : Controller
     {
         IFinRepository _finRepo;

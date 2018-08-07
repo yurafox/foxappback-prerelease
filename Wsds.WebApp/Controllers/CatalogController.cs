@@ -12,14 +12,13 @@ using Wsds.DAL.Repository.Abstract;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class CatalogController : Controller
     {
         IProductGroupRepository _repo;
 
         public CatalogController(IProductGroupRepository repo)
         {
-
             _repo = repo;
         }
 

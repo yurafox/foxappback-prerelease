@@ -1,21 +1,28 @@
+﻿@using System.ComponentModel
+@using System.Text
 @model Wsds.WebApp.Models.PaymentModel
 
 @{
     Layout = null;
 }
 
-<form action="https://lmi.paymaster.ua/" method="post" id="paymaster" name="paymaster">
-    <input type="hidden" name="LMI_MERCHANT_ID" value="1984" />
+@{
+    string description = $"Заказ #{Model.Id} на сумму {Model.Total} грн";
+    string versionString = typeof(Wsds.WebApp.Startup).Assembly.GetName().Version.ToString().Remove(3);
+    string resultLink = $"https://fma-api.foxtrot.com.ua/api/{versionString}/Payment/Result";
+}
+
+<form action="https://lmi.paysoft.solutions/" method="post" id="payment" name="payment">
+    <input type="hidden" name="LMI_MERCHANT_ID" value="2117" />
     <input type="hidden" name="LMI_PAYMENT_NO" value="@Model.Id" />
     <input type="hidden" name="LMI_PAYMENT_AMOUNT" value="@Model.Total" />
-    <input type="hidden" name="LMI_PAYMENT_DESC" value="Payment for order in Foxtrot for amount of @Model.Total UAH" />
+    <input type="hidden" name="LMI_PAYMENT_DESC" value="@description" />
     <input type="hidden" name="LMI_SYS_PAYMENT_ID" value="@Model.Id" />
-    <input type="hidden" name="LMI_SUCCESS_URL" value="https://api.foxtrot.com.ua/Paymaster/Result" />
-    <input type="hidden" name="LMI_FAIL_URL" value="https://api.foxtrot.com.ua/Paymaster/Result" />
+    <input type="hidden" name="LMI_SUCCESS_URL" value="@resultLink" />
+    <input type="hidden" name="LMI_FAIL_URL" value="@resultLink" />
     <input type="hidden" name="LMI_PAYMENT_NOTIFICATION_URL" value="" />
-    <!--<input type="hidden" name="LMI_PAYMENT_SYSTEM" value="21" />-->
-    <!--<input type="hidden" name="LMI_SIM_MODE" value="0" />-->
+    <input type="hidden" name="LMI_PAYMENT_SYSTEM" value="21" />
 </form>
 <script type="text/javascript">
-    document.forms["paymaster"].submit();
+    document.forms["payment"].submit();
 </script>

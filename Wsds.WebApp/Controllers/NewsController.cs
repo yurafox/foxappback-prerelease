@@ -1,13 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Wsds.DAL.Repository.Abstract;
 
-using System;//dmv
-
-
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/News")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class NewsController : Controller
     {
         private INewsRepository _newsRepo;

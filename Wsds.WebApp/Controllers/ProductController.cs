@@ -10,7 +10,7 @@ using Wsds.WebApp.Filters;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class ProductController : Controller
     {
         private readonly IProductRepository _prodRepo;

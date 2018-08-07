@@ -39,9 +39,10 @@ PUT product
             "barcode":{  
                "type":"text"
             },
-			"status":{
-			   "type":"long"
-			}, 
+      			"status":{
+      			   "type":"long"
+      			}, 
+      			
             "popularity":{  
                "type":"long"
             },
@@ -54,10 +55,21 @@ PUT product
             "valueQP":{
                 "type":"long"  
             },
-      		"suggest" : {
+      		 "suggest" : {
       			"type" : "completion",
       			"analyzer" : "standard"
-			},
+		        },
+		       "group":{  
+               "type":"object",
+               "properties":{  
+                  "id":{  
+                     "type":"long"
+                  },
+                  "name":{  
+                     "type":"keyword"
+                  }
+               }
+            },
             "groups":{  
                "type":"nested",
                "properties":{  

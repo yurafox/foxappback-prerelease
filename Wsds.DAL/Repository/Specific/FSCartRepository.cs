@@ -26,12 +26,16 @@ namespace Wsds.DAL.Repository.Specific
         private ICacheService<Quotation_Product_DTO> _csQProduct;
         private IProductRepository _prodRepo;
         private IQuotationProductRepository _qpRepo;
+        private readonly IFinRepository _finRepository;
+        private readonly IClientRepository _clientRepository;
         private IConnection _mqConn;
 
         public FSCartRepository(IClientRepository clRepo, 
                                 IConfiguration config,
                                 IProductRepository prodRepo,
                                 IQuotationProductRepository qpRepo,
+                                IFinRepository finRepository,
+                                IClientRepository clientRepository,
                                 IConnection mqConn,
                                 ICacheService<Quotation_Product_DTO> csQProduct)
         {
@@ -40,6 +44,8 @@ namespace Wsds.DAL.Repository.Specific
             _prodRepo = prodRepo;
             _qpRepo = qpRepo;
             _csQProduct = csQProduct;
+            _finRepository = finRepository;
+            _clientRepository = clientRepository;
             _mqConn = mqConn;
         }
 
@@ -267,6 +273,13 @@ namespace Wsds.DAL.Repository.Specific
                     .OrderByDescending(x => x.orderDate);
         }
 
+        public void UpdateClientOrder(ClientOrder_DTO order)
+        {
+            var cnfg = EntityConfigDictionary.GetConfig("client_order");
+            var prov = new EntityProvider<ClientOrder_DTO>(cnfg);
+            prov.UpdateItem(order);
+        }
+
         public SCNMethodResult<ClientOrder_DTO> SaveClientOrder(ClientOrder_DTO order, long clientId, long scn)
         {
             var confOrders = EntityConfigDictionary.GetConfig("client_order");
@@ -301,7 +314,7 @@ namespace Wsds.DAL.Repository.Specific
             var orderSpec = ordersSpecProv.GetItems("t.id_order = :idOrder", new OracleParameter("idOrder", ordId));
 
             foreach (var orderLine in orderSpec)
-            {
+            {   
                 var s = new CalcCartRequestT22_Item
                 {
                     pk_id = orderLine.id,
@@ -322,7 +335,7 @@ namespace Wsds.DAL.Repository.Specific
                 lptype = 2, //TODO ?
                 promocode = cartObj.promoCode,
                 bonpayamm = cartObj.maxBonusCnt,
-                dogrole = 12, //T22 constant 
+                dogrole = 30, // Интернет Фокстрот (T22 constant)
                 is_cred_prod = cartObj.creditProductId,
                 bait_bon = ((bool)cartObj.usePromoBonus) ? 1 : 0,
                 spec = itemsList
@@ -331,9 +344,9 @@ namespace Wsds.DAL.Repository.Specific
             var requestJson = JsonConvert.SerializeObject(calcCartRequestT22);
             //Debug.WriteLine(requestJson);
 
-            string res = "";
-            var ConnString = _config.GetConnectionString("MainDataConnection");
-            using (var con = new OracleConnection(ConnString))
+            var res = "";
+            var connString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(connString))
             using (var cmd = new OracleCommand("begin :result := foxstore.pkg_xml_json.get_SaleSpec_Js(:json, :key); end;", con))
             {
                 try
@@ -355,30 +368,41 @@ namespace Wsds.DAL.Repository.Specific
             var resp = JsonConvert.DeserializeObject<CalcCartResponseT22>(res);
 
             IList<CalculateCartResponse> lst = new List<CalculateCartResponse>();
+            if (resp == null)
+            {
+                return lst;
+            }
+            foreach (var item in resp.outspec)
+            {
+                if (item.pk_id == null)
+                    continue;
 
-            if (resp != null) { 
-                foreach (var item in resp.outspec) {
-                    var _promoCodeDisc = 0; // (item.promocode == "") ? 0 : Decimal.Parse(item.promocode, new CultureInfo("ru-RU"));
-                    var _bonusDisc = item.bonus_pay;
-                    var _promoBonusDisc = item.bonus_sp_pay;
-                    var _earnedBonus =item.bonus;
-                    var _pk = item.pk_id;
-                    var _qty = item.qty;
-
- 
-                    lst.Add(
-                                new CalculateCartResponse {
-                                    clOrderSpecProdId = _pk,
-                                    promoCodeDisc = _promoCodeDisc,
-                                    bonusDisc= _bonusDisc,
-                                    promoBonusDisc = _promoBonusDisc,
-                                    earnedBonus = _earnedBonus,
-                                    qty = _qty
-                                }
-                              );
-                }
+                var oldPrice = FindOrderSpecItemById(orderSpec, (long)item.pk_id).price;
+                lst.Add(
+                        new CalculateCartResponse {
+                            clOrderSpecProdId = item.pk_id,
+                            promoCode = item.promocode,
+                            promoCodeDisc = oldPrice - item.price,
+                            bonusDisc = item.bonus_pay,
+                            promoBonusDisc = item.bonus_sp_pay,
+                            earnedBonus = item.bonus,
+                            qty = item.qty
+                        }
+                        );
             }
             return lst;
+        }
+
+        private ClientOrderProduct_DTO FindOrderSpecItemById(IEnumerable<ClientOrderProduct_DTO> itemList, long id)
+        {
+            foreach (var item in itemList)
+            {
+                if (item.id == id)
+                {
+                    return item;
+                }
+            }
+            return new ClientOrderProduct_DTO();
         }
 
         private decimal GetShiippingTotal(long idOrder) {
@@ -388,6 +412,8 @@ namespace Wsds.DAL.Repository.Specific
                 .Sum(s => s.loDeliveryCost);
         }
 
+        private const string WorkExchange = "WorkExchange";
+        
         private void EnqueueOrder(ClientOrder_DTO order)
         {
             //var serializedOrder = "";
@@ -412,14 +438,12 @@ namespace Wsds.DAL.Repository.Specific
             };
 
             if (mqOrder != null) {
+                mqOrder.Client = _clientRepository.GetClientById(Convert.ToInt64(order.idClient));
+                mqOrder.PersonalInfo = _clientRepository.GetPersonById(Convert.ToInt64(order.idPerson));
+                mqOrder.PaymentMethod = _finRepository.PaymentMethod(order.idPaymentMethod ?? 0);
+                
                 using (var channel = _mqConn.CreateModel())
                 {
-                    channel.QueueDeclare(queue: "orders_queue",
-                                         durable: true,
-                                         exclusive: false,
-                                         autoDelete: false,
-                                         arguments: null);
-
                     byte[] body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(mqOrder));
 
                     var properties = channel.CreateBasicProperties();
@@ -427,8 +451,8 @@ namespace Wsds.DAL.Repository.Specific
                     properties.ContentType = "application/json";
                     properties.Type = mqOrder.GetType().AssemblyQualifiedName;
 
-                    channel.BasicPublish(exchange: "",
-                                         routingKey: "orders_queue",
+                    channel.BasicPublish(exchange: WorkExchange,
+                                         routingKey: "",
                                          basicProperties: properties,
                                          body: body);
                 }
@@ -470,13 +494,15 @@ namespace Wsds.DAL.Repository.Specific
                                             _bonusTotal = x.Sum(s => s.payBonusCnt * s.qty),
                                             _bonusEarned = x.Sum(s => s.earnedBonusCnt * s.qty)
                                          }
-                               );
-                    dbOrder.itemsTotal = sums.FirstOrDefault()._itemsTotal;
+                               )
+                        .FirstOrDefault();
+                    dbOrder.itemsTotal = sums._itemsTotal;
                     dbOrder.shippingTotal = GetShiippingTotal((long)dbOrder.id); //sums.FirstOrDefault()._shippingTotal;
-                    dbOrder.promoBonusTotal = sums.FirstOrDefault()._promoBonusTotal;
-                    dbOrder.bonusTotal = sums.FirstOrDefault()._bonusTotal;
-                    dbOrder.bonusEarned = sums.FirstOrDefault()._bonusEarned;
+                    dbOrder.promoBonusTotal = sums._promoBonusTotal;
+                    dbOrder.bonusTotal = sums._bonusTotal;
+                    dbOrder.bonusEarned = sums._bonusEarned;
                     dbOrder.total = dbOrder.itemsTotal + dbOrder.shippingTotal - dbOrder.promoBonusTotal - dbOrder.bonusTotal;
+                    dbOrder.orderDate = DateTime.Now;
 
                     if (
                         (dbOrder.itemsTotal == order.itemsTotal)

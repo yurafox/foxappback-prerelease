@@ -198,5 +198,66 @@ namespace Wsds.DAL.Repository.Specific
         {
             return _csEntOffice.Items.Values.Where(x => x.idLoEntity == idLoEntity && x.idCity == idCity);
         }
+
+        public IEnumerable<LoDeliveryTypeAttr_DTO> GetLoDeliveryTypesAttrByLoEntity(Shipment_DTO shpmt, long? loIdClientAddress)
+        {
+            var closCnfg = EntityConfigDictionary.GetConfig("client_order_product");
+            var prov = new EntityProvider<ClientOrderProduct_DTO>(closCnfg);
+
+            var sList = new List<DeliveryRequestT22_S_Date>();
+
+            foreach (var sh in shpmt.shipmentItems)
+            {
+                var s = new DeliveryRequestT22_S_Date();
+
+                var qp = prov.GetItem((long)sh.idOrderSpecProd).idQuotationProduct;
+                s.g_id = _csQProduct.Item((long)qp).idProduct;
+                s.iz_dozakupka = 0; //TODO??
+                sList.Add(s);
+            }
+
+            var del22_Date = new DeliveryRequestT22_Date();
+
+            del22_Date.sht_id = null;
+            del22_Date.shop_k_id = shpmt.idStorePlace;
+            del22_Date.fcity_id = 38044; //TODO
+            del22_Date.tcity_id = _clRepo.ClientAddress((long)loIdClientAddress).idCity;
+            del22_Date.seller_id = shpmt.idSupplier;
+            del22_Date.type_deliv = null;
+            del22_Date.cwh_id = shpmt.idLoEntityOffice;
+
+            del22_Date.spec = sList;
+
+            var requestJson = JsonConvert.SerializeObject(del22_Date);
+
+            string res = "";
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin :result := foxstore.pkg_xml_json.get_deliveryattr_js(:json); end;", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
+                    cmd.Parameters["result"].Size = 2000;
+                    cmd.Parameters.Add(new OracleParameter("json", requestJson));
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                    res = cmd.Parameters["result"].Value.ToString();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+
+            var resList = new List<LoDeliveryTypeAttr_DTO>();
+            var resp = JsonConvert.DeserializeObject<DeliveryResponseT22_AttrRoot>(res);
+
+            if (resp.shipments!=null)
+                foreach (DeliveryResponseT22_Attr rec in resp.shipments)
+                    resList.Add(new LoDeliveryTypeAttr_DTO(rec.sht_id, rec.type_deliv, rec.date));
+
+            return resList;
+        }
     }
 }

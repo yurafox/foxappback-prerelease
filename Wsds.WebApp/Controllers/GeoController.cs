@@ -10,7 +10,7 @@ using Wsds.WebApp.Attributes;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Geo")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class GeoController : Controller
     {
         private IGeoRepository _repo;

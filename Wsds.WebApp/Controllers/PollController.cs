@@ -13,7 +13,7 @@ using Wsds.WebApp.WebExtensions;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Poll")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class PollController : Controller
     {
         private readonly IPollRepository _pollRepository;

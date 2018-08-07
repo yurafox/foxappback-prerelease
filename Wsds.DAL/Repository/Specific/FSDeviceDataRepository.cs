@@ -31,7 +31,10 @@ namespace Wsds.DAL.Repository.Specific
             {
                 return prov.InsertItem(deviceData);
             }
-            else return null;
+            else {
+                deviceData.id = devices.First().id;
+                return prov.UpdateItem(deviceData);
+            }
         }
     }
 }

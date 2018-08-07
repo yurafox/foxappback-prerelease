@@ -16,7 +16,7 @@ using Wsds.WebApp.WebExtensions;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/LO")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class LOController : Controller
     {
         private ILORepository _loRepo;
@@ -62,6 +62,12 @@ namespace Wsds.WebApp.Controllers
         [HttpPost("LoEntityOfficesByLoEntityAndCity")]
         public IActionResult GetLoEntityOfficesByLoEntityAndCity([FromBody] LoEntityOfficesByLoEntityAndCityRequest model) 
                 => Ok(_loRepo.GetLoEntityOfficesByLoEntityAndCity(model.idLoEntity, model.idCity));
+
+        [HttpPost("LoDeliveryTypesAttrByLoEntity")]
+        public IActionResult GetLoDeliveryTypesAttrByLoEntity([FromBody] DeliveryRequest model)
+        {
+            return Ok(_loRepo.GetLoDeliveryTypesAttrByLoEntity(model.shpmt, model.loIdClientAddress));
+        }
 
     }
 }

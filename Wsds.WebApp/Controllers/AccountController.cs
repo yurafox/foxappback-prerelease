@@ -14,7 +14,7 @@ using Wsds.WebApp.WebExtensions;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class AccountController : Controller
     {
         private const string CompName = "AccountController";

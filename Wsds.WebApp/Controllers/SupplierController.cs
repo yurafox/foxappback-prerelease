@@ -10,7 +10,7 @@ using Wsds.DAL.Repository.Abstract;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Supplier")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class SupplierController : Controller
     {
         private readonly ISupplierRepository _repo;

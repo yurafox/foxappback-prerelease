@@ -8,7 +8,7 @@ using Wsds.WebApp.WebExtensions;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Reviews")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class ReviewController : Controller
     {
         private IClientRepository _cRepo;

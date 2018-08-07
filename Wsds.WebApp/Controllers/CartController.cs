@@ -16,7 +16,7 @@ using Wsds.WebApp.WebExtensions;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Cart")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class CartController : Controller
     {
         private ICartRepository _cartRepo;

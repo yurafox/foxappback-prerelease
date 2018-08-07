@@ -9,7 +9,7 @@ namespace Wsds.WebApp.Models
         public string Phone { get; set; }
 
         [Required]
-        [RegularExpression(@"\d{5,6}")]
+        [RegularExpression(@"\d{3,6}")]
         public string Password { get; set; }
 
     }

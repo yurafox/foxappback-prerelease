@@ -11,7 +11,7 @@ using Wsds.WebApp.Attributes;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/QuotationProduct")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class QuotationProductController : Controller
     {
         private readonly IQuotationProductRepository _repo;

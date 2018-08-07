@@ -4,7 +4,7 @@ using Wsds.DAL.Repository.Abstract;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/MeasureUnit")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class MeasureUnitController : Controller
     {
         private readonly IMeasureUnitRepository _repo;

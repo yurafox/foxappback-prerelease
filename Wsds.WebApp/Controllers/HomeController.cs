@@ -6,6 +6,9 @@ using Wsds.WebApp.WebExtensions;
 
 namespace Wsds.WebApp.Controllers
 {
+    [Route("")]
+    [Route("api")]
+    [Route("api/v{version:apiVersion}")]
     public class HomeController : Controller
     {
         #region init cash on instance app
@@ -23,8 +26,8 @@ namespace Wsds.WebApp.Controllers
 
         public IActionResult Index()
         {
-            string dateTime = System.DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");  
-            _serilog.Information($"===== The Index method of HomeController was invoked at {dateTime} =====");
+            //string dateTime = System.DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");  
+            //_serilog.Information($"===== The Index method of HomeController was invoked at {dateTime} =====");
             return View().GetRawContent(TemplateEnum.Home);
         }
     }

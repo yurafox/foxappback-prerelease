@@ -9,6 +9,7 @@ namespace Wsds.DAL.Entities.Communication
     public class CalculateCartResponse
     {
         public long? clOrderSpecProdId { get; set; }
+        public string promoCode { get; set; }
         public decimal? promoCodeDisc { get; set; }
         public decimal? bonusDisc { get; set; }
         public decimal? promoBonusDisc { get; set; }

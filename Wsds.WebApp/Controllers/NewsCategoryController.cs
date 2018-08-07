@@ -4,7 +4,7 @@ using Wsds.DAL.Repository.Abstract;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/NewsCategory")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class NewsCategoryController : Controller
     {
         private INewsCategoryRepository _newsRepo;

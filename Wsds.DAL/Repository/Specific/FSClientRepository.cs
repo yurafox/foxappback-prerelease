@@ -25,10 +25,12 @@ namespace Wsds.DAL.Repository.Specific
     {
         private readonly ICacheService<Client_DTO> _csClient;
         private readonly IConfiguration _config;
+        private IProductRepository _prodRepo;
 
-        public FSClientRepository(ICacheService<Client_DTO> csClient, IConfiguration config) {
+        public FSClientRepository(ICacheService<Client_DTO> csClient, IConfiguration config, IProductRepository prodRepo) {
             _csClient = csClient;
             _config = config;
+            _prodRepo = prodRepo;
         }
         public IEnumerable<Client_DTO> Clients => _csClient.Items.Values;
 
@@ -127,12 +129,8 @@ namespace Wsds.DAL.Repository.Specific
         {
             var ConnString = _config.GetConnectionString("MainDataConnection");
             using (var con = new OracleConnection(ConnString))
-            using (var cmd = new OracleCommand("begin " +
-                                               "insert into PRODUCT_VIEW_HISTORY " +
-                                               "(id, id_client, id_product, date_of_view, view_params) " +
-                                               "values " +
-                                               "(seq_PRODUCT_VIEW_HISTORY.nextval, :idClient, :idProduct, sysdate, :viewParams); " +
-                                               "commit; end;", con))
+
+            using (var cmd = new OracleCommand("begin data_utils.StoreProductViewHistory(clientId =>:idClient, productId => :idProduct, viewParams => :viewParams); end;", con))
             {
                 try
                 {
@@ -286,6 +284,45 @@ namespace Wsds.DAL.Repository.Specific
             return clientList;
         }
 
+
+        public Client_DTO GetClientById(long id)
+        {
+            var clientList = new List<Client_DTO>();
+            string res = "";
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("begin :result := app_core.getClientById(:id); end;", con))
+            {
+                try
+                {
+                    cmd.Parameters.Add("result", OracleDbType.Varchar2, ParameterDirection.Output);
+                    cmd.Parameters["result"].Size = 2000;
+                    cmd.Parameters.Add(new OracleParameter("id", id));
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                    res = cmd.Parameters["result"].Value.ToString();
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+
+            if (String.IsNullOrEmpty(res))
+                return null;
+
+            var client = JsonConvert.DeserializeObject<Client_DTO>(res);
+
+
+            if (client?.id != null)
+            {
+                var applicationKey = GetApplicationKeyByClientId(client.id.Value);
+                client.appKey = applicationKey?.key;
+            }
+
+            return client;
+        }
+
         public Client_DTO CreateOrUpdateClient(Client_DTO client)
         {
             if (client == null) return null;
@@ -370,6 +407,39 @@ namespace Wsds.DAL.Repository.Specific
                 var response = client.GetAsync(String.Format(UrlConstants.CallMeServiceUrl, phone.Substring(2,10))).Result;
 
             }
+        }
+
+        public IEnumerable<Product_DTO> GetProductsView(long clientId)
+        {
+            var ConnString = _config.GetConnectionString("MainDataConnection");
+
+            List<Product_DTO> res = new List<Product_DTO>();
+            using (var con = new OracleConnection(ConnString))
+            using (var cmd = new OracleCommand("select id_product from PRODUCT_VIEW_HISTORY t " +
+                                               "where t.id_client = :idClient " +
+                                               "order by t.date_of_view desc " +
+                                               "fetch first 20 rows only", con))
+            {
+                try
+                {
+                    con.Open();
+                    cmd.Parameters.Add(new OracleParameter("idClient", clientId));
+ 
+                    var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var productId = (long)reader["id_product"];
+
+                        Product_DTO product = _prodRepo.Product(productId);
+                        res.Add(product);
+                    };
+                }
+                finally
+                {
+                    con.Close();
+                }
+            };
+            return res;
         }
 
     }

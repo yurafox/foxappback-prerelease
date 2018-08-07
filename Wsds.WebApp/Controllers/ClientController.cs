@@ -16,7 +16,7 @@ using Wsds.WebApp.WebExtensions;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Client")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class ClientController : Controller
     {
         private IClientRepository _cliRepo;
@@ -162,6 +162,14 @@ namespace Wsds.WebApp.Controllers
             _cliRepo.CallMe(phone);
             return Ok(null);
         }
-
+        
+        [Authorize]
+        [HttpGet("GetProductsView")]
+        [PullToken]
+        public IActionResult GetProductsView()
+        {
+            var tModel = HttpContext.GetTokenModel();
+            return Ok(_cliRepo.GetProductsView(tModel.ClientId));
+        }
     }
 }

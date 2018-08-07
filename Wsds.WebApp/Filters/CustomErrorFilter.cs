@@ -12,9 +12,11 @@ namespace Wsds.WebApp.Filters
         public CustomErrorFilter(ILogger logger)
         {
             _serilog = logger;
-            _serilog.Warning("=====================================================================");
-            _serilog.Warning("==== Serilog pushed this message. CustomErrorFilter was invoked. ====");
-            _serilog.Warning("=====================================================================");
+            //disabled for the prod mode, activate only for development mode
+            //_serilog.Warning("=====================================================================");
+            //_serilog.Warning("==== Serilog pushed this message. CustomErrorFilter was invoked. ====");
+            //_serilog.Warning("=====================================================================");
+
         }
         public override void OnException(ExceptionContext context)
         {

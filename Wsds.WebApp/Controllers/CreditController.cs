@@ -10,7 +10,7 @@ using Wsds.WebApp.Attributes;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Credit")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class CreditController : Controller
     {
         private ICreditRepository _crRepo;

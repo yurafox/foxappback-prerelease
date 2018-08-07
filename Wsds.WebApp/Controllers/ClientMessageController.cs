@@ -10,7 +10,7 @@ using Wsds.DAL.Entities.DTO;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/ClientMessage")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class ClientMessageController : Controller
     {
         private IClientRepository _cRepo;

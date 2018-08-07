@@ -28,11 +28,13 @@ namespace Wsds.DAL.Repository.Abstract
         void DeleteClientAddress(long id);
         Client_DTO GetClientByPhone(string phone);
         IEnumerable<Client_DTO> GetClientsByPhone(string phone);
+        Client_DTO GetClientById(long id);
         IEnumerable<StorePlace_DTO> GetFavoriteStore(long clientId);
         Client_DTO CreateOrUpdateClient(Client_DTO client);
         AppKeys_DTO GetApplicationKeyByClientId(long idClient);
         AppKeys_DTO CreateApplicationKey(AppKeys_DTO key);
         IEnumerable<ClientOrderDatesRange_DTO> GetClientOrderDatesRanges(DateTime clientCreatedDate);
         void CallMe(string phone);
+        IEnumerable<Product_DTO> GetProductsView(long clientId);
     }
 }

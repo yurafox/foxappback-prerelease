@@ -10,7 +10,7 @@ using Wsds.DAL.Entities;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/SaveReview")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class SaveReviewController : Controller
     {
         private IClientRepository _cRepo;

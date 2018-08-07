@@ -16,7 +16,6 @@ using Wsds.DAL.Repository.Specific;
 using Wsds.WebApp.Auth;
 using Microsoft.AspNetCore.HttpOverrides;
 using CachingFramework.Redis;
-using Wsds.DAL.Repository;
 using Wsds.DAL.Entities.DTO;
 using Wsds.DAL.Infrastructure.Facade;
 using StackExchange.Redis;
@@ -24,13 +23,10 @@ using Wsds.DAL.Services.Abstract;
 using Wsds.DAL.Services.Specific;
 using Wsds.WebApp.Auth.Protection;
 using RabbitMQ.Client;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Serilog;
-using Serilog.Sinks;
-using System.IO;
 using Wsds.WebApp.Filters;
-using System.Diagnostics;
-using System.Text;
+using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Wsds.WebApp
 {
@@ -38,21 +34,21 @@ namespace Wsds.WebApp
     {
         private IHostingEnvironment _environment;
         public IConfigurationRoot Configuration { get; }
+        private Version _apiVersion;
 
         public Startup(IHostingEnvironment env)
         {
             _environment = env;
+            _apiVersion = typeof(Startup).Assembly.GetName().Version;
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
-
-
             Configuration = builder.Build();
-            
-             #region Serilog Configuration https://serilog.net/
+
+            #region Serilog Configuration https://serilog.net/
 
             string environment = "dev";
 
@@ -62,19 +58,29 @@ namespace Wsds.WebApp
 
             var seqConfig = Configuration.GetSection("SeqConfig").GetSection(environment);
             var seqServer = seqConfig["host"];
-                         
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
-                .WriteTo.RollingFile(Path.Combine(env.ContentRootPath, "Logs\\log-{Date}.log"))
                 .WriteTo.Console()
                 .WriteTo.Seq(seqServer) //it can be either http://dit-seq-10-80:5341/#/events or http://localhost:5341
                 .CreateLogger();
+
             #endregion
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // add versioning
+            services.AddApiVersioning(options =>
+            {
+                options.ApiVersionReader = new QueryStringApiVersionReader();
+                options.ReportApiVersions = false;
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.ApiVersionSelector = new CurrentImplementationApiVersionSelector(options);
+                options.DefaultApiVersion = new ApiVersion(_apiVersion.Major, _apiVersion.Minor);
+            });
+
+            // fox ssl enable
             services.AddMvc(options =>
             {
                 //options.Filters.Add(new RequireHttpsAttribute());
@@ -131,6 +137,17 @@ namespace Wsds.WebApp
             services.AddSingleton<IConnection>(rabbitConnection);
 
             #region EntityProvider section
+            
+            EntityConfigDictionary.AddConfig("client_credit_cards",
+                new EntityConfig(mainDataConnString)
+                    .AddSqlCommandSelect("select t.id, Serialization.CreditCards2Json(t.id) as value from client_credit_cards t")
+                    .SetKeyField("id")
+                    .SetValueField("value")
+                    .SetSerializerFunc("Serialization.CreditCards2Json")
+                    .SetSequence("SEQ_CLIENT_CREDIT_CARDS")
+                    .SetBaseTable("CLIENT_CREDIT_CARDS")
+                );
+
             EntityConfigDictionary.AddConfig("lo_entity_delivery_type",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.id, Serialization.LoEntityDeliveryType2Json(t.id) as value " +
@@ -553,11 +570,11 @@ namespace Wsds.WebApp
 
             EntityConfigDictionary.AddConfig("product_groups",
                 new EntityConfig(mainDataConnString)
-                    .AddSqlCommandSelect("SELECT t.id, Serialization_Branch.ProductGroups2Json(t.id) as value from product_groups t")
+                    .AddSqlCommandSelect("SELECT t.id, Serialization_Branch.ProductGroups2Json_2(t.id) as value from v_product_groups_tree t")
                     .AddSqlCommandWhere($"where t.id_product_cat ={virtualCatalogId} and t.is_active=1")
                     .SetKeyField("id")
                     .SetValueField("value")
-                    .SetSerializerFunc("Serialization_Branch.ProductGroups2Json")
+                    .SetSerializerFunc("Serialization_Branch.ProductGroups2Json_2")
             );
 
             EntityConfigDictionary.AddConfig("product_reviews",
@@ -683,7 +700,7 @@ namespace Wsds.WebApp
                 .SetValueField("value")
                 );
 
-             EntityConfigDictionary.AddConfig("news",
+            EntityConfigDictionary.AddConfig("news",
                 new EntityConfig(mainDataConnString)
                     .AddSqlCommandSelect("select t.id, Serialization.News2Json(id) as value from news t")
                     .AddSqlCommandWhere("where t.is_active=1")
@@ -697,7 +714,7 @@ namespace Wsds.WebApp
                     .AddSqlCommandSelect("select t.id, Serialization.NewsCategory2Json(id) as value from news_category t")
                     .SetKeyField("id")
                     .SetValueField("value")
-                    .SetSerializerFunc("Serialization.News2Json")
+                    .SetSerializerFunc("Serialization.NewsCategory2Json")
             );
 
             #endregion
@@ -760,6 +777,8 @@ namespace Wsds.WebApp
             services.AddScoped<ILegalPolicyRepository, FSLegalPolicyRepository>();
             services.AddScoped<INewsRepository, FSNewsRepository>();
             services.AddScoped<INewsCategoryRepository, FSNewsCategoryRepository>();
+            services.AddScoped<ICreditCardRepository, FSCreditCardRepository>();
+            services.AddScoped<ISaleRmmRepository, FSSaleRmmRepository>();
             //services.AddScoped<IDictionaryRepository, FSDictionaryRepository>();
             //services.AddScoped<IOrdersRepository, FSOrdersRepository>();
             //services.AddScoped<IUserRepository, FSUserRepository>();
@@ -889,7 +908,7 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoEntityDeliveryType_DTO>),
                 p => new CacheService<LoEntityDeliveryType_DTO>
                     ("lo_entity_delivery_type", 12000000, redisCache), ServiceLifetime.Singleton));
-            
+
             services.Add(new ServiceDescriptor(typeof(ICacheService<News_DTO>),
                 p => new CacheService<News_DTO>
                    ("news", 12000000, redisCache, true), ServiceLifetime.Singleton));
@@ -897,7 +916,7 @@ namespace Wsds.WebApp
             services.Add(new ServiceDescriptor(typeof(ICacheService<NewsCategory_DTO>),
                 p => new CacheService<NewsCategory_DTO>
                    ("news_category", 12000000, redisCache, true), ServiceLifetime.Singleton));
-            
+
             // add roles
             IdentityInit(services.BuildServiceProvider()).Wait();
         }
@@ -917,12 +936,11 @@ namespace Wsds.WebApp
 
             app.UseCors("AnyOrigin");
             app.UseJwtBearerAuthentication(AuthOpt.InitToken(Configuration.GetSection("AuthToken")));
-            //app.UseBufferedResponseBody();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "api/v{version:apiVersion}/{controller=Home}/{action=Index}/{id?}");
             });
 
         }

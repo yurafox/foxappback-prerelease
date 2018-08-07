@@ -6,7 +6,7 @@ using Wsds.DAL.Entities.DTO;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/AppLocalization")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class AppLocalizationController : Controller
     {
         private IAppLocalizationRepository _alRepo;

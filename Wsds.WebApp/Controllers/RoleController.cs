@@ -12,7 +12,7 @@ namespace Wsds.WebApp.Controllers
 {
     [Authorize(Roles = "admin")]
     [Produces("application/json")]
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class RoleController : Controller
     {
         private readonly IRoleRepository _roleRepository;

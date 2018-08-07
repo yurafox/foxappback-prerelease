@@ -32,5 +32,7 @@ namespace Wsds.DAL.Entities
         public long? actionList { get; set; }
         [FieldBinding(Field = "action_title")]
         public string actionTitle { get; set; }
+        [FieldBinding(IsTransient = true)]
+        public Quotation_Product_DTO quotationProduct;
     }
 }

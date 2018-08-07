@@ -22,6 +22,12 @@ namespace Wsds.DAL.Entities.Communication
         public long delivTypeId { get; set; }
     }
 
+    public class DeliveryRequest
+    {
+        public long loIdClientAddress { get; set; }
+        public Shipment_DTO shpmt { get; set; }
+    }
+
     public class DeliveryDateRequest
     {
         public long loEntity { get; set; }
@@ -46,6 +52,7 @@ namespace Wsds.DAL.Entities.Communication
     public class DeliveryRequestT22_Date
     {
         public long? sht_id { get; set; }
+        public long? shop_k_id { get; set; }
         public long? fcity_id { get; set; }
         public long? tcity_id { get; set; }
         public long? seller_id { get; set; }

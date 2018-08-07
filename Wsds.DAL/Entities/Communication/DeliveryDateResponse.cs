@@ -26,4 +26,16 @@ namespace Wsds.DAL.Entities.Communication
         public string deliv_date { get; set; }
         //public IEnumerable<DeliveryResponseT22_S_Date> spec { get; set; }
     }
+
+    public class DeliveryResponseT22_Attr
+    {
+        public int sht_id { get; set; }
+        public int type_deliv { get; set; }
+        public string date { get; set; }
+    }
+
+    public class DeliveryResponseT22_AttrRoot
+    {
+        public List<DeliveryResponseT22_Attr> shipments { get; set; }
+    }
 }

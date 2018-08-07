@@ -10,7 +10,7 @@ using Wsds.DAL.Entities.DTO;
 namespace Wsds.WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/DeviceData")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class DeviceDataController : Controller
     {
         private IDeviceDataRepository _ddRepo;

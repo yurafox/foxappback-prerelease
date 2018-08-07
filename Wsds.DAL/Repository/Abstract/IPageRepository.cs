@@ -10,5 +10,6 @@ namespace Wsds.DAL.Repository.Abstract
     public interface IPageRepository
     {
         Page_DTO GetPageById(long id);
+        string GetPageOptions(long id);
     }
 }

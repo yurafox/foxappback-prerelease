@@ -5,7 +5,7 @@ using Wsds.DAL.Repository.Abstract;
 
 namespace Wsds.WebApp.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class CurrencyController : Controller
     {
         private readonly ICurrencyRepository _repo;
