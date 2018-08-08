@@ -9,7 +9,7 @@
 @{
     string description = $"Заказ #{Model.Id} на сумму {Model.Total} грн";
     string versionString = typeof(Wsds.WebApp.Startup).Assembly.GetName().Version.ToString().Remove(3);
-    string resultLink = $"https://fma-api.foxtrot.com.ua/api/v{versionString}/Payment/Result";
+    string resultLink = $"https://fma-lb.foxtrot.com.ua/api/v{versionString}/Payment/Result";
 }
 
 <form action="https://lmi.paysoft.solutions/" method="post" id="payment" name="payment">
