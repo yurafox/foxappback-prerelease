@@ -9,6 +9,7 @@
   <PropertyGroup>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,7 +41,6 @@
     <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
     <PackageReference Include="CachingFramework.Redis" Version="7.5.0" />
     <PackageReference Include="System.ValueTuple" Version="4.4.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Version="1.1.2" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Wsds.WebApp.Models;
+using Wsds.WebApp.TempTemplate;
+using Wsds.WebApp.WebExtensions;
 
 namespace Wsds.WebApp.Controllers
 {
@@ -14,7 +16,8 @@ namespace Wsds.WebApp.Controllers
                 return BadRequest("Ошибка состояния данных в запросе к платежной системе");
 
 
-            return View("Payment", payment);
+            return View("Payment")
+                  .GetRawContent(TemplateEnum.PayMasterPayment, payment);
         }
 
         [HttpGet("result")]
@@ -25,8 +28,8 @@ namespace Wsds.WebApp.Controllers
                 return BadRequest("ошибка ответа от платежной системы");
             }
 
-            ViewBag.Result = paymentReceiver.GetResultVerification();
-            return View("Result");
+            var result = paymentReceiver.GetResultVerification();
+            return View("Result").GetRawContent(TemplateEnum.PayMasterResult, result);
         }
     }
 }

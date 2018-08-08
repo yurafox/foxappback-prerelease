@@ -967,31 +967,13 @@ namespace Wsds.WebApp
             ConfigurationOptions redisConfig = null;
 
             // working pre-processor
-            #if DEBUG
+           #if DEBUG
              redisConfig = new ConfigurationOptions() {EndPoints = {{"localhost", 6379}}};
 
-            #else
-            var endPointCollection = new EndPointCollection();
-
-            var configSection = Configuration.GetSection("RedisConfig").GetChildren();
-            foreach (var nodeSection in configSection)
-            {
-                endPointCollection.Add(nodeSection["host"], Convert.ToInt32(nodeSection["port"]));
-            }
-            
-            redisConfig = new ConfigurationOptions
-            {
-                EndPoints = // EndPoint - don't have a setter method. Working with initialization block
-                {
-                    endPointCollection[0],
-                    endPointCollection[1],
-                    endPointCollection[2],
-                    endPointCollection[3],
-                    endPointCollection[4],
-                    endPointCollection[5]
-
-                }
-            };
+           #else
+            var redisSection = Configuration.GetSection("RedisConfig");
+            redisConfig = new ConfigurationOptions() {
+                EndPoints = {{redisSection["host"], Convert.ToInt32(redisSection["port"])}}};
             #endif
 
             redisConfig.SyncTimeout = int.MaxValue;

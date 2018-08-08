@@ -26,10 +26,10 @@ namespace Wsds.WebApp.WebExtensions
             return context.Items["settings"] as SettingsModel;
         }
 
-        public static ContentResult GetRawContent(this ViewResult result, TemplateEnum template)
+        public static ContentResult GetRawContent(this ViewResult result, TemplateEnum template, object model=null)
         {
             var templFact = new TemplateFactory();
-            var content = templFact.GetTemplate(template);
+            var content = templFact.GetTemplate(template,model);
             return new ContentResult() { Content = content, ContentType = "text/html"};
         }
     }
