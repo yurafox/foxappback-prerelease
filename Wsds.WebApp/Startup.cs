@@ -90,7 +90,7 @@ namespace Wsds.WebApp
             // fox add code for close many http redirects
             services.Configure<ForwardedHeadersOptions>(options =>
             {
-                options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
             });
 
             // fox cors options
@@ -935,6 +935,12 @@ namespace Wsds.WebApp
             app.UseStatusCodePages();
 
             app.UseCors("AnyOrigin");
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+
             app.UseJwtBearerAuthentication(AuthOpt.InitToken(Configuration.GetSection("AuthToken")));
             app.UseMvc(routes =>
             {
