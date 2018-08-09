@@ -38,15 +38,14 @@ namespace Wsds.WebApp.Controllers
                 else
                 {
                     var user = await _account.Users.UserEngine.FindByNameAsync(auth.Phone.ToLower());
-                    var roles = await _account.Users.UserEngine.GetRolesAsync(user);
-                    //var roles = await _userRepository.UserEngine.GetRolesAsync(user);
+                    //var roles = await _account.Users.UserEngine.GetRolesAsync(user);
 
                     // get clients
                     var client = _account.Clients.GetClientByPhone(user.UserName);
                     if (client?.id != null)
                     {
                         // get token
-                        var jToken = AuthOpt.GetToken(user,client.id,roles);
+                        var jToken = AuthOpt.GetToken(user,client.id/*roles*/);
                   
                         var responseObj = new
                         {
