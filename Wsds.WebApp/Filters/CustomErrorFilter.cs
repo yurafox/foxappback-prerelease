@@ -23,7 +23,7 @@ namespace Wsds.WebApp.Filters
             var exception = context.Exception;
             var actionName = context.ActionDescriptor.DisplayName;
 
-            _serilog.Error($"Serilog pushed this message. An {exception.Message} Error occurred in the {actionName} action." +
+            _serilog.Error($"Linux-Serilog pushed this message. An {exception.Message} Error occurred in the {actionName} action." +
                            $"That is the context of the Exception:" + Environment.NewLine + 
                            $"{ context.Exception}"
                            );
