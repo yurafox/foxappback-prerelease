@@ -25,8 +25,9 @@ namespace Wsds.DAL.Repository.Specific
         {
             string res = null;
             var ConnString = _config.GetConnectionString("MainDataConnection");
+            var replacePattern = "replace(article, '<img src=\"img.aspx?id=', '<img src=\"http://www.foxtrot.com.ua/img.aspx?id=')";
             using (var con = new OracleConnection(ConnString))
-            using (var cmd = new OracleCommand("select t.article from news t where t.id = :id", con))
+            using (var cmd = new OracleCommand($"select {replacePattern} as article from news t where t.id = :id", con))
             {
                 try
                 {
