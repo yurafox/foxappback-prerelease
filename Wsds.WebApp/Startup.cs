@@ -60,7 +60,7 @@ namespace Wsds.WebApp
             var seqServer = seqConfig["host"];
 
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
+                .MinimumLevel.Error()
                 .WriteTo.Console()
                 .WriteTo.Seq(seqServer) //it can be either http://dit-seq-10-80:5341/#/events or http://localhost:5341
                 .CreateLogger();
