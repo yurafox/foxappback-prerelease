@@ -27,6 +27,9 @@ using Serilog;
 using Wsds.WebApp.Filters;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Collections.Generic;
+using Wsds.WebApp.Models;
 
 namespace Wsds.WebApp
 {
@@ -785,137 +788,176 @@ namespace Wsds.WebApp
             //services.AddScoped<IRoleRepository, FSRoleRepository>();
             //services.AddScoped<IBrandRepository, FSBrandRepository>();
 
+            #region singleton options config
+            var singl = new Dictionary<string, SingletonOption>();
+            Configuration.GetSection("SingletonOptions").Bind(singl);
+
             services.Add(new ServiceDescriptor(typeof(ICacheService<AppParam_DTO>),
                     p => new CacheService<AppParam_DTO>
-                    ("app_params", 100000, redisCache, true), ServiceLifetime.Singleton));
+                    ("app_params", singl["app_params"].RefreshTime, redisCache, singl["app_params"].PreLoad ),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Client_DTO>),
                     p => new CacheService<Client_DTO>
-                    ("client", 1000000, redisCache, false), ServiceLifetime.Singleton));
+                     ("client", singl["client"].RefreshTime, redisCache, singl["client"].PreLoad),
+                     ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Quotation_DTO>),
                     p => new CacheService<Quotation_DTO>
-                    ("quotation", 1000000, redisCache), ServiceLifetime.Singleton));
+                    ("quotation", singl["quotation"].RefreshTime, redisCache, singl["quotation"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoEntity_DTO>),
                     p => new CacheService<LoEntity_DTO>
-                    ("loentity", 100000000, redisCache), ServiceLifetime.Singleton));
+                    ("loentity", singl["loentity"].RefreshTime, redisCache, singl["loentity"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Enum_Pmt_Method_DTO>),
                     p => new CacheService<Enum_Pmt_Method_DTO>
-                    ("pmtmethod", 50000000, redisCache), ServiceLifetime.Singleton));
+                    ("pmtmethod", singl["pmtmethod"].RefreshTime, redisCache, singl["pmtmethod"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Country_DTO>),
                     p => new CacheService<Country_DTO>
-                    ("country", 51000000, redisCache), ServiceLifetime.Singleton));
+                    ("country", singl["country"].RefreshTime, redisCache, singl["country"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<City_DTO>),
                     p => new CacheService<City_DTO>
-                    ("city", 5000000, redisCache, true), ServiceLifetime.Singleton));
+                     ("city", singl["city"].RefreshTime, redisCache, singl["city"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Region_DTO>),
                     p => new CacheService<Region_DTO>
-                    ("region", 500000000, redisCache, true), ServiceLifetime.Singleton));
+                     ("region", singl["region"].RefreshTime, redisCache, singl["region"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Lang_DTO>),
                     p => new CacheService<Lang_DTO>
-                    ("lang", 50000000, redisCache), ServiceLifetime.Singleton));
+                    ("lang", singl["lang"].RefreshTime, redisCache, singl["lang"].PreLoad),
+                    ServiceLifetime.Singleton));
+
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Measure_Unit_DTO>),
                     p => new CacheService<Measure_Unit_DTO>
-                    ("measure_unit", 3200000, redisCache), ServiceLifetime.Singleton));
+                   ("measure_unit", singl["measure_unit"].RefreshTime, redisCache, singl["measure_unit"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Product_DTO>),
                     p => new CacheService<Product_DTO>
-                    ("products", 3600000, redisCache, false), ServiceLifetime.Singleton));
+                    ("products", singl["products"].RefreshTime, redisCache, singl["products"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Currency_DTO>),
                     p => new CacheService<Currency_DTO>
-                    ("currencies", 2000000, redisCache), ServiceLifetime.Singleton));
+                   ("currencies", singl["currencies"].RefreshTime, redisCache, singl["currencies"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Supplier_DTO>),
                     p => new CacheService<Supplier_DTO>
-                    ("suppliers", 100000, redisCache), ServiceLifetime.Singleton));
+                    ("suppliers", singl["suppliers"].RefreshTime, redisCache, singl["suppliers"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Manufacturer_DTO>),
                     p => new CacheService<Manufacturer_DTO>
-                    ("manufacturers", 600000, redisCache), ServiceLifetime.Singleton));
+                    ("manufacturers", singl["manufacturers"].RefreshTime, redisCache, singl["manufacturers"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Quotation_Product_DTO>),
                     p => new CacheService<Quotation_Product_DTO>
-                    ("quotation_product", 620000, redisCache, false), ServiceLifetime.Singleton));
+                   ("quotation_product", singl["quotation_product"].RefreshTime, redisCache, singl["quotation_product"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Product_Groups_DTO>),
                 p => new CacheService<Product_Groups_DTO>
-                    ("product_groups", 620000, redisCache, true), ServiceLifetime.Singleton));
+                    ("product_groups", singl["product_groups"].RefreshTime, redisCache, singl["product_groups"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<StorePlace_DTO>),
                 p => new CacheService<StorePlace_DTO>
-                    ("store_place", 1000000, redisCache, true), ServiceLifetime.Singleton));
+                    ("store_place", singl["store_place"].RefreshTime, redisCache, singl["store_place"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Store_DTO>),
                 p => new CacheService<Store_DTO>
-                    ("stores", 10000000, redisCache), ServiceLifetime.Singleton));
+                     ("stores", singl["stores"].RefreshTime, redisCache, singl["stores"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoSupplEntity_DTO>),
                 p => new CacheService<LoSupplEntity_DTO>
-                    ("lo_suppl_entity", 7200000, redisCache, true), ServiceLifetime.Singleton));
+                   ("lo_suppl_entity", singl["lo_suppl_entity"].RefreshTime, redisCache, singl["lo_suppl_entity"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<CreditProduct_DTO>),
                 p => new CacheService<CreditProduct_DTO>
-                    ("credit_product", 7200000, redisCache, true), ServiceLifetime.Singleton));
+                    ("credit_product", singl["credit_product"].RefreshTime, redisCache, singl["credit_product"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<ProductReview_DTO>),
                 p => new CacheService<ProductReview_DTO>
-                    ("product_reviews", 10000000, redisCache), ServiceLifetime.Singleton));
+                    ("product_reviews", singl["product_reviews"].RefreshTime, redisCache, singl["product_reviews"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<StoreReview_DTO>),
                 p => new CacheService<StoreReview_DTO>
-                    ("store_reviews", 10000000, redisCache), ServiceLifetime.Singleton));
+                    ("store_reviews", singl["store_reviews"].RefreshTime, redisCache, singl["store_reviews"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<NoveltyDetails_DTO>),
                 p => new CacheService<NoveltyDetails_DTO>
-                    ("novelty_details", 1000000, redisCache, true), ServiceLifetime.Singleton));
+                   ("novelty_details", singl["novelty_details"].RefreshTime, redisCache, singl["novelty_details"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Page_DTO>),
                 p => new CacheService<Page_DTO>
-                    ("pages", 10000000, redisCache, true), ServiceLifetime.Singleton));
+                    ("pages", singl["pages"].RefreshTime, redisCache, singl["pages"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Action_DTO>),
                 p => new CacheService<Action_DTO>
-                    ("actions", 10000000, redisCache, true), ServiceLifetime.Singleton));
+                    ("actions", singl["actions"].RefreshTime, redisCache, singl["actions"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<BannerSlide_DTO>),
                 p => new CacheService<BannerSlide_DTO>
-                    ("banner_slides", 600000, redisCache, true), ServiceLifetime.Singleton));
+                    ("banner_slides", singl["banner_slides"].RefreshTime, redisCache, singl["banner_slides"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<Localization_DTO>),
                 p => new CacheService<Localization_DTO>
-                    ("global_localization", 600000, redisCache), ServiceLifetime.Singleton));
+                    ("global_localization", singl["global_localization"].RefreshTime, redisCache, singl["global_localization"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<CurrencyRate_DTO>),
                 p => new CacheService<CurrencyRate_DTO>
-                    ("currency_rate", 10000000, redisCache), ServiceLifetime.Singleton));
+                    ("currency_rate", singl["currency_rate"].RefreshTime, redisCache, singl["currency_rate"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoEntityOffice_DTO>),
                 p => new CacheService<LoEntityOffice_DTO>
-                    ("lo_entity_office", 12000000, redisCache), ServiceLifetime.Singleton));
+                    ("lo_entity_office", singl["lo_entity_office"].RefreshTime, redisCache, singl["lo_entity_office"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoDeliveryType_DTO>),
                 p => new CacheService<LoDeliveryType_DTO>
-                    ("lo_delivery_types", 12000000, redisCache), ServiceLifetime.Singleton));
+                   ("lo_delivery_types", singl["lo_delivery_types"].RefreshTime, redisCache, singl["lo_delivery_types"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<LoEntityDeliveryType_DTO>),
                 p => new CacheService<LoEntityDeliveryType_DTO>
-                    ("lo_entity_delivery_type", 12000000, redisCache), ServiceLifetime.Singleton));
+                   ("lo_entity_delivery_type", singl["lo_entity_delivery_type"].RefreshTime, redisCache, singl["lo_entity_delivery_type"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<News_DTO>),
                 p => new CacheService<News_DTO>
-                   ("news", 12000000, redisCache, true), ServiceLifetime.Singleton));
+                   ("news", singl["news"].RefreshTime, redisCache, singl["news"].PreLoad),
+                    ServiceLifetime.Singleton));
 
             services.Add(new ServiceDescriptor(typeof(ICacheService<NewsCategory_DTO>),
                 p => new CacheService<NewsCategory_DTO>
-                   ("news_category", 12000000, redisCache, true), ServiceLifetime.Singleton));
+                   ("news_category", singl["news_category"].RefreshTime, redisCache, singl["news_category"].PreLoad),
+                    ServiceLifetime.Singleton));
+            #endregion
 
             // add roles
             IdentityInit(services.BuildServiceProvider()).Wait();
