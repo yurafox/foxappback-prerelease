@@ -13,7 +13,7 @@ namespace Wsds.WebApp.Controllers
 {
     public class SimilarObjectResponses
     {
-        public long tags_id { get; set; }
+        public string tags_id { get; set; }
     }
 
     [Produces("application/json")]
@@ -65,18 +65,21 @@ namespace Wsds.WebApp.Controllers
 
                     if (listSimilarObjects.Count > 0)
                     {
-                        int qtyProducts = 0;
                         List<Product_DTO> products = new List<Product_DTO>();
                         foreach (SimilarObjectResponses item in listSimilarObjects[0])
                         {
-                            Product_DTO product = _prodRepo.Product(item.tags_id);
-                            if (product.status == 1 && product.valueQP != null && product.props.Count > 0)
+                            long productId = 0;
+                            long.TryParse(item.tags_id, out productId);
+                            if (productId != 0)
                             {
-                                products.Add(product);
-                                qtyProducts++;
+                                Product_DTO product = _prodRepo.Product(productId);
+                                if (product.status == 1 && product.valueQP != null && product.props.Count > 0)
+                                {
+                                    products.Add(product);
 
-                                if (qtyProducts >= qtyReturnProducs)
-                                    break;
+                                    if (products.Count >= qtyReturnProducs)
+                                        break;
+                                }
                             }
                         }
 
