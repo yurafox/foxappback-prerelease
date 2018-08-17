@@ -51,7 +51,7 @@ namespace Wsds.WebApp.TempTemplate
 
             string description = $"Заказ #{model.Id} на сумму {model.Total} грн";
             string versionString = typeof(Wsds.WebApp.Startup).Assembly.GetName().Version.ToString().Remove(3);
-            string resultLink = $"https://fma-lb.foxtrot.com.ua/api/v{versionString}/Payment/Result";
+            string resultLink = $"https://api.foxtrot.com.ua/api/v{versionString}/Payment/Result";
 
             var sb = new StringBuilder();
             sb.Append("<form action = 'https://lmi.paysoft.solutions/' method = 'post' id = 'payment' name = 'payment'>");
