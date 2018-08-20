@@ -11,6 +11,7 @@ using Oracle.ManagedDataAccess.Client;
 using Wsds.DAL.Entities;
 using Wsds.DAL.Entities.DTO;
 using Wsds.DAL.Identity;
+using Wsds.DAL.Identity.Exceptions;
 using Wsds.DAL.Repository.Abstract;
 using Wsds.DAL.Services.Abstract;
 
@@ -80,7 +81,8 @@ namespace Wsds.DAL.Repository.Specific
             if (user == null)
                 return (client?.id == null) ? AbsentUserStrategy() : await OnlyUserAbsentStrategy(client);
 
-            return await UserInSystemWithOldRegistration(user);
+            return (client?.id != null) ? await UserInSystemWithOldRegistration(user) 
+                                        : await RemoveNotSyncUser(user);
         }
 
         public bool VerifyUserPhoneInputData(string phone)
@@ -179,6 +181,17 @@ namespace Wsds.DAL.Repository.Specific
         {
             return ("", 1); // tuple (message:empty status:1)
         }
+
+        private async Task<(string, byte)> RemoveNotSyncUser(AppUser user)
+        {
+            var resultDel = await UserEngine.DeleteAsync(user);
+            if (!resultDel.Succeeded)
+                throw new IdentityRemoveException("can't remove application user");
+
+            return ("", 1); // tuple (message:empty status:1)
+
+        }
+
         private async Task<(string, byte)> OnlyUserAbsentStrategy(Client_DTO client)
         {
             // get card for identity like number
