@@ -17,20 +17,22 @@ namespace WsdsMQReceiver
         private readonly IConfigurationRoot _configuration;
         private readonly HttpClient _client;
 
-        public MQReceiver() {
+        public MQReceiver()
+        {
             var builder = new ConfigurationBuilder()
-                            .SetBasePath(Directory.GetCurrentDirectory())
-                            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            _configuration = builder.Build();            
-            var url = $"{_configuration["Baseurl:host"]}/api/";
-            Console.WriteLine(url);
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            _configuration = builder.Build();
+            var url = $"{_configuration["FoxBackendApi:host"]}/api/v{_configuration["FoxBackendApi:api_version"]}/";
+            СonsoleLog($"Backend-api url: {url}");
             _client = new HttpClient
             {
                 BaseAddress = new Uri(url)
             };
         }
 
-        private IConnection GetConnection() {
+        private IConnection GetConnection()
+        {
             var factory = new ConnectionFactory()
             {
                 HostName = _configuration["Rabbit:hostname"],
@@ -42,7 +44,8 @@ namespace WsdsMQReceiver
             return factory.CreateConnection();
         }
 
-        private void ReceiveMessage() {
+        private void ReceiveMessage()
+        {
             using (var connection = GetConnection())
             using (var channel = connection.CreateModel())
             {
@@ -50,11 +53,11 @@ namespace WsdsMQReceiver
                 var consumer = new EventingBasicConsumer(channel);
                 consumer.Received += (model, ea) =>
                 {
-                    ReceiveHandler(channel, ea); 
+                    ReceiveHandler(channel, ea);
                 };
                 channel.BasicConsume(queue: WorkQueue,
-                                     autoAck: false,
-                                     consumer: consumer);
+                    autoAck: false,
+                    consumer: consumer);
 
                 Console.WriteLine(" Press [enter] to exit.");
                 Console.ReadLine();
@@ -66,32 +69,41 @@ namespace WsdsMQReceiver
             try
             {
                 var message = Encoding.UTF8.GetString(ea.Body);
-                Console.WriteLine("order: {0}", message);
+                СonsoleLog($"Order: {message}");
 
                 var order = JObject.Parse(message);
                 CreateOrder(order);
-                Console.WriteLine("Order comlete");
+                СonsoleLog("Order comlete");
                 channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
             }
-            catch (Exception e) {
-                Console.WriteLine("Exception. Error Message: {0}", e.Message);
-                Console.WriteLine("Exception. Stack Trace: {0}", e.StackTrace);
+            catch (Exception e)
+            {
+                СonsoleLog($"Exception. Error Message: {e.Message}");
+                СonsoleLog($"Exception. Stack Trace: {e.StackTrace}");
                 channel.BasicNack(deliveryTag: ea.DeliveryTag, requeue: !ea.Redelivered, multiple: false);
             }
         }
 
-        private void CreateOrder(JObject order) {
+        private void CreateOrder(JObject order)
+        {
             _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             var stringContent = new StringContent(order.ToString(), Encoding.UTF8, "application/json");
             var result = _client.PostAsync("saleRmm/NewSaleRmm", stringContent).Result;
-            Console.WriteLine($"Status code: {result.StatusCode}");
+            СonsoleLog($"Status code: {result.StatusCode}");
             if (result.StatusCode != HttpStatusCode.OK)
             {
                 var resultContent = result.Content.ReadAsStringAsync();
                 throw new Exception($"Http request error: {resultContent}");
             }
         }
+
+
+        private static void СonsoleLog(string msg)
+        {
+            Console.WriteLine($"{DateTime.Now} {msg}");
+        }
+
 
         static void Main(string[] args) {
             var mqReceiver = new MQReceiver();
