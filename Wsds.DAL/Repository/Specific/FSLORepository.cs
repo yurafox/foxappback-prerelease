@@ -30,7 +30,7 @@ namespace Wsds.DAL.Repository.Specific
         private IClientRepository _clRepo;
         private readonly IConfiguration _config;
 
-        public FSLORepository(ICacheService<LoEntity_DTO> csLoEnt, 
+        public FSLORepository(ICacheService<LoEntity_DTO> csLoEnt,
                               ICacheService<LoSupplEntity_DTO> csLoSupplEnt,
                               ICacheService<Quotation_Product_DTO> csQProduct,
                               ICacheService<Quotation_DTO> csQuot,
@@ -38,7 +38,8 @@ namespace Wsds.DAL.Repository.Specific
                               ICacheService<LoEntityOffice_DTO> csEntOffice,
                               ICacheService<LoEntityDeliveryType_DTO> csEntDelType,
                               IClientRepository clRepo,
-                              IConfiguration config) {
+                              IConfiguration config)
+        {
             _csLoEnt = csLoEnt;
             _csLoSupplEnt = csLoSupplEnt;
             _csQProduct = csQProduct;
@@ -62,7 +63,7 @@ namespace Wsds.DAL.Repository.Specific
             var tlCnfg = EntityConfigDictionary.GetConfig("lo_track_log");
             var prov = new EntityProvider<LoTrackLog>(tlCnfg);
 
-            return prov.GetItems("t.ID_ORDER_SPEC_PROD = :orderSpecProdId", 
+            return prov.GetItems("t.ID_ORDER_SPEC_PROD = :orderSpecProdId",
                 new OracleParameter("orderSpecProdId", orderSpecProdId))
                 .OrderBy(x => x.trackDate);
         }
@@ -84,7 +85,7 @@ namespace Wsds.DAL.Repository.Specific
                 s.g_id = _csQProduct.Item((long)qp).idProduct;
                 s.price = (decimal)_csQProduct.Item((long)qp).price;
                 s.qty = sh.qty;
-                
+
                 sList.Add(s);
             }
 
@@ -125,14 +126,16 @@ namespace Wsds.DAL.Repository.Specific
 
             return new { assessedCost = resp.deliv + resp.deliv_floor };
         }
-        public object GetDeliveryDateByShipment(Shipment_DTO shpmt, long loEntityId, long? loIdClientAddress, long delivTypeId) {
+        public object GetDeliveryDateByShipment(Shipment_DTO shpmt, long loEntityId, long? loIdClientAddress, long delivTypeId)
+        {
 
             var closCnfg = EntityConfigDictionary.GetConfig("client_order_product");
             var prov = new EntityProvider<ClientOrderProduct_DTO>(closCnfg);
 
             var sList = new List<DeliveryRequestT22_S_Date>();
 
-            foreach (var sh in shpmt.shipmentItems) {
+            foreach (var sh in shpmt.shipmentItems)
+            {
                 var s = new DeliveryRequestT22_S_Date();
 
                 var qp = prov.GetItem((long)sh.idOrderSpecProd).idQuotationProduct;
@@ -153,7 +156,7 @@ namespace Wsds.DAL.Repository.Specific
             del22_Date.spec = sList;
 
             var requestJson = JsonConvert.SerializeObject(del22_Date);
-            
+
 
             string res = "";
             var ConnString = _config.GetConnectionString("MainDataConnection");
@@ -183,10 +186,12 @@ namespace Wsds.DAL.Repository.Specific
 
         public LoDeliveryType_DTO LoDeliveryType(long id) => _csDelType.Item(id);
 
-        public IEnumerable<LoDeliveryType_DTO> GetLoDeliveryTypesByLoEntity(long idLoEntity) {
-            var res = new List<LoDeliveryType_DTO>(); 
+        public IEnumerable<LoDeliveryType_DTO> GetLoDeliveryTypesByLoEntity(long idLoEntity)
+        {
+            var res = new List<LoDeliveryType_DTO>();
             var lst = _csEntDelType.Items.Values.Where(x => x.idLoEntity == idLoEntity).ToList();
-            foreach (var item in lst) {
+            foreach (var item in lst)
+            {
                 res.Add(_csDelType.Item(item.idLoDeliveryType));
             }
             return res;
@@ -253,11 +258,16 @@ namespace Wsds.DAL.Repository.Specific
             var resList = new List<LoDeliveryTypeAttr_DTO>();
             var resp = JsonConvert.DeserializeObject<DeliveryResponseT22_AttrRoot>(res);
 
-            if (resp.shipments!=null)
+            if (resp.shipments != null)
                 foreach (DeliveryResponseT22_Attr rec in resp.shipments)
                     resList.Add(new LoDeliveryTypeAttr_DTO(rec.sht_id, rec.type_deliv, rec.date));
 
             return resList;
+        }
+
+        public bool AllowTakeOnCredit(long? status)
+        {
+            return !(status == null || status == 2 || status == 4);
         }
     }
 }

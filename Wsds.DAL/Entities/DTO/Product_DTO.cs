@@ -25,5 +25,6 @@ namespace Wsds.DAL.Entities
         public string barcode { get; set; }
         public long? valueQP { get; set; }
         public long? status { get; set; }
+        public long? site_status { get; set; }
     }
 }

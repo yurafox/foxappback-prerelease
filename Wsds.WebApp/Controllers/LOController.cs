@@ -69,5 +69,10 @@ namespace Wsds.WebApp.Controllers
             return Ok(_loRepo.GetLoDeliveryTypesAttrByLoEntity(model.shpmt, model.loIdClientAddress));
         }
 
+        [HttpGet("AllowTakeOnCredit/{status}")]
+        public IActionResult AllowTakeOnCredit(long? status)
+        {
+            return Ok(_loRepo.AllowTakeOnCredit(status));
+        }
     }
 }
